@@ -52,6 +52,10 @@ const TEXTES = {
     confirmerRestauration: (f, c) => `Remplacer les données actuelles par cette sauvegarde (${f} formules, ${c} contenants) ?`,
     sauvegardeRestauree: 'Sauvegarde restaurée', fichierInvalide: 'Ce fichier n’est pas une sauvegarde valide',
     enregistrementImpossible: 'Impossible d’enregistrer sur cet appareil',
+    modifier: 'Modifier', retour: '‹ Formules', photos: 'Photos', ajouterPhotos: '+ Ajouter des photos',
+    aucunePhoto: 'Pas encore de photo.', supprimerPhoto: 'Supprimer cette photo ?', photoAjoutee: n => `${n} photo(s) ajoutée(s)`,
+    photoImpossible: 'Impossible d’ajouter cette photo', fermer: 'Fermer',
+    photosAide: 'Les photos se gèrent depuis la fiche de la recette, une fois enregistrée.',
   },
   en: {
     navCalcul: 'Calculate', navFormules: 'Recipes', navContenants: 'Jars', navReglages: 'Settings',
@@ -102,6 +106,10 @@ const TEXTES = {
     confirmerRestauration: (f, c) => `Replace the current data with this backup (${f} recipes, ${c} jars)?`,
     sauvegardeRestauree: 'Backup restored', fichierInvalide: 'This file is not a valid backup',
     enregistrementImpossible: 'Could not save on this device',
+    modifier: 'Edit', retour: '‹ Recipes', photos: 'Photos', ajouterPhotos: '+ Add photos',
+    aucunePhoto: 'No photos yet.', supprimerPhoto: 'Delete this photo?', photoAjoutee: n => `${n} photo(s) added`,
+    photoImpossible: 'Could not add this photo', fermer: 'Close',
+    photosAide: 'Photos are managed from the recipe page once it is saved.',
   },
 };
 
@@ -180,6 +188,78 @@ function nouvelId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
+// ---------- Photos ----------
+// Trop lourdes pour localStorage : elles vont dans IndexedDB, réduites en JPEG.
+// La formule ne garde que la liste de leurs identifiants (formule.photos).
+
+const PHOTO_COTE_MAX = 1400;
+let baseDePhotos;
+
+function basePhotos() {
+  baseDePhotos = baseDePhotos || new Promise((ok, ko) => {
+    const req = indexedDB.open('bougies-photos', 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('photos');
+    req.onsuccess = () => ok(req.result);
+    req.onerror = () => ko(req.error);
+  });
+  return baseDePhotos;
+}
+
+async function photos(mode, action) {
+  const db = await basePhotos();
+  return new Promise((ok, ko) => {
+    const tx = db.transaction('photos', mode);
+    const req = action(tx.objectStore('photos'));
+    tx.oncomplete = () => ok(req?.result);
+    tx.onerror = () => ko(tx.error);
+  });
+}
+
+const lirePhoto = id => photos('readonly', s => s.get(id));
+const ecrirePhoto = (id, dataUrl) => photos('readwrite', s => s.put(dataUrl, id));
+const effacerPhotos = ids => photos('readwrite', s => { ids.forEach(id => s.delete(id)); });
+
+function reduirePhoto(fichier) {
+  return new Promise((ok, ko) => {
+    const img = new Image();
+    const url = URL.createObjectURL(fichier);
+    img.onload = () => {
+      const echelle = Math.min(1, PHOTO_COTE_MAX / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * echelle);
+      canvas.height = Math.round(img.height * echelle);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      ok(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); ko(new Error('image')); };
+    img.src = url;
+  });
+}
+
+async function ajouterPhotos(formule, fichiers) {
+  let ajoutees = 0;
+  for (const fichier of fichiers) {
+    try {
+      const id = nouvelId();
+      await ecrirePhoto(id, await reduirePhoto(fichier));
+      formule.photos = [...(formule.photos || []), id];
+      ajoutees++;
+    } catch (e) {
+      toast(t('photoImpossible'));
+    }
+  }
+  enregistrer();
+  if (ajoutees) toast(t('photoAjoutee', ajoutees));
+}
+
+// Remplit les <img data-photo="id"> une fois les photos lues.
+function afficherPhotos() {
+  app.querySelectorAll('img[data-photo]').forEach(async img => {
+    img.src = (await lirePhoto(img.dataset.photo)) || '';
+  });
+}
+
 function nombre(v) {
   const n = parseFloat(String(v ?? '').replace(',', '.').replace(/\s/g, ''));
   return Number.isFinite(n) ? n : 0;
@@ -236,7 +316,7 @@ function traduireEntete() {
 
 function route() {
   traduireEntete();
-  const [page, id] = location.hash.replace(/^#\/?/, '').split('/');
+  const [page, id, mode] = location.hash.replace(/^#\/?/, '').split('/');
   document.querySelectorAll('.topbar nav a').forEach(a => {
     const onglet = a.dataset.tab;
     a.classList.toggle('active', onglet === page || (onglet === 'formules' && page === 'formule') || (onglet === 'contenants' && page === 'contenant'));
@@ -244,7 +324,7 @@ function route() {
   window.scrollTo(0, 0);
   switch (page) {
     case 'formules': return vueFormules();
-    case 'formule': return vueFormule(id);
+    case 'formule': return mode === 'modifier' || !formuleParId(id) ? vueFormule(id) : vueFiche(id);
     case 'contenants': return vueContenants();
     case 'contenant': return vueContenant(id);
     case 'reglages': return vueReglages();
@@ -417,6 +497,81 @@ function lignesHtml(cle, lignes, liste, exemple) {
     </div>`).join('');
 }
 
+// Fiche en lecture seule ; le bouton Modifier ouvre le formulaire.
+function vueFiche(id) {
+  const f = formuleParId(id);
+  const melange = f.parfums.filter(l => l.nom || l.pct);
+  const couches = (f.couches || []).filter(c => c.nom || c.pct);
+  const somme = melange.reduce((s, l) => s + nombre(l.pct), 0);
+  const texte = (titre, valeur) => valeur ? `<h3>${titre}</h3><p style="white-space:pre-wrap">${esc(valeur)}</p>` : '';
+  app.innerHTML = `
+    <div class="entete-fiche">
+      <a class="btn small" href="#/formules">${t('retour')}</a>
+      <div class="actions" style="margin:0">
+        <button class="small" data-action="calculer" data-id="${f.id}">${t('calculer')}</button>
+        <a class="btn small primary" href="#/formule/${f.id}/modifier">✎ ${t('modifier')}</a>
+      </div>
+    </div>
+    <h2><button class="star" data-action="favori" data-id="${f.id}" aria-label="${t('favori')}">${f.favori ? '★' : '☆'}</button>${esc(f.nom)}</h2>
+    <div class="card">
+      <table class="result">
+        <tr><td>${esc(f.cire || t('cire'))}</td><td class="num">${pourcent(100 - nombre(f.dosage))}</td></tr>
+        <tr><td>${t('parfumTotal')}<span class="pct">${t('duPoidsTotal')}</span></td><td class="num">${pourcent(nombre(f.dosage))}</td></tr>
+      </table>
+      <h3>${t('melange')}</h3>
+      ${Math.abs(somme - 100) > 0.05 ? `<p class="warn">${t('melangeFaux', pourcent(somme).replace(' %', ''))}</p>` : ''}
+      <table class="result">
+        ${melange.map(l => `<tr><td>${esc(l.nom)}</td><td class="num">${pourcent(nombre(l.pct))}</td></tr>`).join('')}
+      </table>
+      ${couches.length ? `<h3>${t('couches')}</h3><table class="result">
+        ${couches.map(c => `<tr><td>${esc(c.nom)}</td><td class="num">${pourcent(nombre(c.pct))}</td></tr>`).join('')}</table>` : ''}
+    </div>
+    ${f.design || f.prochaineFois || f.notes ? `<div class="card texte-fiche">
+      ${texte(t('design'), f.design)}${texte(t('prochaineFois'), f.prochaineFois)}${texte(t('notes'), f.notes)}
+    </div>` : ''}
+    <div class="card">
+      <h3 style="margin-top:0">${t('photos')}</h3>
+      ${(f.photos || []).length ? `<div class="galerie">
+        ${f.photos.map(p => `<button class="vignette" data-action="voir-photo" data-id="${p}"><img data-photo="${p}" alt=""></button>`).join('')}
+      </div>` : `<p class="muted">${t('aucunePhoto')}</p>`}
+      <div class="actions">
+        <button data-action="ajouter-photos">${t('ajouterPhotos')}</button>
+        <input type="file" id="fichier-photos" accept="image/*" multiple hidden>
+      </div>
+    </div>`;
+  afficherPhotos();
+  document.getElementById('fichier-photos').addEventListener('change', async ev => {
+    await ajouterPhotos(f, [...ev.target.files]);
+    vueFiche(id);
+  });
+}
+
+function voirPhoto(formuleId, photoId) {
+  const fond = document.createElement('div');
+  fond.className = 'visionneuse';
+  fond.innerHTML = `<img data-photo="${photoId}" alt="">
+    <div class="actions">
+      <button class="danger" data-v="supprimer">${t('supprimer')}</button>
+      <button class="primary" data-v="fermer">${t('fermer')}</button>
+    </div>`;
+  document.body.appendChild(fond);
+  lirePhoto(photoId).then(src => { fond.querySelector('img').src = src || ''; });
+  fond.addEventListener('click', async ev => {
+    const choix = ev.target.dataset.v;
+    if (choix === 'supprimer') {
+      if (!confirm(t('supprimerPhoto'))) return;
+      const f = formuleParId(formuleId);
+      f.photos = f.photos.filter(p => p !== photoId);
+      enregistrer();
+      await effacerPhotos([photoId]);
+      fond.remove();
+      vueFiche(formuleId);
+    } else if (choix === 'fermer' || ev.target === fond) {
+      fond.remove();
+    }
+  });
+}
+
 function vueFormule(id) {
   if (!brouillon || brouillon.id !== id) {
     const existante = formuleParId(id);
@@ -426,7 +581,7 @@ function vueFormule(id) {
     };
     brouillon.couches = brouillon.couches || [];
     brouillon.estNouvelle = !existante;
-    if (!existante) history.replaceState(null, '', '#/formule/' + brouillon.id);
+    if (!existante) history.replaceState(null, '', `#/formule/${brouillon.id}/modifier`);
   }
   const f = brouillon;
   const somme = f.parfums.reduce((s, l) => s + nombre(l.pct), 0);
@@ -467,8 +622,9 @@ function vueFormule(id) {
       <button class="primary" data-action="enregistrer-formule">${t('enregistrer')}</button>
       ${f.estNouvelle ? '' : `<button data-action="dupliquer-formule">${t('dupliquer')}</button>
         <button class="danger" data-action="supprimer-formule">${t('supprimer')}</button>`}
-      <a class="btn" href="#/formules">${t('annuler')}</a>
-    </div>`;
+      <a class="btn" href="${f.estNouvelle ? '#/formules' : `#/formule/${f.id}`}">${t('annuler')}</a>
+    </div>
+    <p class="muted">${t('photosAide')}</p>`;
 }
 
 function lireFormulaire() {
@@ -557,6 +713,11 @@ function vueReglages() {
 
 async function exporter() {
   const { ui, ...donnees } = etat;
+  donnees.photos = {};
+  for (const id of etat.formules.flatMap(f => f.photos || [])) {
+    const photo = await lirePhoto(id);
+    if (photo) donnees.photos[id] = photo;
+  }
   const date = new Date().toISOString().slice(0, 10);
   const nom = `bougies-sauvegarde-${date}.json`;
   const fichier = new File([JSON.stringify(donnees, null, 2)], nom, { type: 'application/json' });
@@ -583,11 +744,14 @@ function importer(ev) {
   const fichier = ev.target.files[0];
   if (!fichier) return;
   const lecteur = new FileReader();
-  lecteur.onload = () => {
+  lecteur.onload = async () => {
     try {
       const donnees = JSON.parse(lecteur.result);
       if (!Array.isArray(donnees.formules) || !Array.isArray(donnees.contenants)) throw new Error('format');
       if (!confirm(t('confirmerRestauration', donnees.formules.length, donnees.contenants.length))) return;
+      await photos('readwrite', s => s.clear());
+      for (const [id, photo] of Object.entries(donnees.photos || {})) await ecrirePhoto(id, photo);
+      delete donnees.photos;
       // La langue choisie sur cet appareil reste celle en cours.
       const langue = etat.reglages.langue;
       etat = depuisDonnees(donnees);
@@ -635,7 +799,8 @@ app.addEventListener('click', ev => {
       const f = formuleParId(id);
       f.favori = !f.favori;
       enregistrer();
-      vueFormules(document.getElementById('recherche').value);
+      const recherche = document.getElementById('recherche');
+      if (recherche) vueFormules(recherche.value); else route();
       break;
     }
     case 'calculer':
@@ -665,13 +830,19 @@ app.addEventListener('click', ev => {
       enregistrer();
       brouillon = null;
       toast(t('formuleEnregistree'));
-      aller('#/formules');
+      aller('#/formule/' + f.id);
       break;
     }
     case 'dupliquer-formule': {
       lireFormulaire();
       const { estNouvelle, ...f } = brouillon;
-      const copie = { ...structuredClone(f), id: nouvelId(), nom: `${f.nom} ${t('copie')}`, favori: false };
+      const copie = { ...structuredClone(f), id: nouvelId(), nom: `${f.nom} ${t('copie')}`, favori: false, photos: [] };
+      // Chaque copie a ses propres photos, pour que supprimer l'une ne vide pas l'autre.
+      (f.photos || []).forEach(p => {
+        const id = nouvelId() + copie.photos.length;
+        copie.photos.push(id);
+        lirePhoto(p).then(photo => photo && ecrirePhoto(id, photo));
+      });
       etat.formules.push(copie);
       enregistrer();
       brouillon = null;
@@ -681,10 +852,17 @@ app.addEventListener('click', ev => {
     }
     case 'supprimer-formule':
       if (!confirm(t('supprimerFormule', brouillon.nom))) return;
+      effacerPhotos(brouillon.photos || []);
       etat.formules = etat.formules.filter(f => f.id !== brouillon.id);
       enregistrer();
       brouillon = null;
       aller('#/formules');
+      break;
+    case 'ajouter-photos':
+      document.getElementById('fichier-photos').click();
+      break;
+    case 'voir-photo':
+      voirPhoto(location.hash.split('/')[2], id);
       break;
     case 'convertir': {
       const ml = nombre(document.getElementById('k-volume').value);
@@ -755,7 +933,7 @@ function toast(msg) {
 
 window.addEventListener('hashchange', () => {
   // Quitter un formulaire sans enregistrer abandonne le brouillon.
-  if (!/^#\/(formule|contenant)\//.test(location.hash)) brouillon = null;
+  if (!/^#\/(formule\/[^/]+\/modifier|contenant\/)/.test(location.hash)) brouillon = null;
   route();
 });
 route();
