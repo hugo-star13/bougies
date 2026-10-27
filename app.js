@@ -123,7 +123,9 @@ const TEXTES = {
     ajouterMouvement: '+ Ajouter', mouvementAjoute: 'Mouvement ajouté', libelleMontant: 'Indiquez un libellé et un montant',
     supprimerMouvement: 'Supprimer ce mouvement ?', exporterCsv: 'Exporter pour Excel', exportCree: 'Fichier créé',
     achatDe: n => `Achat : ${n}`, venteDe: n => `Vente : ${n}`,
-    devise: 'Devise', paiement: 'Paiement', modes: { especes: 'Espèces', carte: 'Carte', virement: 'Virement', cheque: 'Chèque', autre: 'Autre' },
+    devise: 'Devise', paiement: 'Paiement',
+    taux: (de, vers) => `Taux ${de} → ${vers}`, tauxDu: d => `cours du ${d}`, tauxHorsLigne: 'pas de connexion : dernier taux connu, à vérifier',
+    tauxInconnu: 'pas de connexion : saisissez le taux', tauxManquant: 'Indiquez le taux de change', soit: 'soit', origine: 'Montant d’origine', modes: { especes: 'Espèces', carte: 'Carte', virement: 'Virement', cheque: 'Chèque', autre: 'Autre' },
     venteTitre: n => `Vente : ${n}`, valider: 'Valider',
   },
   en: {
@@ -246,7 +248,9 @@ const TEXTES = {
     ajouterMouvement: '+ Add', mouvementAjoute: 'Entry added', libelleMontant: 'Enter a description and an amount',
     supprimerMouvement: 'Delete this entry?', exporterCsv: 'Export for Excel', exportCree: 'File created',
     achatDe: n => `Purchase: ${n}`, venteDe: n => `Sale: ${n}`,
-    devise: 'Currency', paiement: 'Payment', modes: { especes: 'Cash', carte: 'Card', virement: 'Transfer', cheque: 'Cheque', autre: 'Other' },
+    devise: 'Currency', paiement: 'Payment',
+    taux: (de, vers) => `Rate ${de} → ${vers}`, tauxDu: d => `rate of ${d}`, tauxHorsLigne: 'offline: last known rate, please check',
+    tauxInconnu: 'offline: enter the rate', tauxManquant: 'Enter the exchange rate', soit: 'i.e.', origine: 'Original amount', modes: { especes: 'Cash', carte: 'Card', virement: 'Transfer', cheque: 'Cheque', autre: 'Other' },
     venteTitre: n => `Sale: ${n}`, valider: 'Confirm',
   },
 };
@@ -271,6 +275,7 @@ function etatVide() {
     stock: [],
     produits: [],
     mouvements: [],
+    taux: {},
     derniereSauvegarde: null,
     reglages: {
       langue: (navigator.language || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en',
@@ -313,6 +318,7 @@ function depuisDonnees(donnees) {
   e.stock = e.stock || [];
   e.produits = e.produits || [];
   e.mouvements = e.mouvements || [];
+  e.taux = e.taux || {};
   return e;
 }
 
@@ -481,6 +487,85 @@ function creerArticle(type, nom, extra = {}) {
   etat.stock.push(a);
   return a;
 }
+
+// ---------- Devises ----------
+// Les montants sont enregistrés dans la devise des Réglages (CHF). Un achat payé dans une
+// autre devise est converti au cours du jour de l'achat (BCE, via frankfurter), et garde
+// son montant d'origine.
+
+const DEVISES = ['CHF', 'EUR'];
+
+async function tauxDuJour(date, de, vers) {
+  const cle = `${date}:${de}>${vers}`;
+  if (etat.taux[cle]) return { taux: etat.taux[cle], date: etat.taux[cle + ':date'] || date };
+  const jour = date > new Date().toISOString().slice(0, 10) ? 'latest' : date;
+  for (const url of [`https://api.frankfurter.app/${jour}?from=${de}&to=${vers}`,
+    `https://api.frankfurter.dev/v1/${jour}?base=${de}&symbols=${vers}`]) {
+    try {
+      const r = await (await fetch(url)).json();
+      if (r.rates?.[vers]) {
+        etat.taux[cle] = r.rates[vers];
+        etat.taux[cle + ':date'] = r.date;
+        etat.taux[`dernier:${de}>${vers}`] = r.rates[vers];
+        enregistrer();
+        return { taux: r.rates[vers], date: r.date };
+      }
+    } catch (e) { /* essai suivant */ }
+  }
+  const dernier = etat.taux[`dernier:${de}>${vers}`];
+  return dernier ? { taux: dernier, horsLigne: true } : null;
+}
+
+// Prix, devise et, si la devise diffère, le taux. Le préfixe distingue les formulaires.
+function champMontant(prefixe, libelle) {
+  return `<div><label for="${prefixe}-prix">${libelle}</label>
+    <div class="stepper">
+      <input id="${prefixe}-prix" inputmode="decimal" data-conv="${prefixe}" style="max-width:none">
+      <select id="${prefixe}-devise" data-conv="${prefixe}" aria-label="${t('devise')}" style="width:auto">
+        ${DEVISES.map(d => `<option ${d === etat.reglages.devise ? 'selected' : ''}>${d}</option>`).join('')}
+      </select>
+    </div>
+    <div id="${prefixe}-conv" class="conv" hidden>
+      <label for="${prefixe}-taux" id="${prefixe}-taux-label"></label>
+      <input id="${prefixe}-taux" inputmode="decimal" data-conv="${prefixe}" data-taux-manuel="">
+      <p class="muted" id="${prefixe}-resultat"></p>
+    </div></div>`;
+}
+
+async function majConversion(prefixe, source) {
+  const zone = document.getElementById(prefixe + '-conv');
+  if (!zone) return;
+  const de = document.getElementById(prefixe + '-devise').value;
+  const vers = etat.reglages.devise;
+  zone.hidden = de === vers;
+  if (de === vers) return;
+  const champTaux = document.getElementById(prefixe + '-taux');
+  const info = document.getElementById(prefixe + '-resultat');
+  document.getElementById(prefixe + '-taux-label').textContent = t('taux', de, vers);
+  if (source === champTaux) champTaux.dataset.tauxManuel = '1';
+  // Nouveau taux à chaque changement de devise ou de date, sauf s'il a été saisi à la main.
+  if (!champTaux.dataset.tauxManuel && (source?.id?.endsWith('-devise') || source?.type === 'date' || !champTaux.value)) {
+    const date = document.getElementById(prefixe + '-date').value || new Date().toISOString().slice(0, 10);
+    champTaux.dataset.note = '…';
+    const r = await tauxDuJour(date, de, vers);
+    champTaux.value = r ? String(Math.round(r.taux * 10000) / 10000) : '';
+    champTaux.dataset.note = r ? (r.horsLigne ? t('tauxHorsLigne') : t('tauxDu', new Date(r.date).toLocaleDateString(locale()))) : t('tauxInconnu');
+  }
+  const montant = nombre(document.getElementById(prefixe + '-prix').value) * nombre(champTaux.value);
+  info.textContent = [champTaux.dataset.note, montant ? `${t('soit')} ${euros(montant)}` : ''].filter(Boolean).join(' · ');
+}
+
+// Montant converti dans la devise des Réglages, ou null si le taux manque.
+function lireMontant(prefixe) {
+  const brut = nombre(document.getElementById(prefixe + '-prix').value);
+  const devise = document.getElementById(prefixe + '-devise').value;
+  if (devise === etat.reglages.devise) return { montant: brut };
+  const taux = nombre(document.getElementById(prefixe + '-taux').value);
+  if (!(taux > 0)) return null;
+  return { montant: Math.round(brut * taux * 100) / 100, origine: { montant: brut, devise, taux } };
+}
+
+const origineTexte = o => o ? ` <span class="pct">(${o.montant.toLocaleString(locale(), { style: 'currency', currency: o.devise })})</span>` : '';
 
 // Prix moyen pondéré de tous les achats, par g, ml ou pièce.
 function coutUnitaire(a) {
@@ -1162,15 +1247,15 @@ function vueArticle(id) {
     <div class="card">
       <h3 style="margin-top:0">${t('nouvelAchat')}</h3>
       <div class="grid3">
-        <div><label for="a-date">${t('date')}</label><input id="a-date" type="date" value="${aujourdhui}"></div>
+        <div><label for="a-date">${t('date')}</label><input id="a-date" type="date" data-conv="a" value="${aujourdhui}"></div>
         <div><label for="a-qte">${t('quantiteAchetee', u)}</label><input id="a-qte" inputmode="decimal"></div>
-        <div><label for="a-prix">${t('prixPaye')}</label><input id="a-prix" inputmode="decimal"></div>
+        ${champMontant('a', t('prixPaye').replace(/ \(.*\)$/, ''))}
       </div>
       <div class="actions"><button data-action="ajouter-achat">${t('ajouterAchat')}</button></div>
       <h3>${t('achats')}${coutUnitaire(a) !== null ? ` <span class="muted" style="font-weight:400">· ${t('prixMoyen')} ${prixUnitaireTexte(a)}</span>` : ''}</h3>
       ${a.achats.length ? `<table class="result petit">${[...a.achats].map((x, i) => [x, i]).reverse().map(([x, i]) => `
         <tr><td>${new Date(x.date).toLocaleDateString(locale())}<span class="pct">${quantiteTexte(nombre(x.quantite), UNITE[a.type])}</span></td>
-          <td class="num">${euros(nombre(x.prix))} <button class="small" data-action="supprimer-achat" data-i="${i}" aria-label="${t('supprimer')}">✕</button></td></tr>`).join('')}
+          <td class="num">${euros(nombre(x.prix))}${origineTexte(x.origine)} <button class="small" data-action="supprimer-achat" data-i="${i}" aria-label="${t('supprimer')}">✕</button></td></tr>`).join('')}
       </table>` : `<p class="muted">${t('aucunAchat')}</p>`}
     </div>
     <div class="actions">
@@ -1238,7 +1323,7 @@ function alertesHtml() {
 // Tous les mouvements d'argent : achats du stock, ventes de bougies, et ceux ajoutés à la main.
 function tousMouvements() {
   return [
-    ...etat.stock.flatMap(a => a.achats.map(x => ({ date: x.date, libelle: t('achatDe', a.nom), montant: -nombre(x.prix) }))),
+    ...etat.stock.flatMap(a => a.achats.map(x => ({ date: x.date, libelle: t('achatDe', a.nom), montant: -nombre(x.prix), origine: x.origine }))),
     ...etat.produits.flatMap(p => p.ventes.map(v => ({ date: v.date, libelle: t('venteDe', p.nom), montant: nombre(v.prix), mode: v.mode }))),
     ...etat.mouvements.map(m => ({ ...m, manuel: true, montant: m.sens === 'sortie' ? -nombre(m.montant) : nombre(m.montant) })),
   ].sort((a, b) => b.date.localeCompare(a.date));
@@ -1277,11 +1362,11 @@ function vueRapport() {
       <div class="grid2">
         <div><label for="m-sens">${t('type')}</label>
           <select id="m-sens"><option value="sortie">${t('sortie')}</option><option value="entree">${t('entree')}</option></select></div>
-        <div><label for="m-date">${t('date')}</label><input id="m-date" type="date" value="${new Date().toISOString().slice(0, 10)}"></div>
+        <div><label for="m-date">${t('date')}</label><input id="m-date" type="date" data-conv="m" value="${new Date().toISOString().slice(0, 10)}"></div>
       </div>
       <div class="grid3">
         <div><label for="m-libelle">${t('libelle')}</label><input id="m-libelle" placeholder="${t('exLibelle')}"></div>
-        <div><label for="m-montant">${t('montant')}</label><input id="m-montant" inputmode="decimal"></div>
+        ${champMontant('m', t('montant').replace(/ \(.*\)$/, ''))}
         <div><label for="m-mode">${t('paiement')}</label><select id="m-mode">${optionsModes(etat.reglages.dernierMode || 'especes')}</select></div>
       </div>
       <div class="actions"><button data-action="ajouter-mouvement">${t('ajouterMouvement')}</button></div>
@@ -1290,7 +1375,7 @@ function vueRapport() {
       <h3 style="margin-top:0">${t('mouvements')}</h3>
       ${liste.length ? `<table class="result petit">${liste.map(m => `<tr>
         <td>${esc(m.libelle)}<span class="pct">${new Date(m.date).toLocaleDateString(locale())}${m.mode ? ' · ' + t('modes')[m.mode] : ''}</span></td>
-        <td class="num">${signe(m.montant)}${m.manuel ? ` <button class="small" data-action="supprimer-mouvement" data-id="${m.id}" aria-label="${t('supprimer')}">✕</button>` : ''}</td></tr>`).join('')}
+        <td class="num">${signe(m.montant)}${origineTexte(m.origine)}${m.manuel ? ` <button class="small" data-action="supprimer-mouvement" data-id="${m.id}" aria-label="${t('supprimer')}">✕</button>` : ''}</td></tr>`).join('')}
       </table>` : `<p class="muted">${t('aucunMouvement')}</p>`}
     </div>`;
 }
@@ -1337,9 +1422,10 @@ function exporterCsv() {
   const sep = fr ? ';' : ',';
   const virgule = fr && etat.reglages.devise === 'EUR';
   const cellule = v => `"${String(v).replace(/"/g, '""')}"`;
-  const lignes = [[t('date'), t('libelle'), t('paiement'), t('montant')].map(cellule).join(sep),
-    ...tousMouvements().map(m => [m.date, cellule(m.libelle), cellule(m.mode ? t('modes')[m.mode] : ''),
-      virgule ? m.montant.toFixed(2).replace('.', ',') : m.montant.toFixed(2)].join(sep))];
+  const nb = x => virgule ? x.toFixed(2).replace('.', ',') : x.toFixed(2);
+  const lignes = [[t('date'), t('libelle'), t('paiement'), t('montant'), t('origine')].map(cellule).join(sep),
+    ...tousMouvements().map(m => [m.date, cellule(m.libelle), cellule(m.mode ? t('modes')[m.mode] : ''), nb(m.montant),
+      cellule(m.origine ? `${nb(m.origine.montant)} ${m.origine.devise} (${t('taux', m.origine.devise, etat.reglages.devise)} ${m.origine.taux})` : '')].join(sep))];
   const nom = `bougies-rapport-${new Date().toISOString().slice(0, 10)}.csv`;
   partagerFichier(new File(['﻿' + lignes.join('\r\n')], nom, { type: 'text/csv' }))
     .then(ok => ok && toast(t('exportCree')))
@@ -1765,10 +1851,12 @@ app.addEventListener('click', ev => {
       break;
     case 'ajouter-mouvement': {
       const libelle = document.getElementById('m-libelle').value.trim();
-      const montant = nombre(document.getElementById('m-montant').value);
-      if (!libelle || !(montant > 0)) { toast(t('libelleMontant')); return; }
+      const lu = lireMontant('m');
+      if (!libelle || !(nombre(document.getElementById('m-prix').value) > 0)) { toast(t('libelleMontant')); return; }
+      if (!lu) { toast(t('tauxManquant')); return; }
+      const montant = lu.montant;
       etat.mouvements.push({ id: nouvelId(), date: document.getElementById('m-date').value || new Date().toISOString().slice(0, 10),
-        sens: document.getElementById('m-sens').value, libelle, montant, mode: document.getElementById('m-mode').value });
+        sens: document.getElementById('m-sens').value, libelle, montant, mode: document.getElementById('m-mode').value, ...(lu.origine && { origine: lu.origine }) });
       enregistrer();
       toast(t('mouvementAjoute'));
       vueRapport();
@@ -1788,13 +1876,14 @@ app.addEventListener('click', ev => {
       break;
     case 'ajouter-achat': {
       const quantite = nombre(document.getElementById('a-qte').value);
-      const prix = nombre(document.getElementById('a-prix').value);
-      if (!(quantite > 0) || !(prix >= 0) || document.getElementById('a-prix').value.trim() === '') { toast(t('quantiteEtPrix')); return; }
+      if (!(quantite > 0) || document.getElementById('a-prix').value.trim() === '') { toast(t('quantiteEtPrix')); return; }
+      const lu = lireMontant('a');
+      if (!lu) { toast(t('tauxManquant')); return; }
       // L'achat s'ajoute à la quantité affichée, que sauverArticle relit.
       const champ = document.getElementById('s-quantite');
       const avant = champ.value;
       champ.value = Math.round((nombre(avant) + quantite) * 10) / 10;
-      brouillon.achats.push({ date: document.getElementById('a-date').value || new Date().toISOString().slice(0, 10), quantite, prix });
+      brouillon.achats.push({ date: document.getElementById('a-date').value || new Date().toISOString().slice(0, 10), quantite, prix: lu.montant, ...(lu.origine && { origine: lu.origine }) });
       if (!sauverArticle()) { brouillon.achats.pop(); champ.value = avant; return; }
       toast(t('achatAjoute'));
       majBadge();
@@ -1828,6 +1917,7 @@ app.addEventListener('click', ev => {
 
 app.addEventListener('input', ev => {
   const el = ev.target;
+  if (el.dataset.conv) { majConversion(el.dataset.conv, el); return; }
   // Écran Calculer : on recalcule à chaque frappe.
   if (el.dataset.ui) {
     etat.ui[el.dataset.ui] = el.value;
