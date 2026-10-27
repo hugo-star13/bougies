@@ -78,6 +78,28 @@ const TEXTES = {
     chargerRecettes: 'Charger mes recettes', chargerAide: 'Ajoute les recettes et les pots intégrés à l’app (protégés par un mot de passe). Rien n’est remplacé.',
     demanderMdp: 'Mot de passe des recettes :', mdpFaux: 'Mot de passe incorrect', recettesChargees: (f, c) => `${f} recette(s) et ${c} pot(s) ajoutés`,
     etapesPerso: 'Étapes particulières', exEtapesPerso: 'Une étape par ligne, ex. « Fouetter la cire à 45 °C pour la couche du dessus »',
+    navStock: 'Stock', choisir: '— Choisir —', nouvelleSenteur: '+ Nouvelle senteur…', nouvelleCire: '+ Nouvelle cire…',
+    nomSenteur: 'Nom de la nouvelle senteur :', nomCire: 'Nom de la nouvelle cire :',
+    stock: 'Stock', stockAide: 'Vos achats de cire, senteurs, couleurs, pots et mèches. Le prix moyen sert à estimer le coût de chaque bougie.',
+    nouvelArticle: '+ Nouvel article', depuisRecettes: 'Créer depuis mes recettes', aucunArticle: 'Aucun article pour l’instant.',
+    articlesCrees: n => `${n} article(s) ajouté(s)`,
+    types: { cire: 'Cires', parfum: 'Senteurs', couleur: 'Couleurs', pot: 'Pots', meche: 'Mèches', autre: 'Autres' },
+    type: 'Type', typeNom: { cire: 'Cire', parfum: 'Senteur', couleur: 'Couleur', pot: 'Pot', meche: 'Mèche', autre: 'Autre' },
+    unites: { g: 'g', ml: 'ml', u: 'pièce(s)' },
+    nouvelArticleTitre: 'Nouvel article', enStock: 'En stock', potLie: 'Contenant correspondant', aucun: '(aucun)',
+    exNomArticle: 'ex. Cire de soja, Vanille Bourbon…', exNotesArticle: 'Fournisseur, référence…',
+    achats: 'Achats', nouvelAchat: 'Nouvel achat', date: 'Date', quantiteAchetee: u => `Quantité achetée (${u})`, prixPaye: 'Prix payé (€)',
+    ajouterAchat: '+ Ajouter l’achat', achatAjoute: 'Achat ajouté au stock', quantiteEtPrix: 'Indiquez une quantité et un prix',
+    aucunAchat: 'Aucun achat noté.', prixMoyen: 'Prix moyen', epuise: 'épuisé', nommerArticle: 'Donnez un nom à l’article',
+    articleEnregistre: 'Article enregistré', supprimerArticle: n => `Supprimer « ${n} » du stock ?`, supprimerAchat: 'Supprimer cet achat ? (le stock n’est pas modifié)',
+    retourStock: '‹ Stock',
+    cout: 'Coût des consommables (estimation)', parBougie: 'par bougie', prixInconnu: 'prix ?', pasEnStock: 'pas dans le stock',
+    stockInsuffisant: 'stock insuffisant', coutAide: 'Prix moyen de vos achats. Les couleurs ne sont pas comptées.',
+    coutManquant: 'Ajoutez les achats manquants dans Stock pour un coût complet.',
+    densiteParfum: 'Densité des senteurs (g par ml)', stockMisAJour: 'Stock mis à jour',
+    navAlertes: 'Alertes', alertes: 'Alertes de stock', seuil: u => `M’alerter en dessous de (${u})`,
+    aucuneAlerte: 'Rien à racheter pour l’instant.', alertesAide: 'Articles passés sous leur seuil d’alerte. Le seuil se règle dans chaque article du stock.',
+    reste: q => `il reste ${q}`, racheter: 'Noter un achat', stockBas: n => `${n} article(s) à racheter : voir Alertes`,
   },
   en: {
     navCalcul: 'Calculate', navFormules: 'Recipes', navContenants: 'Jars', navReglages: 'Settings',
@@ -154,6 +176,28 @@ const TEXTES = {
     chargerRecettes: 'Load my recipes', chargerAide: 'Adds the recipes and jars built into the app (password protected). Nothing is replaced.',
     demanderMdp: 'Recipes password:', mdpFaux: 'Wrong password', recettesChargees: (f, c) => `${f} recipe(s) and ${c} jar(s) added`,
     etapesPerso: 'Extra steps', exEtapesPerso: 'One step per line, e.g. “Whip the wax at 45 °C for the top layer”',
+    navStock: 'Stock', choisir: '— Choose —', nouvelleSenteur: '+ New scent…', nouvelleCire: '+ New wax…',
+    nomSenteur: 'Name of the new scent:', nomCire: 'Name of the new wax:',
+    stock: 'Stock', stockAide: 'Your purchases of wax, scents, colours, jars and wicks. The average price is used to estimate the cost of each candle.',
+    nouvelArticle: '+ New item', depuisRecettes: 'Create from my recipes', aucunArticle: 'No items yet.',
+    articlesCrees: n => `${n} item(s) added`,
+    types: { cire: 'Waxes', parfum: 'Scents', couleur: 'Colours', pot: 'Jars', meche: 'Wicks', autre: 'Other' },
+    type: 'Type', typeNom: { cire: 'Wax', parfum: 'Scent', couleur: 'Colour', pot: 'Jar', meche: 'Wick', autre: 'Other' },
+    unites: { g: 'g', ml: 'ml', u: 'unit(s)' },
+    nouvelArticleTitre: 'New item', enStock: 'In stock', potLie: 'Matching jar size', aucun: '(none)',
+    exNomArticle: 'e.g. Soy wax, Bourbon vanilla…', exNotesArticle: 'Supplier, reference…',
+    achats: 'Purchases', nouvelAchat: 'New purchase', date: 'Date', quantiteAchetee: u => `Quantity bought (${u})`, prixPaye: 'Price paid (€)',
+    ajouterAchat: '+ Add purchase', achatAjoute: 'Purchase added to stock', quantiteEtPrix: 'Enter a quantity and a price',
+    aucunAchat: 'No purchases yet.', prixMoyen: 'Average price', epuise: 'out of stock', nommerArticle: 'Give the item a name',
+    articleEnregistre: 'Item saved', supprimerArticle: n => `Remove “${n}” from stock?`, supprimerAchat: 'Delete this purchase? (stock is not changed)',
+    retourStock: '‹ Stock',
+    cout: 'Cost of materials (estimate)', parBougie: 'per candle', prixInconnu: 'price ?', pasEnStock: 'not in stock',
+    stockInsuffisant: 'not enough stock', coutAide: 'Average price of your purchases. Colours are not counted.',
+    coutManquant: 'Add the missing purchases in Stock for a complete cost.',
+    densiteParfum: 'Scent density (g per ml)', stockMisAJour: 'Stock updated',
+    navAlertes: 'Alerts', alertes: 'Stock alerts', seuil: u => `Alert me below (${u})`,
+    aucuneAlerte: 'Nothing to restock for now.', alertesAide: 'Items below their alert level. Set the level in each stock item.',
+    reste: q => `${q} left`, racheter: 'Record a purchase', stockBas: n => `${n} item(s) to restock: see Alerts`,
   },
 };
 
@@ -172,11 +216,13 @@ function etatVide() {
     version: 2,
     formules: [],
     contenants: [],
+    stock: [],
     derniereSauvegarde: null,
     reglages: {
       langue: (navigator.language || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en',
       dosageDefaut: 8,
       densite: 0.9,
+      densiteParfum: 1,
       // Valeurs de ses notes (Violet Lemonade).
       temperatures: { pot: '35-40', fonte: '70', couleur: '65', parfum: '60-65', coulage: '55-60' },
     },
@@ -209,6 +255,7 @@ function depuisDonnees(donnees) {
   e.reglages = Object.assign(vide.reglages, donnees.reglages);
   e.reglages.temperatures = Object.assign(etatVide().reglages.temperatures, e.reglages.temperatures);
   e.ui = e.ui || {};
+  e.stock = e.stock || [];
   return e;
 }
 
@@ -351,6 +398,94 @@ function calculer(formule, poidsTotal) {
   };
 }
 
+// ---------- Stock et coûts ----------
+
+const TYPES = ['cire', 'parfum', 'couleur', 'pot', 'meche', 'autre'];
+const UNITE = { cire: 'g', parfum: 'ml', couleur: 'g', pot: 'u', meche: 'u', autre: 'u' };
+
+const articleParId = id => etat.stock.find(a => a.id === id);
+const memeNom = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+const articleNomme = (type, nom) => nom && etat.stock.find(a => a.type === type && memeNom(a.nom, nom));
+
+// Seuil d'alerte proposé pour un nouvel article, modifiable ensuite.
+const SEUIL = { cire: 1000, parfum: 100, couleur: 5, pot: 6, meche: 6, autre: 0 };
+
+function creerArticle(type, nom, extra = {}) {
+  const a = { id: nouvelId(), type, nom, quantite: 0, seuil: SEUIL[type], achats: [], notes: '', ...extra };
+  etat.stock.push(a);
+  return a;
+}
+
+// Prix moyen pondéré de tous les achats, par g, ml ou pièce.
+function coutUnitaire(a) {
+  const q = (a?.achats || []).reduce((s, x) => s + nombre(x.quantite), 0);
+  const p = (a?.achats || []).reduce((s, x) => s + nombre(x.prix), 0);
+  return q > 0 ? p / q : null;
+}
+
+// Seulement les articles déjà achetés au moins une fois : un nom tout juste créé n'alerte pas.
+const enAlerte = () => etat.stock.filter(a => (a.achats.length || a.quantite > 0) && nombre(a.quantite) <= nombre(a.seuil));
+
+function majBadge() {
+  const n = enAlerte().length;
+  const badge = document.getElementById('badge-alertes');
+  if (badge) { badge.textContent = n || ''; badge.hidden = !n; }
+}
+
+function euros(x) {
+  return x.toLocaleString(locale(), { style: 'currency', currency: 'EUR' });
+}
+
+function quantiteTexte(q, unite) {
+  return `${q.toLocaleString(locale(), { maximumFractionDigits: 1 })} ${t('unites')[unite]}`;
+}
+
+// Le prix d'une cire se lit mieux au kilo, le reste à l'unité.
+function prixUnitaireTexte(a) {
+  const c = coutUnitaire(a);
+  if (c === null) return '';
+  return a.type === 'cire' ? `${euros(c * 1000)}/kg` : `${euros(c)}/${UNITE[a.type] === 'u' ? t('unites').u.replace(/\(s\)$/, '') : UNITE[a.type]}`;
+}
+
+// Ce que consomme une fournée, avec le prix de chaque poste quand le stock le connaît.
+function consommation(f, lignes) {
+  const poidsTotal = lignes.reduce((s, l) => s + l.p * l.n, 0);
+  const r = calculer(f, poidsTotal);
+  const postes = [];
+  const ajouter = (type, nom, quantite) => {
+    if (!nom || !(quantite > 0)) return;
+    const a = type === 'pot' ? etat.stock.find(x => x.type === 'pot' && x.contenant === nom) : articleNomme(type, nom);
+    const deja = postes.find(p => p.type === type && (p.article ? p.article === a : memeNom(p.nom, nom)));
+    if (deja) { deja.quantite += quantite; return; }
+    postes.push({ type, nom: a?.nom || (type === 'pot' ? contenantParId(nom)?.nom : nom), article: a, quantite });
+  };
+  ajouter('cire', f.cire, r.cire);
+  r.lignes.forEach(l => ajouter('parfum', l.nom, l.g / (nombre(etat.reglages.densiteParfum) || 1)));
+  lignes.forEach(l => {
+    if (l.contenant === 'perso') return;
+    ajouter('pot', l.contenant, l.n);
+    ajouter('meche', contenantParId(l.contenant)?.meche, l.n);
+  });
+  postes.forEach(p => {
+    const c = coutUnitaire(p.article);
+    p.cout = c === null ? null : c * p.quantite;
+    p.manque = p.article && p.article.quantite < p.quantite - 1e-6;
+  });
+  return { postes, total: postes.reduce((s, p) => s + (p.cout || 0), 0), complet: postes.every(p => p.cout !== null) };
+}
+
+function coutHtml(f, lignes, nbBougies) {
+  const { postes, total, complet } = consommation(f, lignes);
+  if (!postes.length) return '';
+  return `<h3>${t('cout')}</h3>
+    <table class="result petit">
+      ${postes.map(p => `<tr><td>${esc(p.nom)}<span class="pct">${quantiteTexte(p.quantite, UNITE[p.type])}${p.manque ? ` · <span class="warn">${t('stockInsuffisant')}</span>` : ''}</span></td>
+        <td class="num">${p.cout !== null ? euros(p.cout) : `<span class="muted">${p.article ? t('prixInconnu') : t('pasEnStock')}</span>`}</td></tr>`).join('')}
+      <tr class="total"><td>${t('total')}${nbBougies > 1 ? `<span class="pct">${euros(total / nbBougies)} ${t('parBougie')}</span>` : ''}</td><td class="num">${complet ? '' : '≥ '}${euros(total)}</td></tr>
+    </table>
+    <p class="muted">${t('coutAide')}${complet ? '' : ' ' + t('coutManquant')}</p>`;
+}
+
 // ---------- Rendu ----------
 
 const app = document.getElementById('app');
@@ -369,11 +504,14 @@ function route() {
     a.classList.toggle('active', onglet === page || (onglet === 'formules' && page === 'formule') || (onglet === 'contenants' && page === 'contenant'));
   });
   window.scrollTo(0, 0);
+  majBadge();
   switch (page) {
     case 'formules': return vueFormules();
     case 'formule': return mode === 'modifier' || !formuleParId(id) ? vueFormule(id) : vueFiche(id);
     case 'contenants': return vueContenants();
     case 'contenant': return vueContenant(id);
+    case 'stock': return id ? vueArticle(id) : vueStock();
+    case 'alertes': return vueAlertes();
     case 'reglages': return vueReglages();
     case 'fabrication': return vueFabrication();
     default: return vueCalcul();
@@ -500,6 +638,7 @@ function afficherResultat() {
     ${f.design ? `<p><strong>${t('design')} :</strong> ${esc(f.design)}</p>` : ''}
     ${f.prochaineFois ? `<p><strong>${t('prochaineFois')} :</strong> <span style="white-space:pre-wrap">${esc(f.prochaineFois)}</span></p>` : ''}
     ${f.notes ? `<p class="muted" style="white-space:pre-wrap">${esc(f.notes)}</p>` : ''}
+    ${coutHtml(f, lignes, nbBougies)}
     <div class="actions"><button class="primary" data-action="fabriquer">${t('fabriquer')}</button></div>`;
 }
 
@@ -533,17 +672,29 @@ function vueFormules(filtre = '') {
   });
 }
 
-function suggestions() {
-  const noms = new Set();
-  etat.formules.forEach(f => f.parfums.forEach(l => l.nom && noms.add(l.nom)));
-  const cires = new Set(etat.formules.map(f => f.cire).filter(Boolean));
-  return `<datalist id="dl-parfums">${[...noms].sort().map(n => `<option value="${esc(n)}">`).join('')}</datalist>
-    <datalist id="dl-cires">${[...cires].map(n => `<option value="${esc(n)}">`).join('')}</datalist>`;
+// Noms connus pour un type : ceux du stock et ceux déjà utilisés dans les recettes.
+function nomsConnus(type) {
+  const noms = etat.stock.filter(a => a.type === type).map(a => a.nom);
+  etat.formules.forEach(f => (type === 'cire' ? [f.cire] : f.parfums.map(l => l.nom))
+    .forEach(n => n && !noms.some(x => memeNom(x, n)) && noms.push(n)));
+  return noms.sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
 }
 
-function lignesHtml(cle, lignes, liste, exemple) {
+// Menu déroulant avec, en bas, une option pour créer un nouveau nom.
+function menuNoms(type, valeur, attributs) {
+  const noms = nomsConnus(type);
+  if (valeur && !noms.some(n => n === valeur)) noms.unshift(valeur);
+  return `<select ${attributs} data-menu="${type}" data-avant="${esc(valeur)}">
+    <option value="">${t('choisir')}</option>
+    ${noms.map(n => `<option value="${esc(n)}" ${n === valeur ? 'selected' : ''}>${esc(n)}</option>`).join('')}
+    <option value="__nouveau__">${type === 'cire' ? t('nouvelleCire') : t('nouvelleSenteur')}</option>
+  </select>`;
+}
+
+function lignesHtml(cle, lignes, exemple) {
   return lignes.map((l, i) => `<div class="line">
-      <input data-ligne="${cle}" data-i="${i}" data-champ="nom" ${liste ? `list="${liste}"` : ''} placeholder="${exemple}" value="${esc(l.nom)}">
+      ${cle === 'parfums' ? menuNoms('parfum', l.nom, `data-ligne="${cle}" data-i="${i}" data-champ="nom" aria-label="${t('nom')}"`)
+        : `<input data-ligne="${cle}" data-i="${i}" data-champ="nom" placeholder="${exemple}" value="${esc(l.nom)}">`}
       <input data-ligne="${cle}" data-i="${i}" data-champ="pct" inputmode="decimal" placeholder="%" value="${esc(l.pct)}">
       <button data-action="retirer" data-cle="${cle}" data-i="${i}" aria-label="${t('retirer')}">✕</button>
     </div>`).join('');
@@ -639,14 +790,14 @@ function vueFormule(id) {
   }
   const f = brouillon;
   const somme = f.parfums.reduce((s, l) => s + nombre(l.pct), 0);
-  app.innerHTML = `${suggestions()}
+  app.innerHTML = `
     <h2>${f.estNouvelle ? t('nouvelleFormule') : esc(f.nom)}</h2>
     <div class="card">
       <label for="f-nom">${t('nom')}</label>
       <input id="f-nom" data-champ="nom" value="${esc(f.nom)}" placeholder="${t('exNomFormule')}">
       <div class="grid2">
         <div><label for="f-cire">${t('typeCire')}</label>
-          <input id="f-cire" data-champ="cire" list="dl-cires" value="${esc(f.cire)}" placeholder="${t('exCire')}"></div>
+          ${menuNoms('cire', f.cire, 'id="f-cire" data-champ="cire"')}</div>
         <div><label for="f-dosage">${t('dosage')}</label>
           <input id="f-dosage" data-champ="dosage" inputmode="decimal" value="${esc(f.dosage)}" placeholder="8"></div>
       </div>
@@ -654,14 +805,14 @@ function vueFormule(id) {
     <div class="card lines">
       <h3 style="margin-top:0">${t('melange')}</h3>
       <p class="muted">${t('melangeAide')}</p>
-      ${lignesHtml('parfums', f.parfums, 'dl-parfums', t('nom'))}
+      ${lignesHtml('parfums', f.parfums, t('nom'))}
       <div class="actions" style="margin-top:8px;align-items:center">
         <button class="small" data-action="ajouter" data-cle="parfums">${t('ajouterParfum')}</button>
         <span id="somme-melange" class="${Math.abs(somme - 100) > 0.05 ? 'warn' : 'muted'}">${t('total')} : ${pourcent(somme)}</span>
       </div>
       <h3>${t('couches')}</h3>
       <p class="muted">${t('couchesAide')}</p>
-      ${lignesHtml('couches', f.couches, null, t('exCouche'))}
+      ${lignesHtml('couches', f.couches, t('exCouche'))}
       <button class="small" data-action="ajouter" data-cle="couches">${t('ajouterCouche')}</button>
     </div>
     <div class="card">
@@ -748,6 +899,137 @@ function vueContenant(id) {
     </div>`;
 }
 
+// --- Stock ---
+
+function vueStock() {
+  app.innerHTML = `<h2>${t('stock')}</h2>
+    <p class="muted">${t('stockAide')}</p>
+    <div class="actions" style="margin:0 0 16px">
+      <a class="btn primary" href="#/stock/nouveau">${t('nouvelArticle')}</a>
+      <button data-action="stock-depuis-recettes">${t('depuisRecettes')}</button>
+    </div>
+    ${etat.stock.length ? TYPES.filter(ty => etat.stock.some(a => a.type === ty)).map(ty => `
+      <h3>${t('types')[ty]}</h3>
+      <ul class="list">${etat.stock.filter(a => a.type === ty).sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(a => `
+        <li><a class="row" href="#/stock/${a.id}"><div class="grow">
+          <div class="title">${esc(a.nom)}</div>
+          <div class="sub">${prixUnitaireTexte(a) || t('aucunAchat')}</div>
+        </div>
+        <div class="${a.quantite <= nombre(a.seuil) ? 'warn' : ''}" style="white-space:nowrap">${a.quantite > 0 ? quantiteTexte(a.quantite, UNITE[a.type]) : t('epuise')}</div></a></li>`).join('')}
+      </ul>`).join('')
+      : `<div class="empty">${t('aucunArticle')}</div>`}`;
+}
+
+function vueArticle(id) {
+  if (!brouillon || brouillon.id !== id) {
+    const existant = articleParId(id);
+    brouillon = existant ? structuredClone(existant)
+      : { id: nouvelId(), type: 'parfum', nom: '', quantite: 0, seuil: SEUIL.parfum, achats: [], notes: '' };
+    brouillon.estNouvelle = !existant;
+    if (!existant) history.replaceState(null, '', '#/stock/' + brouillon.id);
+  }
+  const a = brouillon;
+  const u = t('unites')[UNITE[a.type]];
+  const aujourdhui = new Date().toISOString().slice(0, 10);
+  app.innerHTML = `
+    <div class="entete-fiche"><a class="btn small" href="#/stock">${t('retourStock')}</a></div>
+    <h2>${a.estNouvelle ? t('nouvelArticleTitre') : esc(a.nom)}</h2>
+    <div class="card">
+      <div class="grid2">
+        <div><label for="s-type">${t('type')}</label>
+          <select id="s-type" data-champ="type">
+            ${TYPES.map(ty => `<option value="${ty}" ${ty === a.type ? 'selected' : ''}>${t('typeNom')[ty]}</option>`).join('')}
+          </select></div>
+        <div><label for="s-nom">${t('nom')}</label>
+          <input id="s-nom" data-champ="nom" value="${esc(a.nom)}" placeholder="${t('exNomArticle')}"></div>
+      </div>
+      ${a.type === 'pot' ? `<label for="s-contenant">${t('potLie')}</label>
+        <select id="s-contenant" data-champ="contenant">
+          <option value="">${t('aucun')}</option>
+          ${contenantsTries().map(c => `<option value="${c.id}" ${c.id === a.contenant ? 'selected' : ''}>${esc(c.nom)}</option>`).join('')}
+        </select>` : ''}
+      <div class="grid2">
+        <div><label for="s-quantite">${t('enStock')} (${u})</label>
+          <input id="s-quantite" data-champ="quantite" inputmode="decimal" value="${esc(Math.round(nombre(a.quantite) * 10) / 10)}"></div>
+        <div><label for="s-seuil">${t('seuil', u)}</label>
+          <input id="s-seuil" data-champ="seuil" inputmode="decimal" value="${esc(a.seuil)}"></div>
+      </div>
+      <label for="s-notes">${t('notes')}</label>
+      <textarea id="s-notes" data-champ="notes" placeholder="${t('exNotesArticle')}">${esc(a.notes)}</textarea>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">${t('nouvelAchat')}</h3>
+      <div class="grid3">
+        <div><label for="a-date">${t('date')}</label><input id="a-date" type="date" value="${aujourdhui}"></div>
+        <div><label for="a-qte">${t('quantiteAchetee', u)}</label><input id="a-qte" inputmode="decimal"></div>
+        <div><label for="a-prix">${t('prixPaye')}</label><input id="a-prix" inputmode="decimal"></div>
+      </div>
+      <div class="actions"><button data-action="ajouter-achat">${t('ajouterAchat')}</button></div>
+      <h3>${t('achats')}${coutUnitaire(a) !== null ? ` <span class="muted" style="font-weight:400">· ${t('prixMoyen')} ${prixUnitaireTexte(a)}</span>` : ''}</h3>
+      ${a.achats.length ? `<table class="result petit">${[...a.achats].map((x, i) => [x, i]).reverse().map(([x, i]) => `
+        <tr><td>${new Date(x.date).toLocaleDateString(locale())}<span class="pct">${quantiteTexte(nombre(x.quantite), UNITE[a.type])}</span></td>
+          <td class="num">${euros(nombre(x.prix))} <button class="small" data-action="supprimer-achat" data-i="${i}" aria-label="${t('supprimer')}">✕</button></td></tr>`).join('')}
+      </table>` : `<p class="muted">${t('aucunAchat')}</p>`}
+    </div>
+    <div class="actions">
+      <button class="primary" data-action="enregistrer-article">${t('enregistrer')}</button>
+      ${a.estNouvelle ? '' : `<button class="danger" data-action="supprimer-article">${t('supprimer')}</button>`}
+      <a class="btn" href="#/stock">${t('annuler')}</a>
+    </div>`;
+}
+
+// Enregistre le brouillon d'article dans le stock. Renommer une cire ou une senteur
+// renomme aussi les recettes qui l'utilisent, pour que le lien vers les prix tienne.
+function sauverArticle() {
+  lireFormulaire();
+  const { estNouvelle, ...a } = brouillon;
+  if (a.type === 'pot' && !a.nom && a.contenant) a.nom = contenantParId(a.contenant)?.nom || '';
+  if (!a.nom) { toast(t('nommerArticle')); return null; }
+  a.quantite = nombre(a.quantite);
+  a.seuil = nombre(a.seuil);
+  if (a.type !== 'pot') delete a.contenant;
+  const ancien = articleParId(a.id);
+  if (ancien && ancien.type === a.type && !memeNom(ancien.nom, a.nom)) {
+    etat.formules.forEach(f => {
+      if (a.type === 'cire' && memeNom(f.cire, ancien.nom)) f.cire = a.nom;
+      if (a.type === 'parfum') f.parfums.forEach(l => { if (memeNom(l.nom, ancien.nom)) l.nom = a.nom; });
+    });
+  }
+  const idx = etat.stock.findIndex(x => x.id === a.id);
+  if (idx >= 0) etat.stock[idx] = a; else etat.stock.push(a);
+  brouillon = { ...structuredClone(a), estNouvelle: false };
+  enregistrer();
+  return a;
+}
+
+// Ajoute au stock les cires, senteurs, pots et mèches déjà utilisés ailleurs.
+function stockDepuisRecettes() {
+  let n = 0;
+  const ajouter = (type, nom, extra) => { if (nom && !articleNomme(type, nom)) { creerArticle(type, nom, extra); n++; } };
+  nomsConnus('cire').forEach(nom => ajouter('cire', nom));
+  nomsConnus('parfum').forEach(nom => ajouter('parfum', nom));
+  etat.contenants.forEach(c => {
+    if (!etat.stock.some(a => a.type === 'pot' && a.contenant === c.id)) { creerArticle('pot', c.nom, { contenant: c.id }); n++; }
+    ajouter('meche', c.meche);
+  });
+  enregistrer();
+  toast(t('articlesCrees', n));
+  vueStock();
+}
+
+function vueAlertes() {
+  const liste = enAlerte();
+  app.innerHTML = `<h2>${t('alertes')}</h2>
+    <p class="muted">${t('alertesAide')}</p>
+    ${liste.length ? `<ul class="list">${liste.map(a => `
+      <li><div class="grow">
+        <div class="title">${esc(a.nom)} <span class="muted" style="font-weight:400">· ${t('typeNom')[a.type]}</span></div>
+        <div class="sub warn">${a.quantite > 0 ? t('reste', quantiteTexte(a.quantite, UNITE[a.type])) : t('epuise')}</div>
+      </div>
+      <a class="btn small" href="#/stock/${a.id}">${t('racheter')}</a></li>`).join('')}</ul>`
+      : `<div class="empty">${t('aucuneAlerte')}</div>`}`;
+}
+
 // --- Réglages et sauvegarde ---
 
 function vueReglages() {
@@ -765,6 +1047,8 @@ function vueReglages() {
           <input id="r-dosage" data-reglage="dosageDefaut" inputmode="decimal" value="${esc(r.dosageDefaut)}"></div>
         <div><label for="r-densite">${t('densite')}</label>
           <input id="r-densite" data-reglage="densite" inputmode="decimal" value="${esc(r.densite)}"></div>
+        <div><label for="r-densite-parfum">${t('densiteParfum')}</label>
+          <input id="r-densite-parfum" data-reglage="densiteParfum" inputmode="decimal" value="${esc(r.densiteParfum)}"></div>
       </div>
       <h3>${t('temperatures')}</h3>
       <div class="grid-temp">
@@ -939,6 +1223,7 @@ function vueFabrication() {
         ${e.detail ? `<div class="detail-etape">${e.detail}</div>` : ''}
       </li>`).join('')}
     </ol>
+    ${(c => c ? `<div class="card">${c.replace('<h3>', '<h3 style="margin-top:0">')}</div>` : '')(coutHtml(f, lignes, nb))}
     <div class="card">
       <label for="notes-fournee" style="margin-top:0">${t('notesFournee')}</label>
       <textarea id="notes-fournee" placeholder="${t('exNotesFournee')}">${esc(fab.notes)}</textarea>
@@ -1063,6 +1348,14 @@ app.addEventListener('click', ev => {
         f.notes = [f.notes, `${t('fournee', date, n)} : ${fab.notes.trim()}`].filter(Boolean).join('\n');
         toast(t('fourneeEnregistree'));
       }
+      if (action === 'terminer-fabrication' && f) {
+        const lignes = fab.lignes.map(l => ({ ...l, p: poidsLigne(l), n: Math.max(0, Math.round(nombre(l.n))) })).filter(l => l.p > 0 && l.n > 0);
+        const postes = consommation(f, lignes).postes.filter(p => p.article);
+        postes.forEach(p => { p.article.quantite = Math.max(0, nombre(p.article.quantite) - p.quantite); });
+        const bas = enAlerte().length;
+        if (bas) setTimeout(() => toast(t('stockBas', bas)), 2400);
+        else if (postes.length && !fab.notes?.trim()) toast(t('stockMisAJour'));
+      }
       delete etat.ui.fabrication;
       enregistrer();
       liberer();
@@ -1092,6 +1385,40 @@ app.addEventListener('click', ev => {
       enregistrer();
       brouillon = null;
       aller('#/contenants');
+      break;
+    case 'stock-depuis-recettes':
+      stockDepuisRecettes();
+      break;
+    case 'enregistrer-article':
+      if (sauverArticle()) { brouillon = null; toast(t('articleEnregistre')); aller('#/stock'); }
+      break;
+    case 'ajouter-achat': {
+      const quantite = nombre(document.getElementById('a-qte').value);
+      const prix = nombre(document.getElementById('a-prix').value);
+      if (!(quantite > 0) || !(prix >= 0) || document.getElementById('a-prix').value.trim() === '') { toast(t('quantiteEtPrix')); return; }
+      // L'achat s'ajoute à la quantité affichée, que sauverArticle relit.
+      const champ = document.getElementById('s-quantite');
+      const avant = champ.value;
+      champ.value = Math.round((nombre(avant) + quantite) * 10) / 10;
+      brouillon.achats.push({ date: document.getElementById('a-date').value || new Date().toISOString().slice(0, 10), quantite, prix });
+      if (!sauverArticle()) { brouillon.achats.pop(); champ.value = avant; return; }
+      toast(t('achatAjoute'));
+      majBadge();
+      vueArticle(brouillon.id);
+      break;
+    }
+    case 'supprimer-achat':
+      if (!confirm(t('supprimerAchat'))) return;
+      lireFormulaire();
+      brouillon.achats.splice(i, 1);
+      if (sauverArticle()) vueArticle(brouillon.id);
+      break;
+    case 'supprimer-article':
+      if (!confirm(t('supprimerArticle', brouillon.nom))) return;
+      etat.stock = etat.stock.filter(a => a.id !== brouillon.id);
+      enregistrer();
+      brouillon = null;
+      aller('#/stock');
       break;
     case 'exporter':
       exporter();
@@ -1142,6 +1469,23 @@ app.addEventListener('input', ev => {
   }
 });
 
+app.addEventListener('change', ev => {
+  const el = ev.target;
+  if (el.id === 's-type') {
+    lireFormulaire();
+    if (!articleParId(brouillon.id)) brouillon.seuil = SEUIL[brouillon.type];
+    vueArticle(brouillon.id);
+  } else if (el.dataset.menu && el.value === '__nouveau__') {
+    const type = el.dataset.menu;
+    const nom = prompt(type === 'cire' ? t('nomCire') : t('nomSenteur'))?.trim();
+    lireFormulaire();
+    const valeur = nom ? (articleNomme(type, nom)?.nom || creerArticle(type, nom).nom) : el.dataset.avant;
+    if (nom) enregistrer();
+    if (el.dataset.ligne) brouillon[el.dataset.ligne][el.dataset.i].nom = valeur; else brouillon.cire = valeur;
+    vueFormule(brouillon.id);
+  }
+});
+
 let minuteurToast;
 function toast(msg) {
   const el = document.getElementById('toast');
@@ -1153,7 +1497,7 @@ function toast(msg) {
 
 window.addEventListener('hashchange', () => {
   // Quitter un formulaire sans enregistrer abandonne le brouillon.
-  if (!/^#\/(formule\/[^/]+\/modifier|contenant\/)/.test(location.hash)) brouillon = null;
+  if (!/^#\/(formule\/[^/]+\/modifier|contenant\/|stock\/)/.test(location.hash)) brouillon = null;
   route();
 });
 route();
