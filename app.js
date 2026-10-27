@@ -115,7 +115,18 @@ const TEXTES = {
     retourBougies: '‹ Mes bougies', bougieEnregistree: 'Enregistré', annulerVente: 'Annuler cette vente ? (la bougie revient en stock)',
     navAlertes: 'Alertes', alertes: 'Alertes de stock', seuil: u => `M’alerter en dessous de (${u})`,
     aucuneAlerte: 'Rien à racheter pour l’instant.', alertesAide: 'Articles passés sous leur seuil d’alerte. Le seuil se règle dans chaque article du stock.',
-    reste: q => `il reste ${q}`, racheter: 'Noter un achat', stockBas: n => `${n} article(s) à racheter : voir Alertes`,
+    reste: q => `il reste ${q}`, racheter: 'Noter un achat', stockBas: n => `${n} article(s) à racheter : voir Stock`,
+    navRapport: 'Rapport', rapport: 'Rapport', rapportAide: 'Ce qui entre (ventes) et ce qui sort (achats du stock et autres dépenses).',
+    annee: 'Année', entrees: 'Entrées', sorties: 'Sorties', solde: 'Solde', mois: 'Mois', mouvements: 'Mouvements',
+    aucunMouvement: 'Aucun mouvement sur cette année.', autreMouvement: 'Autre dépense ou recette',
+    sortie: 'Dépense', entree: 'Recette', libelle: 'Libellé', exLibelle: 'ex. Frais de marché, étiquettes…', montant: 'Montant (€)',
+    ajouterMouvement: '+ Ajouter', mouvementAjoute: 'Mouvement ajouté', libelleMontant: 'Indiquez un libellé et un montant',
+    supprimerMouvement: 'Supprimer ce mouvement ?', exporterCsv: 'Exporter pour Excel', exportCree: 'Fichier créé',
+    achatDe: n => `Achat : ${n}`, venteDe: n => `Vente : ${n}`,
+    devise: 'Devise', paiement: 'Paiement',
+    taux: (de, vers) => `Taux ${de} → ${vers}`, tauxDu: d => `cours du ${d}`, tauxHorsLigne: 'pas de connexion : dernier taux connu, à vérifier',
+    tauxInconnu: 'pas de connexion : saisissez le taux', tauxManquant: 'Indiquez le taux de change', soit: 'soit', origine: 'Montant d’origine', modes: { especes: 'Espèces', carte: 'Carte', virement: 'Virement', cheque: 'Chèque', autre: 'Autre' },
+    venteTitre: n => `Vente : ${n}`, valider: 'Valider',
   },
   en: {
     navCalcul: 'Calculate', navFormules: 'Recipes', navContenants: 'Jars', navReglages: 'Settings',
@@ -229,13 +240,26 @@ const TEXTES = {
     retourBougies: '‹ My candles', bougieEnregistree: 'Saved', annulerVente: 'Cancel this sale? (the candle goes back in stock)',
     navAlertes: 'Alerts', alertes: 'Stock alerts', seuil: u => `Alert me below (${u})`,
     aucuneAlerte: 'Nothing to restock for now.', alertesAide: 'Items below their alert level. Set the level in each stock item.',
-    reste: q => `${q} left`, racheter: 'Record a purchase', stockBas: n => `${n} item(s) to restock: see Alerts`,
+    reste: q => `${q} left`, racheter: 'Record a purchase', stockBas: n => `${n} item(s) to restock: see Stock`,
+    navRapport: 'Report', rapport: 'Report', rapportAide: 'Money in (sales) and money out (stock purchases and other expenses).',
+    annee: 'Year', entrees: 'In', sorties: 'Out', solde: 'Balance', mois: 'Month', mouvements: 'Entries',
+    aucunMouvement: 'No entries this year.', autreMouvement: 'Other expense or income',
+    sortie: 'Expense', entree: 'Income', libelle: 'Description', exLibelle: 'e.g. Market fee, labels…', montant: 'Amount (€)',
+    ajouterMouvement: '+ Add', mouvementAjoute: 'Entry added', libelleMontant: 'Enter a description and an amount',
+    supprimerMouvement: 'Delete this entry?', exporterCsv: 'Export for Excel', exportCree: 'File created',
+    achatDe: n => `Purchase: ${n}`, venteDe: n => `Sale: ${n}`,
+    devise: 'Currency', paiement: 'Payment',
+    taux: (de, vers) => `Rate ${de} → ${vers}`, tauxDu: d => `rate of ${d}`, tauxHorsLigne: 'offline: last known rate, please check',
+    tauxInconnu: 'offline: enter the rate', tauxManquant: 'Enter the exchange rate', soit: 'i.e.', origine: 'Original amount', modes: { especes: 'Cash', carte: 'Card', virement: 'Transfer', cheque: 'Cheque', autre: 'Other' },
+    venteTitre: n => `Sale: ${n}`, valider: 'Confirm',
   },
 };
 
+// Les textes écrivent « € » ; on affiche la devise choisie dans les Réglages.
 function t(cle, ...args) {
   const v = TEXTES[etat.reglages.langue][cle] ?? TEXTES.fr[cle];
-  return typeof v === 'function' ? v(...args) : v;
+  const r = typeof v === 'function' ? v(...args) : v;
+  return typeof r === 'string' ? r.replace(/€/g, etat.reglages.devise) : r;
 }
 
 // ---------- Données ----------
@@ -250,12 +274,15 @@ function etatVide() {
     contenants: [],
     stock: [],
     produits: [],
+    mouvements: [],
+    taux: {},
     derniereSauvegarde: null,
     reglages: {
       langue: (navigator.language || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en',
       dosageDefaut: 8,
       densite: 0.9,
       densiteParfum: 1,
+      devise: 'CHF',
       // Valeurs de ses notes (Violet Lemonade).
       temperatures: { pot: '35-40', fonte: '70', couleur: '65', parfum: '60-65', coulage: '55-60' },
     },
@@ -290,6 +317,8 @@ function depuisDonnees(donnees) {
   e.ui = e.ui || {};
   e.stock = e.stock || [];
   e.produits = e.produits || [];
+  e.mouvements = e.mouvements || [];
+  e.taux = e.taux || {};
   return e;
 }
 
@@ -394,7 +423,8 @@ function nombre(v) {
 }
 
 function locale() {
-  return etat.reglages.langue === 'en' ? 'en-GB' : 'fr-FR';
+  if (etat.reglages.langue === 'en') return 'en-GB';
+  return etat.reglages.devise === 'CHF' ? 'fr-CH' : 'fr-FR';
 }
 
 function grammes(x) {
@@ -458,6 +488,85 @@ function creerArticle(type, nom, extra = {}) {
   return a;
 }
 
+// ---------- Devises ----------
+// Les montants sont enregistrés dans la devise des Réglages (CHF). Un achat payé dans une
+// autre devise est converti au cours du jour de l'achat (BCE, via frankfurter), et garde
+// son montant d'origine.
+
+const DEVISES = ['CHF', 'EUR'];
+
+async function tauxDuJour(date, de, vers) {
+  const cle = `${date}:${de}>${vers}`;
+  if (etat.taux[cle]) return { taux: etat.taux[cle], date: etat.taux[cle + ':date'] || date };
+  const jour = date > new Date().toISOString().slice(0, 10) ? 'latest' : date;
+  for (const url of [`https://api.frankfurter.app/${jour}?from=${de}&to=${vers}`,
+    `https://api.frankfurter.dev/v1/${jour}?base=${de}&symbols=${vers}`]) {
+    try {
+      const r = await (await fetch(url)).json();
+      if (r.rates?.[vers]) {
+        etat.taux[cle] = r.rates[vers];
+        etat.taux[cle + ':date'] = r.date;
+        etat.taux[`dernier:${de}>${vers}`] = r.rates[vers];
+        enregistrer();
+        return { taux: r.rates[vers], date: r.date };
+      }
+    } catch (e) { /* essai suivant */ }
+  }
+  const dernier = etat.taux[`dernier:${de}>${vers}`];
+  return dernier ? { taux: dernier, horsLigne: true } : null;
+}
+
+// Prix, devise et, si la devise diffère, le taux. Le préfixe distingue les formulaires.
+function champMontant(prefixe, libelle) {
+  return `<div><label for="${prefixe}-prix">${libelle}</label>
+    <div class="stepper">
+      <input id="${prefixe}-prix" inputmode="decimal" data-conv="${prefixe}" style="max-width:none">
+      <select id="${prefixe}-devise" data-conv="${prefixe}" aria-label="${t('devise')}" style="width:auto">
+        ${DEVISES.map(d => `<option ${d === etat.reglages.devise ? 'selected' : ''}>${d}</option>`).join('')}
+      </select>
+    </div>
+    <div id="${prefixe}-conv" class="conv" hidden>
+      <label for="${prefixe}-taux" id="${prefixe}-taux-label"></label>
+      <input id="${prefixe}-taux" inputmode="decimal" data-conv="${prefixe}" data-taux-manuel="">
+      <p class="muted" id="${prefixe}-resultat"></p>
+    </div></div>`;
+}
+
+async function majConversion(prefixe, source) {
+  const zone = document.getElementById(prefixe + '-conv');
+  if (!zone) return;
+  const de = document.getElementById(prefixe + '-devise').value;
+  const vers = etat.reglages.devise;
+  zone.hidden = de === vers;
+  if (de === vers) return;
+  const champTaux = document.getElementById(prefixe + '-taux');
+  const info = document.getElementById(prefixe + '-resultat');
+  document.getElementById(prefixe + '-taux-label').textContent = t('taux', de, vers);
+  if (source === champTaux) champTaux.dataset.tauxManuel = '1';
+  // Nouveau taux à chaque changement de devise ou de date, sauf s'il a été saisi à la main.
+  if (!champTaux.dataset.tauxManuel && (source?.id?.endsWith('-devise') || source?.type === 'date' || !champTaux.value)) {
+    const date = document.getElementById(prefixe + '-date').value || new Date().toISOString().slice(0, 10);
+    champTaux.dataset.note = '…';
+    const r = await tauxDuJour(date, de, vers);
+    champTaux.value = r ? String(Math.round(r.taux * 10000) / 10000) : '';
+    champTaux.dataset.note = r ? (r.horsLigne ? t('tauxHorsLigne') : t('tauxDu', new Date(r.date).toLocaleDateString(locale()))) : t('tauxInconnu');
+  }
+  const montant = nombre(document.getElementById(prefixe + '-prix').value) * nombre(champTaux.value);
+  info.textContent = [champTaux.dataset.note, montant ? `${t('soit')} ${euros(montant)}` : ''].filter(Boolean).join(' · ');
+}
+
+// Montant converti dans la devise des Réglages, ou null si le taux manque.
+function lireMontant(prefixe) {
+  const brut = nombre(document.getElementById(prefixe + '-prix').value);
+  const devise = document.getElementById(prefixe + '-devise').value;
+  if (devise === etat.reglages.devise) return { montant: brut };
+  const taux = nombre(document.getElementById(prefixe + '-taux').value);
+  if (!(taux > 0)) return null;
+  return { montant: Math.round(brut * taux * 100) / 100, origine: { montant: brut, devise, taux } };
+}
+
+const origineTexte = o => o ? ` <span class="pct">(${o.montant.toLocaleString(locale(), { style: 'currency', currency: o.devise })})</span>` : '';
+
 // Prix moyen pondéré de tous les achats, par g, ml ou pièce.
 function coutUnitaire(a) {
   const q = (a?.achats || []).reduce((s, x) => s + nombre(x.quantite), 0);
@@ -475,7 +584,7 @@ function majBadge() {
 }
 
 function euros(x) {
-  return x.toLocaleString(locale(), { style: 'currency', currency: 'EUR' });
+  return x.toLocaleString(locale(), { style: 'currency', currency: etat.reglages.devise });
 }
 
 function quantiteTexte(q, unite) {
@@ -554,7 +663,8 @@ function route() {
     case 'contenants': return vueContenants();
     case 'contenant': return vueContenant(id);
     case 'stock': return id ? vueArticle(id) : vueStock();
-    case 'alertes': return vueAlertes();
+    case 'alertes': return aller('#/stock');
+    case 'rapport': return vueRapport();
     case 'bougies': return vueBougies();
     case 'bougie': return vueBougie(id);
     case 'reglages': return vueReglages();
@@ -1037,7 +1147,7 @@ function vueBougies() {
         const incomplet = p.entrees.some(e => !e.complet);
         return `<li class="${p.quantite ? '' : 'vide'}"><a class="row" href="#/bougie/${p.id}"><div class="grow">
           <div class="title">${esc(p.nom)}</div>
-          <div class="sub">${cout !== null ? `${t('coutUnite')} ${incomplet ? '≥ ' : ''}${euros(cout)}` : ''}${p.prixVente !== '' ? ` · ${t('prixVente').replace(' (€)', '')} ${euros(nombre(p.prixVente))}` : ''}</div>
+          <div class="sub">${cout !== null ? `${t('coutUnite')} ${incomplet ? '≥ ' : ''}${euros(cout)}` : ''}${p.prixVente !== '' ? ` · ${t('prixVente').replace(/ \(.*\)$/, '')} ${euros(nombre(p.prixVente))}` : ''}</div>
         </div><div style="white-space:nowrap" class="${p.quantite ? '' : 'muted'}">${t('enStockN', p.quantite)}</div></a>
         <button class="small" data-action="vendre" data-id="${p.id}" ${p.quantite ? '' : 'disabled'}>${t('vendu')}</button></li>`;
       }).join('')}</ul>`
@@ -1069,7 +1179,7 @@ function vueBougie(id) {
       <table class="result petit">${[...p.entrees].reverse().map(e => `<tr><td>${date(e.date)}<span class="pct">${t('bougies', e.n)}</span></td>
         <td class="num">${e.complet ? '' : '≥ '}${euros(e.cout / e.n)} <span class="pct">/ ${t('coutUnite')}</span></td></tr>`).join('')}</table>
       <h3>${t('ventes')}</h3>
-      ${p.ventes.length ? `<table class="result petit">${p.ventes.map((v, i) => [v, i]).reverse().map(([v, i]) => `<tr><td>${date(v.date)}<span class="pct">× ${v.n}</span></td>
+      ${p.ventes.length ? `<table class="result petit">${p.ventes.map((v, i) => [v, i]).reverse().map(([v, i]) => `<tr><td>${date(v.date)}<span class="pct">× ${v.n}${v.mode ? ' · ' + t('modes')[v.mode] : ''}</span></td>
         <td class="num">${euros(nombre(v.prix))} <button class="small" data-action="annuler-vente" data-id="${p.id}" data-i="${i}" aria-label="${t('supprimer')}">✕</button></td></tr>`).join('')}</table>`
         : `<p class="muted">${t('aucuneVente')}</p>`}
     </div>`;
@@ -1080,6 +1190,7 @@ function vueBougie(id) {
 function vueStock() {
   app.innerHTML = `<h2>${t('stock')}</h2>
     <p class="muted">${t('stockAide')}</p>
+    ${alertesHtml()}
     <div class="actions" style="margin:0 0 16px">
       <a class="btn primary" href="#/stock/nouveau">${t('nouvelArticle')}</a>
       <button data-action="stock-depuis-recettes">${t('depuisRecettes')}</button>
@@ -1136,15 +1247,15 @@ function vueArticle(id) {
     <div class="card">
       <h3 style="margin-top:0">${t('nouvelAchat')}</h3>
       <div class="grid3">
-        <div><label for="a-date">${t('date')}</label><input id="a-date" type="date" value="${aujourdhui}"></div>
+        <div><label for="a-date">${t('date')}</label><input id="a-date" type="date" data-conv="a" value="${aujourdhui}"></div>
         <div><label for="a-qte">${t('quantiteAchetee', u)}</label><input id="a-qte" inputmode="decimal"></div>
-        <div><label for="a-prix">${t('prixPaye')}</label><input id="a-prix" inputmode="decimal"></div>
+        ${champMontant('a', t('prixPaye').replace(/ \(.*\)$/, ''))}
       </div>
       <div class="actions"><button data-action="ajouter-achat">${t('ajouterAchat')}</button></div>
       <h3>${t('achats')}${coutUnitaire(a) !== null ? ` <span class="muted" style="font-weight:400">· ${t('prixMoyen')} ${prixUnitaireTexte(a)}</span>` : ''}</h3>
       ${a.achats.length ? `<table class="result petit">${[...a.achats].map((x, i) => [x, i]).reverse().map(([x, i]) => `
         <tr><td>${new Date(x.date).toLocaleDateString(locale())}<span class="pct">${quantiteTexte(nombre(x.quantite), UNITE[a.type])}</span></td>
-          <td class="num">${euros(nombre(x.prix))} <button class="small" data-action="supprimer-achat" data-i="${i}" aria-label="${t('supprimer')}">✕</button></td></tr>`).join('')}
+          <td class="num">${euros(nombre(x.prix))}${origineTexte(x.origine)} <button class="small" data-action="supprimer-achat" data-i="${i}" aria-label="${t('supprimer')}">✕</button></td></tr>`).join('')}
       </table>` : `<p class="muted">${t('aucunAchat')}</p>`}
     </div>
     <div class="actions">
@@ -1195,17 +1306,130 @@ function stockDepuisRecettes() {
   vueStock();
 }
 
-function vueAlertes() {
+// Articles à racheter, affichés en haut de la page Stock.
+function alertesHtml() {
   const liste = enAlerte();
-  app.innerHTML = `<h2>${t('alertes')}</h2>
-    <p class="muted">${t('alertesAide')}</p>
-    ${liste.length ? `<ul class="list">${liste.map(a => `
+  return liste.length ? `<div class="card rappel"><h3 style="margin-top:0">${t('alertes')}</h3>
+    <ul class="list">${liste.map(a => `
       <li><div class="grow">
         <div class="title">${esc(a.nom)} <span class="muted" style="font-weight:400">· ${t('typeNom')[a.type]}</span></div>
         <div class="sub warn">${a.quantite > 0 ? t('reste', quantiteTexte(a.quantite, UNITE[a.type])) : t('epuise')}</div>
       </div>
-      <a class="btn small" href="#/stock/${a.id}">${t('racheter')}</a></li>`).join('')}</ul>`
-      : `<div class="empty">${t('aucuneAlerte')}</div>`}`;
+      <a class="btn small" href="#/stock/${a.id}">${t('racheter')}</a></li>`).join('')}</ul></div>` : '';
+}
+
+// --- Rapport (entrées et sorties) ---
+
+// Tous les mouvements d'argent : achats du stock, ventes de bougies, et ceux ajoutés à la main.
+function tousMouvements() {
+  return [
+    ...etat.stock.flatMap(a => a.achats.map(x => ({ date: x.date, libelle: t('achatDe', a.nom), montant: -nombre(x.prix), origine: x.origine }))),
+    ...etat.produits.flatMap(p => p.ventes.map(v => ({ date: v.date, libelle: t('venteDe', p.nom), montant: nombre(v.prix), mode: v.mode }))),
+    ...etat.mouvements.map(m => ({ ...m, manuel: true, montant: m.sens === 'sortie' ? -nombre(m.montant) : nombre(m.montant) })),
+  ].sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function vueRapport() {
+  const tous = tousMouvements();
+  const annees = [...new Set([String(new Date().getFullYear()), ...tous.map(m => m.date.slice(0, 4))])].sort().reverse();
+  const annee = annees.includes(etat.ui.annee) ? etat.ui.annee : annees[0];
+  const liste = tous.filter(m => m.date.startsWith(annee));
+  const totaux = l => ({ e: l.filter(m => m.montant > 0).reduce((s, m) => s + m.montant, 0), s: -l.filter(m => m.montant < 0).reduce((s, m) => s + m.montant, 0) });
+  const an = totaux(liste);
+  const mois = [...new Set(liste.map(m => m.date.slice(0, 7)))].sort().reverse();
+  const nomMois = m => new Date(m + '-15').toLocaleDateString(locale(), { month: 'long' });
+  const signe = x => `<span class="${x < 0 ? 'warn' : ''}">${euros(x)}</span>`;
+  app.innerHTML = `<h2>${t('rapport')}</h2>
+    <p class="muted">${t('rapportAide')}</p>
+    <div class="actions" style="margin:0 0 16px;align-items:center">
+      <select data-ui="annee" aria-label="${t('annee')}" style="width:auto">${annees.map(a => `<option ${a === annee ? 'selected' : ''}>${a}</option>`).join('')}</select>
+      <button data-action="exporter-csv">${t('exporterCsv')}</button>
+    </div>
+    <div class="card">
+      <table class="result">
+        <tr><td>${t('entrees')}</td><td class="num">${euros(an.e)}</td></tr>
+        <tr><td>${t('sorties')}</td><td class="num">${euros(-an.s)}</td></tr>
+        <tr class="total"><td>${t('solde')}</td><td class="num">${signe(an.e - an.s)}</td></tr>
+      </table>
+      ${mois.length ? `<h3>${t('mois')}</h3><table class="result petit">
+        <tr><td></td><td class="num muted">${t('entrees')}</td><td class="num muted">${t('sorties')}</td><td class="num muted">${t('solde')}</td></tr>
+        ${mois.map(m => { const x = totaux(liste.filter(v => v.date.startsWith(m))); return `<tr><td>${nomMois(m)}</td>
+          <td class="num">${euros(x.e)}</td><td class="num">${euros(-x.s)}</td><td class="num">${signe(x.e - x.s)}</td></tr>`; }).join('')}
+      </table>` : ''}
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">${t('autreMouvement')}</h3>
+      <div class="grid2">
+        <div><label for="m-sens">${t('type')}</label>
+          <select id="m-sens"><option value="sortie">${t('sortie')}</option><option value="entree">${t('entree')}</option></select></div>
+        <div><label for="m-date">${t('date')}</label><input id="m-date" type="date" data-conv="m" value="${new Date().toISOString().slice(0, 10)}"></div>
+      </div>
+      <div class="grid3">
+        <div><label for="m-libelle">${t('libelle')}</label><input id="m-libelle" placeholder="${t('exLibelle')}"></div>
+        ${champMontant('m', t('montant').replace(/ \(.*\)$/, ''))}
+        <div><label for="m-mode">${t('paiement')}</label><select id="m-mode">${optionsModes(etat.reglages.dernierMode || 'especes')}</select></div>
+      </div>
+      <div class="actions"><button data-action="ajouter-mouvement">${t('ajouterMouvement')}</button></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">${t('mouvements')}</h3>
+      ${liste.length ? `<table class="result petit">${liste.map(m => `<tr>
+        <td>${esc(m.libelle)}<span class="pct">${new Date(m.date).toLocaleDateString(locale())}${m.mode ? ' · ' + t('modes')[m.mode] : ''}</span></td>
+        <td class="num">${signe(m.montant)}${origineTexte(m.origine)}${m.manuel ? ` <button class="small" data-action="supprimer-mouvement" data-id="${m.id}" aria-label="${t('supprimer')}">✕</button>` : ''}</td></tr>`).join('')}
+      </table>` : `<p class="muted">${t('aucunMouvement')}</p>`}
+    </div>`;
+}
+
+const optionsModes = choisi => Object.entries(t('modes')).map(([k, v]) => `<option value="${k}" ${k === choisi ? 'selected' : ''}>${v}</option>`).join('');
+
+// Le livre des recettes demande le moyen de paiement de chaque vente.
+function fenetreVente(p) {
+  const fond = document.createElement('div');
+  fond.className = 'visionneuse';
+  const prix = p.prixVente === '' ? '' : String(p.prixVente).replace('.', locale() === 'fr-FR' ? ',' : '.');
+  fond.innerHTML = `<div class="card fenetre">
+    <h3 style="margin-top:0">${t('venteTitre', esc(p.nom))}</h3>
+    <div class="grid2">
+      <div><label for="v-prix">${t('prixVente')}</label><input id="v-prix" inputmode="decimal" value="${esc(prix)}"></div>
+      <div><label for="v-mode">${t('paiement')}</label><select id="v-mode">${optionsModes(etat.reglages.dernierMode || 'especes')}</select></div>
+    </div>
+    <div class="actions">
+      <button class="primary" data-v="valider">${t('valider')}</button>
+      <button data-v="annuler">${t('annuler')}</button>
+    </div></div>`;
+  document.body.appendChild(fond);
+  fond.querySelector('#v-prix').focus();
+  fond.addEventListener('click', ev => {
+    const choix = ev.target.dataset.v;
+    if (choix === 'annuler' || ev.target === fond) { fond.remove(); return; }
+    if (choix !== 'valider') return;
+    const montant = nombre(fond.querySelector('#v-prix').value);
+    const mode = fond.querySelector('#v-mode').value;
+    p.ventes.push({ date: new Date().toISOString().slice(0, 10), n: 1, prix: montant, mode });
+    p.quantite = Math.max(0, p.quantite - 1);
+    if (p.prixVente === '' && montant) p.prixVente = montant;
+    etat.reglages.dernierMode = mode;
+    enregistrer();
+    fond.remove();
+    toast(p.quantite ? t('venteNotee') : `${t('venteNotee')} · ${t('plusEnStock')}`);
+    route();
+  });
+}
+
+// Point-virgule en français ; virgule décimale seulement pour Excel réglé en France.
+function exporterCsv() {
+  const fr = etat.reglages.langue === 'fr';
+  const sep = fr ? ';' : ',';
+  const virgule = fr && etat.reglages.devise === 'EUR';
+  const cellule = v => `"${String(v).replace(/"/g, '""')}"`;
+  const nb = x => virgule ? x.toFixed(2).replace('.', ',') : x.toFixed(2);
+  const lignes = [[t('date'), t('libelle'), t('paiement'), t('montant'), t('origine')].map(cellule).join(sep),
+    ...tousMouvements().map(m => [m.date, cellule(m.libelle), cellule(m.mode ? t('modes')[m.mode] : ''), nb(m.montant),
+      cellule(m.origine ? `${nb(m.origine.montant)} ${m.origine.devise} (${t('taux', m.origine.devise, etat.reglages.devise)} ${m.origine.taux})` : '')].join(sep))];
+  const nom = `bougies-rapport-${new Date().toISOString().slice(0, 10)}.csv`;
+  partagerFichier(new File(['﻿' + lignes.join('\r\n')], nom, { type: 'text/csv' }))
+    .then(ok => ok && toast(t('exportCree')))
+    .catch(() => toast(t('sauvegardeEchouee')));
 }
 
 // --- Réglages et sauvegarde ---
@@ -1219,6 +1443,10 @@ function vueReglages() {
       <select id="r-langue" data-reglage="langue">
         <option value="fr" ${r.langue === 'fr' ? 'selected' : ''}>Français</option>
         <option value="en" ${r.langue === 'en' ? 'selected' : ''}>English</option>
+      </select>
+      <label for="r-devise">${t('devise')}</label>
+      <select id="r-devise" data-reglage="devise">
+        ${['CHF', 'EUR'].map(d => `<option ${r.devise === d ? 'selected' : ''}>${d}</option>`).join('')}
       </select>
       <div class="grid2">
         <div><label for="r-dosage">${t('dosageDefaut')}</label>
@@ -1261,21 +1489,33 @@ async function exporter() {
   const nom = `bougies-sauvegarde-${date}.json`;
   const fichier = new File([JSON.stringify(donnees, null, 2)], nom, { type: 'application/json' });
   try {
-    if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
-      await navigator.share({ files: [fichier], title: nom });
-    } else {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(fichier);
-      a.download = nom;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    }
+    if (!await partagerFichier(fichier)) return;
     etat.derniereSauvegarde = new Date().toISOString();
     enregistrer();
     vueReglages();
     toast(t('sauvegardeCreee'));
   } catch (e) {
-    if (e.name !== 'AbortError') toast(t('sauvegardeEchouee'));
+    toast(t('sauvegardeEchouee'));
+  }
+}
+
+// Sur iPad, la feuille de partage permet d'enregistrer dans Fichiers ; ailleurs, un téléchargement.
+// Renvoie false si la personne a fermé la feuille sans rien faire.
+async function partagerFichier(fichier) {
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
+      await navigator.share({ files: [fichier], title: fichier.name });
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(fichier);
+      a.download = fichier.name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
+    return true;
+  } catch (e) {
+    if (e.name === 'AbortError') return false;
+    throw e;
   }
 }
 
@@ -1576,18 +1816,9 @@ app.addEventListener('click', ev => {
       brouillon = null;
       aller('#/contenants');
       break;
-    case 'vendre': {
-      const p = produitParId(id);
-      const reponse = prompt(t('demanderPrixVente'), p.prixVente === '' ? '' : String(p.prixVente).replace('.', etat.reglages.langue === 'fr' ? ',' : '.'));
-      if (reponse === null) return;
-      p.ventes.push({ date: new Date().toISOString().slice(0, 10), n: 1, prix: nombre(reponse) });
-      p.quantite = Math.max(0, p.quantite - 1);
-      if (p.prixVente === '' && nombre(reponse)) p.prixVente = nombre(reponse);
-      enregistrer();
-      toast(p.quantite ? t('venteNotee') : `${t('venteNotee')} · ${t('plusEnStock')}`);
-      route();
+    case 'vendre':
+      fenetreVente(produitParId(id));
       break;
-    }
     case 'annuler-vente': {
       if (!confirm(t('annulerVente'))) return;
       const p = produitParId(id);
@@ -1615,6 +1846,28 @@ app.addEventListener('click', ev => {
       aller('#/bougies');
       break;
     }
+    case 'exporter-csv':
+      exporterCsv();
+      break;
+    case 'ajouter-mouvement': {
+      const libelle = document.getElementById('m-libelle').value.trim();
+      const lu = lireMontant('m');
+      if (!libelle || !(nombre(document.getElementById('m-prix').value) > 0)) { toast(t('libelleMontant')); return; }
+      if (!lu) { toast(t('tauxManquant')); return; }
+      const montant = lu.montant;
+      etat.mouvements.push({ id: nouvelId(), date: document.getElementById('m-date').value || new Date().toISOString().slice(0, 10),
+        sens: document.getElementById('m-sens').value, libelle, montant, mode: document.getElementById('m-mode').value, ...(lu.origine && { origine: lu.origine }) });
+      enregistrer();
+      toast(t('mouvementAjoute'));
+      vueRapport();
+      break;
+    }
+    case 'supprimer-mouvement':
+      if (!confirm(t('supprimerMouvement'))) return;
+      etat.mouvements = etat.mouvements.filter(m => m.id !== id);
+      enregistrer();
+      vueRapport();
+      break;
     case 'stock-depuis-recettes':
       stockDepuisRecettes();
       break;
@@ -1623,13 +1876,14 @@ app.addEventListener('click', ev => {
       break;
     case 'ajouter-achat': {
       const quantite = nombre(document.getElementById('a-qte').value);
-      const prix = nombre(document.getElementById('a-prix').value);
-      if (!(quantite > 0) || !(prix >= 0) || document.getElementById('a-prix').value.trim() === '') { toast(t('quantiteEtPrix')); return; }
+      if (!(quantite > 0) || document.getElementById('a-prix').value.trim() === '') { toast(t('quantiteEtPrix')); return; }
+      const lu = lireMontant('a');
+      if (!lu) { toast(t('tauxManquant')); return; }
       // L'achat s'ajoute à la quantité affichée, que sauverArticle relit.
       const champ = document.getElementById('s-quantite');
       const avant = champ.value;
       champ.value = Math.round((nombre(avant) + quantite) * 10) / 10;
-      brouillon.achats.push({ date: document.getElementById('a-date').value || new Date().toISOString().slice(0, 10), quantite, prix });
+      brouillon.achats.push({ date: document.getElementById('a-date').value || new Date().toISOString().slice(0, 10), quantite, prix: lu.montant, ...(lu.origine && { origine: lu.origine }) });
       if (!sauverArticle()) { brouillon.achats.pop(); champ.value = avant; return; }
       toast(t('achatAjoute'));
       majBadge();
@@ -1663,11 +1917,12 @@ app.addEventListener('click', ev => {
 
 app.addEventListener('input', ev => {
   const el = ev.target;
+  if (el.dataset.conv) { majConversion(el.dataset.conv, el); return; }
   // Écran Calculer : on recalcule à chaque frappe.
   if (el.dataset.ui) {
     etat.ui[el.dataset.ui] = el.value;
     enregistrer();
-    afficherResultat();
+    if (el.dataset.ui === 'annee') vueRapport(); else afficherResultat();
   } else if (el.dataset.pot !== undefined) {
     etat.ui.lignes[el.dataset.pot][el.dataset.champPot] = el.value;
     enregistrer();
@@ -1686,9 +1941,9 @@ app.addEventListener('input', ev => {
     enregistrer();
   } else if (el.dataset.reglage) {
     const cle = el.dataset.reglage;
-    etat.reglages[cle] = cle === 'langue' ? el.value : nombre(el.value);
+    etat.reglages[cle] = cle === 'langue' || cle === 'devise' ? el.value : nombre(el.value);
     enregistrer();
-    if (cle === 'langue') route();
+    if (cle === 'langue' || cle === 'devise') route();
   } else if (el.dataset.ligne === 'parfums') {
     // Total du mélange mis à jour en direct dans le formulaire.
     const somme = [...app.querySelectorAll('[data-ligne="parfums"][data-champ="pct"]')].reduce((s, x) => s + nombre(x.value), 0);
