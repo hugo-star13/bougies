@@ -81,7 +81,7 @@ const TEXTES = {
     navStock: 'Stock', choisir: '— Choisir —', nouvelleSenteur: '+ Nouvelle senteur…', nouvelleCire: '+ Nouvelle cire…',
     nomSenteur: 'Nom de la nouvelle senteur :', nomCire: 'Nom de la nouvelle cire :',
     stock: 'Stock', stockAide: 'Vos achats de cire, senteurs, couleurs, pots et mèches. Le prix moyen sert à estimer le coût de chaque bougie.',
-    nouvelArticle: '+ Nouvel article', depuisRecettes: 'Créer depuis mes recettes', aucunArticle: 'Aucun article pour l’instant.',
+    nouvelArticle: '+ Nouvel article', depuisRecettes: 'Créer depuis mes recettes', aucunArticle: 'Aucun article pour l’instant. Ajoutez vos achats de cire, senteurs, pots et mèches, ou créez-les d’un coup depuis vos recettes.',
     articlesCrees: n => `${n} article(s) ajouté(s)`,
     types: { cire: 'Cires', parfum: 'Senteurs', couleur: 'Couleurs', pot: 'Pots', meche: 'Mèches', autre: 'Autres' },
     type: 'Type', typeNom: { cire: 'Cire', parfum: 'Senteur', couleur: 'Couleur', pot: 'Pot', meche: 'Mèche', autre: 'Autre' },
@@ -206,7 +206,7 @@ const TEXTES = {
     navStock: 'Stock', choisir: '— Choose —', nouvelleSenteur: '+ New scent…', nouvelleCire: '+ New wax…',
     nomSenteur: 'Name of the new scent:', nomCire: 'Name of the new wax:',
     stock: 'Stock', stockAide: 'Your purchases of wax, scents, colours, jars and wicks. The average price is used to estimate the cost of each candle.',
-    nouvelArticle: '+ New item', depuisRecettes: 'Create from my recipes', aucunArticle: 'No items yet.',
+    nouvelArticle: '+ New item', depuisRecettes: 'Create from my recipes', aucunArticle: 'No items yet. Add your wax, scents, jars and wicks, or create them all at once from your recipes.',
     articlesCrees: n => `${n} item(s) added`,
     types: { cire: 'Waxes', parfum: 'Scents', couleur: 'Colours', pot: 'Jars', meche: 'Wicks', autre: 'Other' },
     type: 'Type', typeNom: { cire: 'Wax', parfum: 'Scent', couleur: 'Colour', pot: 'Jar', meche: 'Wick', autre: 'Other' },
@@ -794,6 +794,7 @@ function afficherResultat() {
       ${r.colorants.map(l => `<tr><td>${esc(l.nom)}<span class="pct">${pourcent(l.pct)} ${t('duPoidsTotal')}</span></td><td class="num">${grammes(l.g)}</td></tr>`).join('')}
       <tr class="total"><td>${t('total')}</td><td class="num">${grammes(poidsTotal)}</td></tr>
     </table>
+    <div class="actions"><button class="primary" data-action="fabriquer">${t('fabriquer')}</button></div>
     ${couches.length ? `<h3>${t('couches')}</h3><table class="result petit">
       ${couches.map(c => {
         const p = poidsTotal * nombre(c.pct) / 100;
@@ -810,8 +811,7 @@ function afficherResultat() {
     ${f.design ? `<p><strong>${t('design')} :</strong> ${esc(f.design)}</p>` : ''}
     ${f.prochaineFois ? `<p><strong>${t('prochaineFois')} :</strong> <span style="white-space:pre-wrap">${esc(f.prochaineFois)}</span></p>` : ''}
     ${f.notes ? `<p class="muted" style="white-space:pre-wrap">${esc(f.notes)}</p>` : ''}
-    ${coutHtml(f, lignes, nbBougies)}
-    <div class="actions"><button class="primary" data-action="fabriquer">${t('fabriquer')}</button></div>`;
+    ${coutHtml(f, lignes, nbBougies)}`;
 }
 
 // --- Formules ---
