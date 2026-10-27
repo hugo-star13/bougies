@@ -134,3 +134,16 @@ h2 .star { vertical-align: middle; margin-right: 4px; }
   padding: calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px);
 }
 .visionneuse img { max-width: 100%; max-height: calc(100% - 90px); border-radius: 10px; object-fit: contain; }
+
+.bandeau-fab { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.grid-temp { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0 12px; }
+.rappel { border-color: var(--accent); }
+ol.etapes { list-style: none; margin: 0; padding: 0; }
+.etape { transition: opacity .2s; }
+.etape.faite { opacity: .55; }
+.etape.faite .coche > span { text-decoration: line-through; }
+.coche { display: flex; align-items: center; gap: 14px; margin: 0; font-size: 19px; cursor: pointer; }
+.coche input { width: 30px; height: 30px; min-height: 0; flex: none; accent-color: var(--accent); }
+.num-etape { color: var(--accent); font-weight: 700; margin-right: 4px; }
+.detail-etape { margin: 10px 0 0 44px; }
+.detail-etape p { margin: 0 0 4px; }
