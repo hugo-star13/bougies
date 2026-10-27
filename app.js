@@ -75,6 +75,8 @@ const TEXTES = {
     tPot: 'Préchauffer les pots', tFonte: 'Fonte de la cire', tCouleur: 'Ajout de la couleur', tParfum: 'Ajout du parfum', tCoulage: 'Coulage',
     pourCouche: n => `couche ${n}`,
     fabricationRecette: 'Fabrication', tempsAide: 'Laissez vide pour utiliser les températures par défaut (Réglages).',
+    chargerRecettes: 'Charger mes recettes', chargerAide: 'Ajoute les recettes et les pots intégrés à l’app (protégés par un mot de passe). Rien n’est remplacé.',
+    demanderMdp: 'Mot de passe des recettes :', mdpFaux: 'Mot de passe incorrect', recettesChargees: (f, c) => `${f} recette(s) et ${c} pot(s) ajoutés`,
     etapesPerso: 'Étapes particulières', exEtapesPerso: 'Une étape par ligne, ex. « Fouetter la cire à 45 °C pour la couche du dessus »',
   },
   en: {
@@ -149,6 +151,8 @@ const TEXTES = {
     tPot: 'Pre-warm jars', tFonte: 'Melt wax', tCouleur: 'Add colour', tParfum: 'Add scent', tCoulage: 'Pour',
     pourCouche: n => `layer ${n}`,
     fabricationRecette: 'Making', tempsAide: 'Leave empty to use the default temperatures (Settings).',
+    chargerRecettes: 'Load my recipes', chargerAide: 'Adds the recipes and jars built into the app (password protected). Nothing is replaced.',
+    demanderMdp: 'Recipes password:', mdpFaux: 'Wrong password', recettesChargees: (f, c) => `${f} recipe(s) and ${c} jar(s) added`,
     etapesPerso: 'Extra steps', exEtapesPerso: 'One step per line, e.g. “Whip the wax at 45 °C for the top layer”',
   },
 };
@@ -772,10 +776,12 @@ function vueReglages() {
     <div class="card">
       <h3 style="margin-top:0">${t('sauvegarde')}</h3>
       <p>${t('sauvegardeTexte')}</p>
+      <p class="muted">${t('chargerAide')}</p>
       <p class="muted">${t('derniereSauvegarde')} : ${d} · ${t('compte', etat.formules.length, etat.contenants.length)}</p>
       <div class="actions">
         <button class="primary" data-action="exporter">${t('sauvegarderDonnees')}</button>
         <button data-action="importer">${t('restaurer')}</button>
+        <button data-action="charger-recettes">${t('chargerRecettes')}</button>
         <input type="file" id="fichier-import" accept=".json,application/json" hidden>
       </div>
     </div>`;
@@ -808,6 +814,38 @@ async function exporter() {
     toast(t('sauvegardeCreee'));
   } catch (e) {
     if (e.name !== 'AbortError') toast(t('sauvegardeEchouee'));
+  }
+}
+
+// Recettes intégrées : le dépôt est public, donc le fichier est chiffré
+// (PBKDF2 + AES-GCM) et ne se lit qu'avec le mot de passe.
+async function chargerRecettes() {
+  const mdp = prompt(t('demanderMdp'));
+  if (!mdp) return;
+  try {
+    const chiffre = await (await fetch('recettes.chiffre.json', { cache: 'no-cache' })).json();
+    const octets = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(mdp), 'PBKDF2', false, ['deriveKey']);
+    const cle = await crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: octets(chiffre.sel), iterations: chiffre.iterations, hash: 'SHA-256' },
+      base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+    let clair;
+    try {
+      clair = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: octets(chiffre.iv) }, cle, octets(chiffre.donnees));
+    } catch (e) {
+      toast(t('mdpFaux'));
+      return;
+    }
+    const donnees = depuisDonnees(JSON.parse(new TextDecoder().decode(clair)));
+    const nouvellesF = donnees.formules.filter(f => !formuleParId(f.id));
+    const nouveauxC = donnees.contenants.filter(c => !contenantParId(c.id));
+    etat.formules.push(...nouvellesF);
+    etat.contenants.push(...nouveauxC);
+    enregistrer();
+    toast(t('recettesChargees', nouvellesF.length, nouveauxC.length));
+    vueReglages();
+  } catch (e) {
+    toast(t('fichierInvalide'));
   }
 }
 
@@ -1060,6 +1098,9 @@ app.addEventListener('click', ev => {
       break;
     case 'importer':
       document.getElementById('fichier-import').click();
+      break;
+    case 'charger-recettes':
+      chargerRecettes();
       break;
   }
 });
