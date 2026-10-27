@@ -312,7 +312,8 @@ function migrer(donnees) {
 function depuisDonnees(donnees) {
   const vide = etatVide();
   const e = Object.assign(vide, migrer(donnees));
-  e.reglages = Object.assign(vide.reglages, donnees.reglages);
+  // Object.assign ci-dessus a remplacé vide.reglages par celui des données : on repart des valeurs par défaut.
+  e.reglages = Object.assign(etatVide().reglages, donnees.reglages);
   e.reglages.temperatures = Object.assign(etatVide().reglages.temperatures, e.reglages.temperatures);
   e.ui = e.ui || {};
   e.stock = e.stock || [];
