@@ -34,7 +34,7 @@ const TEXTES = {
     copie: '(copie)', formuleEnregistree: 'Formule enregistrée', formuleDupliquee: 'Formule dupliquée',
     nommerFormule: 'Donnez un nom à la formule', supprimerFormule: n => `Supprimer la formule « ${n} » ?`,
     contenants: 'Contenants', contenantsAide: 'Vos tailles de pots, avec le poids total (cire + parfum) que vous versez dedans.',
-    nouveauContenant: 'Nouveau contenant', ajouterContenantBtn: '+ Nouveau contenant', aucunContenant: 'Aucun contenant pour l’instant.',
+    nouveauContenant: 'Nouveau contenant', ajouterContenantBtn: '+ Nouveau pot', aucunContenant: 'Aucun contenant pour l’instant.',
     exNomContenant: 'ex. Petit pot', poidsVerse: 'Poids total versé (g)', exPoids: 'ex. 135',
     volumeEau: 'Contenance en eau (ml), optionnel', convertir: f => `Poids = ml × ${f}`,
     mecheConseillee: 'Mèche conseillée', exMeche: 'ex. ECO 6', exNotesContenant: 'Fournisseur, dimensions…',
@@ -97,6 +97,22 @@ const TEXTES = {
     stockInsuffisant: 'stock insuffisant', coutAide: 'Prix moyen de vos achats. Les couleurs ne sont pas comptées.',
     coutManquant: 'Ajoutez les achats manquants dans Stock pour un coût complet.',
     densiteParfum: 'Densité des senteurs (g par ml)', stockMisAJour: 'Stock mis à jour',
+    potOuMoule: 'Pot ou moule', pots: 'Pots', moules: 'Moules', genre: 'Type', genrePot: 'Pot', genreMoule: 'Moule',
+    contenantsAide2: 'Vos pots et vos moules, avec le poids total (cire + parfum + colorant) versé dans chacun.',
+    nouveauMoule: 'Nouveau moule', photosContenant: 'Les photos s’ajoutent une fois le pot ou le moule enregistré.',
+    colorants: 'Colorants', colorantsAide: 'Part de chaque colorant en % du poids total de la bougie (ex. 0,5).',
+    ajouterColorant: '+ Colorant', nouveauColorant: '+ Nouveau colorant…', nomColorant: 'Nom du nouveau colorant :',
+    coutAide2: 'Prix moyen de vos achats. Les moules ne sont pas comptés (ils resservent).',
+    navBougies: 'Mes bougies', mesBougies: 'Mes bougies',
+    mesBougiesAide: 'Les bougies terminées en mode fabrication arrivent ici, rangées par recette et par pot ou moule.',
+    aucuneBougie: 'Aucune bougie terminée pour l’instant. Elles s’ajoutent quand vous terminez une fabrication.',
+    enStockN: n => `${n} en stock`, coutUnite: 'coût', prixVente: 'Prix de vente (€)', vendu: 'Vendu',
+    demanderPrixVente: 'Prix de vente (€) :', venteNotee: 'Vente notée', plusEnStock: 'Plus aucune en stock',
+    resumeBougies: (n, v) => `${n} bougie(s) en stock · valeur (coût) ${v}`,
+    resumeVentes: (n, ca) => `${n} vendue(s) · ${ca} encaissés`,
+    fabriquees: 'Fabriquées', ventes: 'Ventes', aucuneVente: 'Pas encore de vente.',
+    bougiesAjoutees: n => `${n} bougie(s) ajoutée(s) à Mes bougies`, supprimerBougie: n => `Supprimer « ${n} » de Mes bougies ?`,
+    retourBougies: '‹ Mes bougies', bougieEnregistree: 'Enregistré', annulerVente: 'Annuler cette vente ? (la bougie revient en stock)',
     navAlertes: 'Alertes', alertes: 'Alertes de stock', seuil: u => `M’alerter en dessous de (${u})`,
     aucuneAlerte: 'Rien à racheter pour l’instant.', alertesAide: 'Articles passés sous leur seuil d’alerte. Le seuil se règle dans chaque article du stock.',
     reste: q => `il reste ${q}`, racheter: 'Noter un achat', stockBas: n => `${n} article(s) à racheter : voir Alertes`,
@@ -195,6 +211,22 @@ const TEXTES = {
     stockInsuffisant: 'not enough stock', coutAide: 'Average price of your purchases. Colours are not counted.',
     coutManquant: 'Add the missing purchases in Stock for a complete cost.',
     densiteParfum: 'Scent density (g per ml)', stockMisAJour: 'Stock updated',
+    potOuMoule: 'Jar or mould', pots: 'Jars', moules: 'Moulds', genre: 'Type', genrePot: 'Jar', genreMoule: 'Mould',
+    contenantsAide2: 'Your jars and moulds, with the total weight (wax + scent + dye) poured into each.',
+    nouveauMoule: 'New mould', photosContenant: 'Photos can be added once the jar or mould is saved.',
+    colorants: 'Dyes', colorantsAide: 'Share of each dye as % of the candle’s total weight (e.g. 0.5).',
+    ajouterColorant: '+ Dye', nouveauColorant: '+ New dye…', nomColorant: 'Name of the new dye:',
+    coutAide2: 'Average price of your purchases. Moulds are not counted (they are reused).',
+    navBougies: 'My candles', mesBougies: 'My candles',
+    mesBougiesAide: 'Candles finished in making mode land here, grouped by recipe and by jar or mould.',
+    aucuneBougie: 'No finished candles yet. They are added when you finish a batch.',
+    enStockN: n => `${n} in stock`, coutUnite: 'cost', prixVente: 'Selling price (€)', vendu: 'Sold',
+    demanderPrixVente: 'Selling price (€):', venteNotee: 'Sale recorded', plusEnStock: 'None left in stock',
+    resumeBougies: (n, v) => `${n} candle(s) in stock · value (cost) ${v}`,
+    resumeVentes: (n, ca) => `${n} sold · ${ca} received`,
+    fabriquees: 'Made', ventes: 'Sales', aucuneVente: 'No sales yet.',
+    bougiesAjoutees: n => `${n} candle(s) added to My candles`, supprimerBougie: n => `Remove “${n}” from My candles?`,
+    retourBougies: '‹ My candles', bougieEnregistree: 'Saved', annulerVente: 'Cancel this sale? (the candle goes back in stock)',
     navAlertes: 'Alerts', alertes: 'Stock alerts', seuil: u => `Alert me below (${u})`,
     aucuneAlerte: 'Nothing to restock for now.', alertesAide: 'Items below their alert level. Set the level in each stock item.',
     reste: q => `${q} left`, racheter: 'Record a purchase', stockBas: n => `${n} item(s) to restock: see Alerts`,
@@ -217,6 +249,7 @@ function etatVide() {
     formules: [],
     contenants: [],
     stock: [],
+    produits: [],
     derniereSauvegarde: null,
     reglages: {
       langue: (navigator.language || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en',
@@ -256,6 +289,7 @@ function depuisDonnees(donnees) {
   e.reglages.temperatures = Object.assign(etatVide().reglages.temperatures, e.reglages.temperatures);
   e.ui = e.ui || {};
   e.stock = e.stock || [];
+  e.produits = e.produits || [];
   return e;
 }
 
@@ -385,18 +419,26 @@ function formulesTriees() {
 // ---------- Calcul ----------
 
 // Parfum = poids total × dosage ; cire = le reste. Chaque parfum prend sa part du mélange.
+// Les colorants sont en % du poids total, comme le parfum, et la cire est le reste.
 function calculer(formule, poidsTotal) {
   const parfum = poidsTotal * nombre(formule.dosage) / 100;
   const melange = formule.parfums.filter(l => l.nom || l.pct);
   const sommeMelange = melange.reduce((s, l) => s + nombre(l.pct), 0);
+  const colorants = (formule.colorants || []).filter(l => l.nom || l.pct)
+    .map(l => ({ nom: l.nom, pct: nombre(l.pct), g: poidsTotal * nombre(l.pct) / 100 }));
+  const colorant = colorants.reduce((s, l) => s + l.g, 0);
   return {
     poidsTotal,
     parfum,
-    cire: poidsTotal - parfum,
+    colorants,
+    cire: poidsTotal - parfum - colorant,
     sommeMelange,
     lignes: melange.map(l => ({ nom: l.nom, pct: nombre(l.pct), g: parfum * nombre(l.pct) / 100 })),
   };
 }
+
+// Part de cire dans un poids donné (pour une couche).
+const partCire = (formule, poids) => poids ? calculer(formule, poids).cire : 0;
 
 // ---------- Stock et coûts ----------
 
@@ -461,9 +503,10 @@ function consommation(f, lignes) {
   };
   ajouter('cire', f.cire, r.cire);
   r.lignes.forEach(l => ajouter('parfum', l.nom, l.g / (nombre(etat.reglages.densiteParfum) || 1)));
+  r.colorants.forEach(l => ajouter('couleur', l.nom, l.g));
   lignes.forEach(l => {
     if (l.contenant === 'perso') return;
-    ajouter('pot', l.contenant, l.n);
+    if (contenantParId(l.contenant)?.genre !== 'moule') ajouter('pot', l.contenant, l.n);
     ajouter('meche', contenantParId(l.contenant)?.meche, l.n);
   });
   postes.forEach(p => {
@@ -483,7 +526,7 @@ function coutHtml(f, lignes, nbBougies) {
         <td class="num">${p.cout !== null ? euros(p.cout) : `<span class="muted">${p.article ? t('prixInconnu') : t('pasEnStock')}</span>`}</td></tr>`).join('')}
       <tr class="total"><td>${t('total')}${nbBougies > 1 ? `<span class="pct">${euros(total / nbBougies)} ${t('parBougie')}</span>` : ''}</td><td class="num">${complet ? '' : '≥ '}${euros(total)}</td></tr>
     </table>
-    <p class="muted">${t('coutAide')}${complet ? '' : ' ' + t('coutManquant')}</p>`;
+    <p class="muted">${t('coutAide2')}${complet ? '' : ' ' + t('coutManquant')}</p>`;
 }
 
 // ---------- Rendu ----------
@@ -501,7 +544,7 @@ function route() {
   const [page, id, mode] = location.hash.replace(/^#\/?/, '').split('/');
   document.querySelectorAll('.topbar nav a').forEach(a => {
     const onglet = a.dataset.tab;
-    a.classList.toggle('active', onglet === page || (onglet === 'formules' && page === 'formule') || (onglet === 'contenants' && page === 'contenant'));
+    a.classList.toggle('active', onglet === page || (onglet === 'formules' && page === 'formule') || (onglet === 'contenants' && page === 'contenant') || (onglet === 'bougies' && page === 'bougie'));
   });
   window.scrollTo(0, 0);
   majBadge();
@@ -512,6 +555,8 @@ function route() {
     case 'contenant': return vueContenant(id);
     case 'stock': return id ? vueArticle(id) : vueStock();
     case 'alertes': return vueAlertes();
+    case 'bougies': return vueBougies();
+    case 'bougie': return vueBougie(id);
     case 'reglages': return vueReglages();
     case 'fabrication': return vueFabrication();
     default: return vueCalcul();
@@ -573,9 +618,12 @@ function vueCalcul() {
       ${ui.lignes.map((l, i) => `
         <div class="grid2 pot">
           <div>
-            <label for="c-contenant-${i}">${t('contenant')}</label>
+            <label for="c-contenant-${i}">${t('potOuMoule')}</label>
             <select id="c-contenant-${i}" data-pot="${i}" data-champ-pot="contenant">
-              ${contenantsTries().map(c => `<option value="${c.id}" ${c.id === l.contenant ? 'selected' : ''}>${esc(c.nom)} (${grammes(nombre(c.poids))})</option>`).join('')}
+              ${[['pot', t('pots')], ['moule', t('moules')]].map(([g, titre]) => {
+                const liste = contenantsTries().filter(c => (c.genre || 'pot') === g);
+                return liste.length ? `<optgroup label="${titre}">${liste.map(c => `<option value="${c.id}" ${c.id === l.contenant ? 'selected' : ''}>${esc(c.nom)} (${grammes(nombre(c.poids))})</option>`).join('')}</optgroup>` : '';
+              }).join('')}
               <option value="perso" ${l.contenant === 'perso' ? 'selected' : ''}>${t('autrePoids')}</option>
             </select>
             ${l.contenant === 'perso' ? `<label for="c-poids-${i}">${t('poidsParBougie')}</label>
@@ -620,13 +668,14 @@ function afficherResultat() {
       <tr><td>${esc(f.cire || t('cire'))}</td><td class="num">${grammes(r.cire)}</td></tr>
       <tr><td>${t('parfumTotal')}<span class="pct">${pourcent(nombre(f.dosage))} ${t('duPoidsTotal')}</span></td><td class="num">${grammes(r.parfum)}</td></tr>
       ${r.lignes.map(l => `<tr class="sous"><td>${esc(l.nom)}<span class="pct">${pourcent(l.pct)}</span></td><td class="num">${grammes(l.g)}</td></tr>`).join('')}
+      ${r.colorants.map(l => `<tr><td>${esc(l.nom)}<span class="pct">${pourcent(l.pct)} ${t('duPoidsTotal')}</span></td><td class="num">${grammes(l.g)}</td></tr>`).join('')}
       <tr class="total"><td>${t('total')}</td><td class="num">${grammes(poidsTotal)}</td></tr>
     </table>
     ${couches.length ? `<h3>${t('couches')}</h3><table class="result petit">
       ${couches.map(c => {
         const p = poidsTotal * nombre(c.pct) / 100;
         return `<tr><td>${esc(c.nom)}<span class="pct">${pourcent(nombre(c.pct))}</span></td>
-          <td class="num">${grammes(p)} <span class="pct">(${t('cire').toLowerCase()} ${grammes(p - p * nombre(f.dosage) / 100)})</span></td></tr>`;
+          <td class="num">${grammes(p)} <span class="pct">(${t('cire').toLowerCase()} ${grammes(partCire(f, p))})</span></td></tr>`;
       }).join('')}</table>` : ''}
     ${plusieursPots ? `<h3>${t('parPot')}</h3><table class="result petit">
       ${lignes.map(l => {
@@ -675,7 +724,7 @@ function vueFormules(filtre = '') {
 // Noms connus pour un type : ceux du stock et ceux déjà utilisés dans les recettes.
 function nomsConnus(type) {
   const noms = etat.stock.filter(a => a.type === type).map(a => a.nom);
-  etat.formules.forEach(f => (type === 'cire' ? [f.cire] : f.parfums.map(l => l.nom))
+  etat.formules.forEach(f => (type === 'cire' ? [f.cire] : type === 'couleur' ? (f.colorants || []).map(l => l.nom) : f.parfums.map(l => l.nom))
     .forEach(n => n && !noms.some(x => memeNom(x, n)) && noms.push(n)));
   return noms.sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
 }
@@ -687,13 +736,15 @@ function menuNoms(type, valeur, attributs) {
   return `<select ${attributs} data-menu="${type}" data-avant="${esc(valeur)}">
     <option value="">${t('choisir')}</option>
     ${noms.map(n => `<option value="${esc(n)}" ${n === valeur ? 'selected' : ''}>${esc(n)}</option>`).join('')}
-    <option value="__nouveau__">${type === 'cire' ? t('nouvelleCire') : t('nouvelleSenteur')}</option>
+    <option value="__nouveau__">${{ cire: t('nouvelleCire'), couleur: t('nouveauColorant') }[type] || t('nouvelleSenteur')}</option>
   </select>`;
 }
 
+const MENU_LIGNE = { parfums: 'parfum', colorants: 'couleur' };
+
 function lignesHtml(cle, lignes, exemple) {
   return lignes.map((l, i) => `<div class="line">
-      ${cle === 'parfums' ? menuNoms('parfum', l.nom, `data-ligne="${cle}" data-i="${i}" data-champ="nom" aria-label="${t('nom')}"`)
+      ${MENU_LIGNE[cle] ? menuNoms(MENU_LIGNE[cle], l.nom, `data-ligne="${cle}" data-i="${i}" data-champ="nom" aria-label="${t('nom')}"`)
         : `<input data-ligne="${cle}" data-i="${i}" data-champ="nom" placeholder="${exemple}" value="${esc(l.nom)}">`}
       <input data-ligne="${cle}" data-i="${i}" data-champ="pct" inputmode="decimal" placeholder="%" value="${esc(l.pct)}">
       <button data-action="retirer" data-cle="${cle}" data-i="${i}" aria-label="${t('retirer')}">✕</button>
@@ -718,7 +769,7 @@ function vueFiche(id) {
     <h2><button class="star" data-action="favori" data-id="${f.id}" aria-label="${t('favori')}">${f.favori ? '★' : '☆'}</button>${esc(f.nom)}</h2>
     <div class="card">
       <table class="result">
-        <tr><td>${esc(f.cire || t('cire'))}</td><td class="num">${pourcent(100 - nombre(f.dosage))}</td></tr>
+        <tr><td>${esc(f.cire || t('cire'))}</td><td class="num">${pourcent(100 - nombre(f.dosage) - (f.colorants || []).reduce((s, c) => s + nombre(c.pct), 0))}</td></tr>
         <tr><td>${t('parfumTotal')}<span class="pct">${t('duPoidsTotal')}</span></td><td class="num">${pourcent(nombre(f.dosage))}</td></tr>
       </table>
       <h3>${t('melange')}</h3>
@@ -728,6 +779,8 @@ function vueFiche(id) {
       </table>
       ${couches.length ? `<h3>${t('couches')}</h3><table class="result">
         ${couches.map(c => `<tr><td>${esc(c.nom)}</td><td class="num">${pourcent(nombre(c.pct))}</td></tr>`).join('')}</table>` : ''}
+      ${(f.colorants || []).length ? `<h3>${t('colorants')}</h3><table class="result">
+        ${f.colorants.map(c => `<tr><td>${esc(c.nom)}<span class="pct">${t('duPoidsTotal')}</span></td><td class="num">${pourcent(nombre(c.pct))}</td></tr>`).join('')}</table>` : ''}
     </div>
     ${f.design || f.prochaineFois || f.notes || f.etapes || Object.values(f.temperatures || {}).some(Boolean) ? `<div class="card texte-fiche">
       ${texte(t('design'), f.design)}${texte(t('prochaineFois'), f.prochaineFois)}${texte(t('notes'), f.notes)}${texte(t('etapesPerso'), f.etapes)}
@@ -751,7 +804,7 @@ function vueFiche(id) {
   });
 }
 
-function voirPhoto(formuleId, photoId) {
+function voirPhoto(objet, photoId, rafraichir) {
   const fond = document.createElement('div');
   fond.className = 'visionneuse';
   fond.innerHTML = `<img data-photo="${photoId}" alt="">
@@ -765,12 +818,11 @@ function voirPhoto(formuleId, photoId) {
     const choix = ev.target.dataset.v;
     if (choix === 'supprimer') {
       if (!confirm(t('supprimerPhoto'))) return;
-      const f = formuleParId(formuleId);
-      f.photos = f.photos.filter(p => p !== photoId);
+      objet.photos = objet.photos.filter(p => p !== photoId);
       enregistrer();
       await effacerPhotos([photoId]);
       fond.remove();
-      vueFiche(formuleId);
+      rafraichir();
     } else if (choix === 'fermer' || ev.target === fond) {
       fond.remove();
     }
@@ -782,9 +834,10 @@ function vueFormule(id) {
     const existante = formuleParId(id);
     brouillon = existante ? structuredClone(existante) : {
       id: nouvelId(), nom: '', cire: '', dosage: etat.reglages.dosageDefaut, favori: false,
-      parfums: [{ nom: '', pct: '' }], couches: [], design: '', prochaineFois: '', notes: '',
+      parfums: [{ nom: '', pct: '' }], couches: [], colorants: [], design: '', prochaineFois: '', notes: '',
     };
     brouillon.couches = brouillon.couches || [];
+    brouillon.colorants = brouillon.colorants || [];
     brouillon.estNouvelle = !existante;
     if (!existante) history.replaceState(null, '', `#/formule/${brouillon.id}/modifier`);
   }
@@ -814,6 +867,10 @@ function vueFormule(id) {
       <p class="muted">${t('couchesAide')}</p>
       ${lignesHtml('couches', f.couches, t('exCouche'))}
       <button class="small" data-action="ajouter" data-cle="couches">${t('ajouterCouche')}</button>
+      <h3>${t('colorants')}</h3>
+      <p class="muted">${t('colorantsAide')}</p>
+      ${lignesHtml('colorants', f.colorants, '')}
+      <button class="small" data-action="ajouter" data-cle="colorants">${t('ajouterColorant')}</button>
     </div>
     <div class="card">
       <label for="f-design" style="margin-top:0">${t('design')}</label>
@@ -853,31 +910,49 @@ function lireFormulaire() {
   });
 }
 
-// --- Contenants ---
+// --- Contenants (pots et moules) ---
 
 function vueContenants() {
-  app.innerHTML = `<h2>${t('contenants')}</h2>
-    <p class="muted">${t('contenantsAide')}</p>
-    <div class="actions" style="margin:0 0 16px"><a class="btn primary" href="#/contenant/nouveau">${t('ajouterContenantBtn')}</a></div>
-    ${etat.contenants.length ? `<ul class="list">${contenantsTries().map(c => `<li><a class="row" href="#/contenant/${c.id}"><div class="grow">
+  const ligne = c => `<li><a class="row" href="#/contenant/${c.id}">
+      ${(c.photos || []).length ? `<img class="mini" data-photo="${c.photos[0]}" alt="">` : ''}
+      <div class="grow">
         <div class="title">${esc(c.nom)}</div>
         <div class="sub">${grammes(nombre(c.poids))}${c.volume ? ` · ${esc(c.volume)} ml` : ''}${c.meche ? ` · ${t('meche').toLowerCase()} ${esc(c.meche)}` : ''}</div>
-      </div></a></li>`).join('')}</ul>`
-      : `<div class="empty">${t('aucunContenant')}</div>`}`;
+      </div></a></li>`;
+  app.innerHTML = `<h2>${t('contenants')}</h2>
+    <p class="muted">${t('contenantsAide2')}</p>
+    <div class="actions" style="margin:0 0 16px">
+      <a class="btn primary" href="#/contenant/nouveau">${t('ajouterContenantBtn')}</a>
+      <a class="btn" href="#/contenant/nouveau-moule">+ ${t('nouveauMoule')}</a>
+    </div>
+    ${etat.contenants.length ? [['pot', t('pots')], ['moule', t('moules')]].map(([g, titre]) => {
+      const liste = contenantsTries().filter(c => (c.genre || 'pot') === g);
+      return liste.length ? `<h3>${titre}</h3><ul class="list">${liste.map(ligne).join('')}</ul>` : '';
+    }).join('') : `<div class="empty">${t('aucunContenant')}</div>`}`;
+  afficherPhotos();
 }
 
 function vueContenant(id) {
   if (!brouillon || brouillon.id !== id) {
     const existant = contenantParId(id);
-    brouillon = existant ? structuredClone(existant) : { id: nouvelId(), nom: '', poids: '', volume: '', meche: '', notes: '' };
+    brouillon = existant ? structuredClone(existant)
+      : { id: nouvelId(), genre: id === 'nouveau-moule' ? 'moule' : 'pot', nom: '', poids: '', volume: '', meche: '', notes: '', photos: [] };
+    brouillon.genre = brouillon.genre || 'pot';
     brouillon.estNouvelle = !existant;
     if (!existant) history.replaceState(null, '', '#/contenant/' + brouillon.id);
   }
   const c = brouillon;
-  app.innerHTML = `<h2>${c.estNouvelle ? t('nouveauContenant') : esc(c.nom)}</h2>
+  app.innerHTML = `<h2>${c.estNouvelle ? (c.genre === 'moule' ? t('nouveauMoule') : t('nouveauContenant')) : esc(c.nom)}</h2>
     <div class="card">
-      <label for="k-nom">${t('nom')}</label>
-      <input id="k-nom" data-champ="nom" value="${esc(c.nom)}" placeholder="${t('exNomContenant')}">
+      <div class="grid2">
+        <div><label for="k-genre" style="margin-top:0">${t('genre')}</label>
+          <select id="k-genre" data-champ="genre">
+            <option value="pot" ${c.genre === 'pot' ? 'selected' : ''}>${t('genrePot')}</option>
+            <option value="moule" ${c.genre === 'moule' ? 'selected' : ''}>${t('genreMoule')}</option>
+          </select></div>
+        <div><label for="k-nom" style="margin-top:0">${t('nom')}</label>
+          <input id="k-nom" data-champ="nom" value="${esc(c.nom)}" placeholder="${t('exNomContenant')}"></div>
+      </div>
       <div class="grid2">
         <div><label for="k-volume">${t('volumeEau')}</label>
           <div class="stepper">
@@ -892,10 +967,111 @@ function vueContenant(id) {
       <label for="k-notes">${t('notes')}</label>
       <textarea id="k-notes" data-champ="notes" placeholder="${t('exNotesContenant')}">${esc(c.notes)}</textarea>
     </div>
+    <div class="card">
+      <h3 style="margin-top:0">${t('photos')}</h3>
+      ${c.estNouvelle ? `<p class="muted">${t('photosContenant')}</p>` : `
+        ${(c.photos || []).length ? `<div class="galerie">
+          ${c.photos.map(ph => `<button class="vignette" data-action="voir-photo" data-id="${ph}"><img data-photo="${ph}" alt=""></button>`).join('')}
+        </div>` : `<p class="muted">${t('aucunePhoto')}</p>`}
+        <div class="actions">
+          <button data-action="ajouter-photos">${t('ajouterPhotos')}</button>
+          <input type="file" id="fichier-photos" accept="image/*" multiple hidden>
+        </div>`}
+    </div>
     <div class="actions">
       <button class="primary" data-action="enregistrer-contenant">${t('enregistrer')}</button>
       ${c.estNouvelle ? '' : `<button class="danger" data-action="supprimer-contenant">${t('supprimer')}</button>`}
       <a class="btn" href="#/contenants">${t('annuler')}</a>
+    </div>`;
+  afficherPhotos();
+  document.getElementById('fichier-photos')?.addEventListener('change', async ev => {
+    lireFormulaire();
+    const enregistre = contenantParId(c.id);
+    await ajouterPhotos(enregistre, [...ev.target.files]);
+    brouillon.photos = [...(enregistre.photos || [])];
+    vueContenant(c.id);
+  });
+}
+
+// --- Mes bougies (bougies terminées, prêtes à vendre) ---
+
+const produitParId = id => etat.produits.find(p => p.id === id);
+const somme = (liste, cle) => liste.reduce((s, x) => s + nombre(x[cle]), 0);
+
+// Coût moyen d'une bougie sur toutes ses fournées.
+function coutProduit(p) {
+  const n = somme(p.entrees, 'n');
+  return n ? somme(p.entrees, 'cout') / n : null;
+}
+
+// Range les bougies d'une fournée terminée : une ligne par recette et par pot ou moule.
+function rangerBougies(f, lignes) {
+  const date = new Date().toISOString().slice(0, 10);
+  let total = 0;
+  lignes.forEach(l => {
+    const cle = l.contenant === 'perso' ? 'perso:' + nombre(l.poids) : l.contenant;
+    let p = etat.produits.find(x => x.formule === f.id && x.contenant === cle);
+    if (!p) {
+      p = { id: nouvelId(), formule: f.id, contenant: cle, nom: `${f.nom} · ${nomLigne(l)}`, quantite: 0, prixVente: '', entrees: [], ventes: [] };
+      etat.produits.push(p);
+    }
+    const c = consommation(f, [l]);
+    p.entrees.push({ date, n: l.n, cout: c.total, complet: c.complet });
+    p.quantite += l.n;
+    total += l.n;
+  });
+  return total;
+}
+
+function vueBougies() {
+  const liste = [...etat.produits].sort((a, b) => (!b.quantite - !a.quantite) || a.nom.localeCompare(b.nom, 'fr'));
+  const enStock = somme(etat.produits, 'quantite');
+  const valeur = etat.produits.reduce((s, p) => s + (coutProduit(p) || 0) * p.quantite, 0);
+  const ventes = etat.produits.flatMap(p => p.ventes);
+  app.innerHTML = `<h2>${t('mesBougies')}</h2>
+    <p class="muted">${t('mesBougiesAide')}</p>
+    ${liste.length ? `<div class="card"><strong>${t('resumeBougies', enStock, euros(valeur))}</strong><br>
+      <span class="muted">${t('resumeVentes', somme(ventes, 'n'), euros(somme(ventes, 'prix')))}</span></div>
+      <ul class="list">${liste.map(p => {
+        const cout = coutProduit(p);
+        const incomplet = p.entrees.some(e => !e.complet);
+        return `<li class="${p.quantite ? '' : 'vide'}"><a class="row" href="#/bougie/${p.id}"><div class="grow">
+          <div class="title">${esc(p.nom)}</div>
+          <div class="sub">${cout !== null ? `${t('coutUnite')} ${incomplet ? '≥ ' : ''}${euros(cout)}` : ''}${p.prixVente !== '' ? ` · ${t('prixVente').replace(' (€)', '')} ${euros(nombre(p.prixVente))}` : ''}</div>
+        </div><div style="white-space:nowrap" class="${p.quantite ? '' : 'muted'}">${t('enStockN', p.quantite)}</div></a>
+        <button class="small" data-action="vendre" data-id="${p.id}" ${p.quantite ? '' : 'disabled'}>${t('vendu')}</button></li>`;
+      }).join('')}</ul>`
+      : `<div class="empty">${t('aucuneBougie')}</div>`}`;
+}
+
+function vueBougie(id) {
+  const p = produitParId(id);
+  if (!p) return aller('#/bougies');
+  const date = d => new Date(d).toLocaleDateString(locale());
+  app.innerHTML = `
+    <div class="entete-fiche"><a class="btn small" href="#/bougies">${t('retourBougies')}</a>
+      <button class="primary small" data-action="vendre" data-id="${p.id}" ${p.quantite ? '' : 'disabled'}>${t('vendu')}</button></div>
+    <h2>${esc(p.nom)}</h2>
+    <div class="card">
+      <div class="grid2">
+        <div><label for="b-quantite" style="margin-top:0">${t('enStock')}</label>
+          <input id="b-quantite" inputmode="numeric" value="${p.quantite}"></div>
+        <div><label for="b-prix" style="margin-top:0">${t('prixVente')}</label>
+          <input id="b-prix" inputmode="decimal" value="${esc(p.prixVente)}"></div>
+      </div>
+      <div class="actions">
+        <button class="primary" data-action="enregistrer-bougie" data-id="${p.id}">${t('enregistrer')}</button>
+        <button class="danger" data-action="supprimer-bougie" data-id="${p.id}">${t('supprimer')}</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">${t('fabriquees')}</h3>
+      <table class="result petit">${[...p.entrees].reverse().map(e => `<tr><td>${date(e.date)}<span class="pct">${t('bougies', e.n)}</span></td>
+        <td class="num">${e.complet ? '' : '≥ '}${euros(e.cout / e.n)} <span class="pct">/ ${t('coutUnite')}</span></td></tr>`).join('')}</table>
+      <h3>${t('ventes')}</h3>
+      ${p.ventes.length ? `<table class="result petit">${p.ventes.map((v, i) => [v, i]).reverse().map(([v, i]) => `<tr><td>${date(v.date)}<span class="pct">× ${v.n}</span></td>
+        <td class="num">${euros(nombre(v.prix))} <button class="small" data-action="annuler-vente" data-id="${p.id}" data-i="${i}" aria-label="${t('supprimer')}">✕</button></td></tr>`).join('')}</table>`
+        : `<p class="muted">${t('aucuneVente')}</p>`}
     </div>`;
 }
 
@@ -946,7 +1122,7 @@ function vueArticle(id) {
       ${a.type === 'pot' ? `<label for="s-contenant">${t('potLie')}</label>
         <select id="s-contenant" data-champ="contenant">
           <option value="">${t('aucun')}</option>
-          ${contenantsTries().map(c => `<option value="${c.id}" ${c.id === a.contenant ? 'selected' : ''}>${esc(c.nom)}</option>`).join('')}
+          ${contenantsTries().filter(c => c.genre !== 'moule').map(c => `<option value="${c.id}" ${c.id === a.contenant ? 'selected' : ''}>${esc(c.nom)}</option>`).join('')}
         </select>` : ''}
       <div class="grid2">
         <div><label for="s-quantite">${t('enStock')} (${u})</label>
@@ -993,6 +1169,7 @@ function sauverArticle() {
     etat.formules.forEach(f => {
       if (a.type === 'cire' && memeNom(f.cire, ancien.nom)) f.cire = a.nom;
       if (a.type === 'parfum') f.parfums.forEach(l => { if (memeNom(l.nom, ancien.nom)) l.nom = a.nom; });
+      if (a.type === 'couleur') (f.colorants || []).forEach(l => { if (memeNom(l.nom, ancien.nom)) l.nom = a.nom; });
     });
   }
   const idx = etat.stock.findIndex(x => x.id === a.id);
@@ -1008,8 +1185,9 @@ function stockDepuisRecettes() {
   const ajouter = (type, nom, extra) => { if (nom && !articleNomme(type, nom)) { creerArticle(type, nom, extra); n++; } };
   nomsConnus('cire').forEach(nom => ajouter('cire', nom));
   nomsConnus('parfum').forEach(nom => ajouter('parfum', nom));
+  nomsConnus('couleur').forEach(nom => ajouter('couleur', nom));
   etat.contenants.forEach(c => {
-    if (!etat.stock.some(a => a.type === 'pot' && a.contenant === c.id)) { creerArticle('pot', c.nom, { contenant: c.id }); n++; }
+    if (c.genre !== 'moule' && !etat.stock.some(a => a.type === 'pot' && a.contenant === c.id)) { creerArticle('pot', c.nom, { contenant: c.id }); n++; }
     ajouter('meche', c.meche);
   });
   enregistrer();
@@ -1075,7 +1253,7 @@ function vueReglages() {
 async function exporter() {
   const { ui, ...donnees } = etat;
   donnees.photos = {};
-  for (const id of etat.formules.flatMap(f => f.photos || [])) {
+  for (const id of [...etat.formules, ...etat.contenants].flatMap(x => x.photos || [])) {
     const photo = await lirePhoto(id);
     if (photo) donnees.photos[id] = photo;
   }
@@ -1168,18 +1346,21 @@ function etapesFabrication(f, lignes) {
   Object.entries(f.temperatures || {}).forEach(([k, v]) => { if (v) tp[k] = v; });
   const poidsTotal = lignes.reduce((s, l) => s + l.p * l.n, 0);
   const r = calculer(f, poidsTotal);
-  const dosage = nombre(f.dosage) / 100;
   const couches = (f.couches || []).filter(c => c.nom || c.pct);
   const liste = items => `<table class="result petit">${items.map(([nom, g]) => `<tr><td>${nom}</td><td class="num">${grammes(g)}</td></tr>`).join('')}</table>`;
   const etapes = [{ titre: t('etPot', tp.pot) }];
   etapes.push({
     titre: t('etPeserCire'),
     detail: couches.length
-      ? liste(couches.map(c => [esc(c.nom), poidsTotal * nombre(c.pct) / 100 * (1 - dosage)]))
+      ? liste(couches.map(c => [esc(c.nom), partCire(f, poidsTotal * nombre(c.pct) / 100)]))
       : liste([[esc(f.cire || t('cire')), r.cire]]),
   });
   etapes.push({ titre: t('etFondre', tp.fonte) });
-  if (f.design || couches.length) etapes.push({ titre: t('etCouleur', tp.couleur), detail: f.design ? `<p class="muted">${esc(f.design)}</p>` : '' });
+  if (f.design || couches.length || r.colorants.length) etapes.push({
+    titre: t('etCouleur', tp.couleur),
+    detail: (r.colorants.length ? liste(r.colorants.map(l => [`${esc(l.nom)} <span class="pct">${pourcent(l.pct)}</span>`, l.g])) : '')
+      + (f.design ? `<p class="muted">${esc(f.design)}</p>` : ''),
+  });
   etapes.push({ titre: t('etPeserParfum'), detail: liste([...r.lignes.map(l => [`${esc(l.nom)} <span class="pct">${pourcent(l.pct)}</span>`, l.g]), [`<strong>${t('total')}</strong>`, r.parfum]]) });
   if (couches.length > 1) etapes.push({ titre: t('etRepartir'), detail: liste(couches.map(c => [esc(c.nom), r.parfum * nombre(c.pct) / 100])) });
   etapes.push({ titre: t('etParfum', tp.parfum) });
@@ -1293,6 +1474,7 @@ app.addEventListener('click', ev => {
       const { estNouvelle, ...f } = brouillon;
       f.parfums = f.parfums.filter(l => l.nom || l.pct);
       f.couches = f.couches.filter(l => l.nom || l.pct);
+      f.colorants = f.colorants.filter(l => l.nom || l.pct);
       const idx = etat.formules.findIndex(x => x.id === f.id);
       if (idx >= 0) etat.formules[idx] = f; else etat.formules.push(f);
       enregistrer();
@@ -1329,9 +1511,15 @@ app.addEventListener('click', ev => {
     case 'ajouter-photos':
       document.getElementById('fichier-photos').click();
       break;
-    case 'voir-photo':
-      voirPhoto(location.hash.split('/')[2], id);
+    case 'voir-photo': {
+      const [, page, cible] = location.hash.split('/');
+      if (page === 'contenant') {
+        voirPhoto(contenantParId(cible), id, () => { lireFormulaire(); brouillon.photos = [...contenantParId(cible).photos]; vueContenant(cible); });
+      } else {
+        voirPhoto(formuleParId(cible), id, () => vueFiche(cible));
+      }
       break;
+    }
     case 'fabriquer':
       etat.ui.fabrication = { formule: etat.ui.formule, lignes: structuredClone(etat.ui.lignes), coches: [], notes: '' };
       enregistrer();
@@ -1352,9 +1540,10 @@ app.addEventListener('click', ev => {
         const lignes = fab.lignes.map(l => ({ ...l, p: poidsLigne(l), n: Math.max(0, Math.round(nombre(l.n))) })).filter(l => l.p > 0 && l.n > 0);
         const postes = consommation(f, lignes).postes.filter(p => p.article);
         postes.forEach(p => { p.article.quantite = Math.max(0, nombre(p.article.quantite) - p.quantite); });
+        const ajoutees = rangerBougies(f, lignes);
         const bas = enAlerte().length;
+        if (!fab.notes?.trim()) toast(t('bougiesAjoutees', ajoutees));
         if (bas) setTimeout(() => toast(t('stockBas', bas)), 2400);
-        else if (postes.length && !fab.notes?.trim()) toast(t('stockMisAJour'));
       }
       delete etat.ui.fabrication;
       enregistrer();
@@ -1381,11 +1570,51 @@ app.addEventListener('click', ev => {
     }
     case 'supprimer-contenant':
       if (!confirm(t('supprimerContenant', brouillon.nom))) return;
+      effacerPhotos(contenantParId(brouillon.id)?.photos || []);
       etat.contenants = etat.contenants.filter(c => c.id !== brouillon.id);
       enregistrer();
       brouillon = null;
       aller('#/contenants');
       break;
+    case 'vendre': {
+      const p = produitParId(id);
+      const reponse = prompt(t('demanderPrixVente'), p.prixVente === '' ? '' : String(p.prixVente).replace('.', etat.reglages.langue === 'fr' ? ',' : '.'));
+      if (reponse === null) return;
+      p.ventes.push({ date: new Date().toISOString().slice(0, 10), n: 1, prix: nombre(reponse) });
+      p.quantite = Math.max(0, p.quantite - 1);
+      if (p.prixVente === '' && nombre(reponse)) p.prixVente = nombre(reponse);
+      enregistrer();
+      toast(p.quantite ? t('venteNotee') : `${t('venteNotee')} · ${t('plusEnStock')}`);
+      route();
+      break;
+    }
+    case 'annuler-vente': {
+      if (!confirm(t('annulerVente'))) return;
+      const p = produitParId(id);
+      p.quantite += nombre(p.ventes[i].n);
+      p.ventes.splice(i, 1);
+      enregistrer();
+      vueBougie(id);
+      break;
+    }
+    case 'enregistrer-bougie': {
+      const p = produitParId(id);
+      p.quantite = Math.max(0, Math.round(nombre(document.getElementById('b-quantite').value)));
+      const prix = document.getElementById('b-prix').value.trim();
+      p.prixVente = prix === '' ? '' : nombre(prix);
+      enregistrer();
+      toast(t('bougieEnregistree'));
+      aller('#/bougies');
+      break;
+    }
+    case 'supprimer-bougie': {
+      const p = produitParId(id);
+      if (!confirm(t('supprimerBougie', p.nom))) return;
+      etat.produits = etat.produits.filter(x => x !== p);
+      enregistrer();
+      aller('#/bougies');
+      break;
+    }
     case 'stock-depuis-recettes':
       stockDepuisRecettes();
       break;
@@ -1477,7 +1706,7 @@ app.addEventListener('change', ev => {
     vueArticle(brouillon.id);
   } else if (el.dataset.menu && el.value === '__nouveau__') {
     const type = el.dataset.menu;
-    const nom = prompt(type === 'cire' ? t('nomCire') : t('nomSenteur'))?.trim();
+    const nom = prompt({ cire: t('nomCire'), couleur: t('nomColorant') }[type] || t('nomSenteur'))?.trim();
     lireFormulaire();
     const valeur = nom ? (articleNomme(type, nom)?.nom || creerArticle(type, nom).nom) : el.dataset.avant;
     if (nom) enregistrer();
