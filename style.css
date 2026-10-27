@@ -147,3 +147,8 @@ ol.etapes { list-style: none; margin: 0; padding: 0; }
 .num-etape { color: var(--accent); font-weight: 700; margin-right: 4px; }
 .detail-etape { margin: 10px 0 0 44px; }
 .detail-etape p { margin: 0 0 4px; }
+.badge {
+  display: inline-block; min-width: 22px; padding: 1px 7px; border-radius: 11px;
+  background: var(--danger); color: #fff; font-size: 13px; line-height: 20px; text-align: center;
+}
+.badge[hidden] { display: none; }
