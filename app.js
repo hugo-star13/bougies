@@ -1,19 +1,166 @@
 'use strict';
 
+// ---------- Textes (français / anglais) ----------
+
+const TEXTES = {
+  fr: {
+    navCalcul: 'Calculer', navFormules: 'Formules', navContenants: 'Contenants', navReglages: 'Réglages',
+    bienvenue: 'Bienvenue',
+    bienvenueTexte: 'Commencez par créer vos contenants (tailles de pots), puis vos formules. Vous pouvez aussi restaurer une sauvegarde dans Réglages.',
+    ajouterContenant: 'Ajouter un contenant', creerFormule: 'Créer une formule',
+    formule: 'Formule', contenant: 'Contenant', nombre: 'Nombre', autrePoids: 'Autre poids…',
+    poidsParBougie: 'Poids par bougie (g)', ajouterPot: '+ Autre pot dans la fournée', retirer: 'Retirer',
+    indiquerPoids: 'Indiquez un poids pour voir les quantités.',
+    bougies: n => `${n} bougie${n > 1 ? 's' : ''}`,
+    cire: 'Cire', parfumTotal: 'Parfum', dont: 'dont', total: 'Total',
+    duPoidsTotal: 'du poids total', duMelange: 'du mélange',
+    melangeFaux: s => `Le mélange fait ${s} % au lieu de 100 % : vérifiez la formule.`,
+    couches: 'Couches', parPot: 'Par pot', meche: 'Mèche', design: 'Design', prochaineFois: 'La prochaine fois',
+    rappelJamais: 'Aucune sauvegarde pour l’instant.',
+    rappelJours: j => `Dernière sauvegarde il y a ${j} jours.`,
+    rappelTexte: 'Pensez à sauvegarder vos formules.', sauvegarder: 'Sauvegarder',
+    formules: 'Formules', rechercher: 'Rechercher un nom ou une senteur', nouvelle: '+ Nouvelle', calculer: 'Calculer',
+    aucuneFormule: 'Aucune formule pour l’instant.', aucuneCorrespond: 'Aucune formule ne correspond.', favori: 'Favori',
+    nouvelleFormule: 'Nouvelle formule', nom: 'Nom', exNomFormule: 'ex. Hazelnut Mocha',
+    typeCire: 'Cire', exCire: 'ex. Soja',
+    dosage: 'Parfum (% du poids total)',
+    melange: 'Mélange de parfums', melangeAide: 'Part de chaque parfum dans le mélange. Le total doit faire 100 %.',
+    ajouterParfum: '+ Parfum',
+    couchesAide: 'Optionnel : part de chaque couche dans le pot (ex. 80 % blanche, 20 % rose).',
+    ajouterCouche: '+ Couche', exCouche: 'ex. Blanche',
+    exDesign: 'Couleurs, décorations…', exProchaineFois: 'Ce qu’il faut changer au prochain essai',
+    notes: 'Notes', exNotes: 'Températures, astuces, essais…',
+    enregistrer: 'Enregistrer', dupliquer: 'Dupliquer', supprimer: 'Supprimer', annuler: 'Annuler',
+    copie: '(copie)', formuleEnregistree: 'Formule enregistrée', formuleDupliquee: 'Formule dupliquée',
+    nommerFormule: 'Donnez un nom à la formule', supprimerFormule: n => `Supprimer la formule « ${n} » ?`,
+    contenants: 'Contenants', contenantsAide: 'Vos tailles de pots, avec le poids total (cire + parfum) que vous versez dedans.',
+    nouveauContenant: 'Nouveau contenant', ajouterContenantBtn: '+ Nouveau contenant', aucunContenant: 'Aucun contenant pour l’instant.',
+    exNomContenant: 'ex. Petit pot', poidsVerse: 'Poids total versé (g)', exPoids: 'ex. 135',
+    volumeEau: 'Contenance en eau (ml), optionnel', convertir: f => `Poids = ml × ${f}`,
+    mecheConseillee: 'Mèche conseillée', exMeche: 'ex. ECO 6', exNotesContenant: 'Fournisseur, dimensions…',
+    contenantEnregistre: 'Contenant enregistré', nomEtPoids: 'Indiquez un nom et un poids',
+    supprimerContenant: n => `Supprimer le contenant « ${n} » ?`,
+    reglages: 'Réglages', langue: 'Langue',
+    dosageDefaut: 'Parfum par défaut pour une nouvelle formule (% du poids total)',
+    densite: 'Conversion ml d’eau → g de cire (densité)',
+    sauvegarde: 'Sauvegarde',
+    sauvegardeTexte: 'Les formules sont enregistrées <strong>uniquement sur cet iPad</strong>. Si l’app est supprimée de l’écran d’accueil ou si les données de Safari sont effacées, elles disparaissent. Sauvegardez régulièrement le fichier dans Fichiers ou iCloud Drive.',
+    derniereSauvegarde: 'Dernière sauvegarde', jamais: 'jamais',
+    compte: (f, c) => `${f} formule(s), ${c} contenant(s)`,
+    sauvegarderDonnees: 'Sauvegarder mes données', restaurer: 'Restaurer une sauvegarde',
+    sauvegardeCreee: 'Sauvegarde créée', sauvegardeEchouee: 'La sauvegarde a échoué',
+    confirmerRestauration: (f, c) => `Remplacer les données actuelles par cette sauvegarde (${f} formules, ${c} contenants) ?`,
+    sauvegardeRestauree: 'Sauvegarde restaurée', fichierInvalide: 'Ce fichier n’est pas une sauvegarde valide',
+    enregistrementImpossible: 'Impossible d’enregistrer sur cet appareil',
+  },
+  en: {
+    navCalcul: 'Calculate', navFormules: 'Recipes', navContenants: 'Jars', navReglages: 'Settings',
+    bienvenue: 'Welcome',
+    bienvenueTexte: 'Start by adding your jars (sizes), then your recipes. You can also restore a backup in Settings.',
+    ajouterContenant: 'Add a jar', creerFormule: 'Create a recipe',
+    formule: 'Recipe', contenant: 'Jar', nombre: 'Quantity', autrePoids: 'Other weight…',
+    poidsParBougie: 'Weight per candle (g)', ajouterPot: '+ Another jar in this batch', retirer: 'Remove',
+    indiquerPoids: 'Enter a weight to see the amounts.',
+    bougies: n => `${n} candle${n > 1 ? 's' : ''}`,
+    cire: 'Wax', parfumTotal: 'Scent', dont: 'of which', total: 'Total',
+    duPoidsTotal: 'of total weight', duMelange: 'of the blend',
+    melangeFaux: s => `The blend adds up to ${s} % instead of 100 %: check the recipe.`,
+    couches: 'Layers', parPot: 'Per jar', meche: 'Wick', design: 'Design', prochaineFois: 'Next time',
+    rappelJamais: 'No backup yet.',
+    rappelJours: j => `Last backup ${j} days ago.`,
+    rappelTexte: 'Remember to back up your recipes.', sauvegarder: 'Back up',
+    formules: 'Recipes', rechercher: 'Search a name or a scent', nouvelle: '+ New', calculer: 'Calculate',
+    aucuneFormule: 'No recipes yet.', aucuneCorrespond: 'No recipe matches.', favori: 'Favourite',
+    nouvelleFormule: 'New recipe', nom: 'Name', exNomFormule: 'e.g. Hazelnut Mocha',
+    typeCire: 'Wax', exCire: 'e.g. Soy',
+    dosage: 'Scent (% of total weight)',
+    melange: 'Scent blend', melangeAide: 'Share of each scent in the blend. The total must be 100 %.',
+    ajouterParfum: '+ Scent',
+    couchesAide: 'Optional: share of each layer in the jar (e.g. 80 % white, 20 % pink).',
+    ajouterCouche: '+ Layer', exCouche: 'e.g. White',
+    exDesign: 'Colours, decorations…', exProchaineFois: 'What to change next time',
+    notes: 'Notes', exNotes: 'Temperatures, tips, tests…',
+    enregistrer: 'Save', dupliquer: 'Duplicate', supprimer: 'Delete', annuler: 'Cancel',
+    copie: '(copy)', formuleEnregistree: 'Recipe saved', formuleDupliquee: 'Recipe duplicated',
+    nommerFormule: 'Give the recipe a name', supprimerFormule: n => `Delete the recipe “${n}”?`,
+    contenants: 'Jars', contenantsAide: 'Your jar sizes, with the total weight (wax + scent) you pour into each.',
+    nouveauContenant: 'New jar', ajouterContenantBtn: '+ New jar', aucunContenant: 'No jars yet.',
+    exNomContenant: 'e.g. Small jar', poidsVerse: 'Total weight poured (g)', exPoids: 'e.g. 135',
+    volumeEau: 'Water capacity (ml), optional', convertir: f => `Weight = ml × ${f}`,
+    mecheConseillee: 'Recommended wick', exMeche: 'e.g. ECO 6', exNotesContenant: 'Supplier, size…',
+    contenantEnregistre: 'Jar saved', nomEtPoids: 'Enter a name and a weight',
+    supprimerContenant: n => `Delete the jar “${n}”?`,
+    reglages: 'Settings', langue: 'Language',
+    dosageDefaut: 'Default scent for a new recipe (% of total weight)',
+    densite: 'Water ml → wax g conversion (density)',
+    sauvegarde: 'Backup',
+    sauvegardeTexte: 'Recipes are stored <strong>only on this iPad</strong>. If the app is removed from the home screen or Safari data is cleared, they are lost. Back up the file regularly to Files or iCloud Drive.',
+    derniereSauvegarde: 'Last backup', jamais: 'never',
+    compte: (f, c) => `${f} recipe(s), ${c} jar(s)`,
+    sauvegarderDonnees: 'Back up my data', restaurer: 'Restore a backup',
+    sauvegardeCreee: 'Backup created', sauvegardeEchouee: 'Backup failed',
+    confirmerRestauration: (f, c) => `Replace the current data with this backup (${f} recipes, ${c} jars)?`,
+    sauvegardeRestauree: 'Backup restored', fichierInvalide: 'This file is not a valid backup',
+    enregistrementImpossible: 'Could not save on this device',
+  },
+};
+
+function t(cle, ...args) {
+  const v = TEXTES[etat.reglages.langue][cle] ?? TEXTES.fr[cle];
+  return typeof v === 'function' ? v(...args) : v;
+}
+
 // ---------- Données ----------
 
 const CLE = 'bougies-donnees-v1';
 const RAPPEL_SAUVEGARDE_JOURS = 14;
 
 function etatVide() {
-  return { version: 1, formules: [], contenants: [], derniereSauvegarde: null, ui: {} };
+  return {
+    version: 2,
+    formules: [],
+    contenants: [],
+    derniereSauvegarde: null,
+    reglages: {
+      langue: (navigator.language || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en',
+      dosageDefaut: 8,
+      densite: 0.9,
+    },
+    ui: {},
+  };
+}
+
+// Version 1 : parfums en % du poids de cire, additifs séparés.
+// Version 2 : un dosage global (% du poids total) et un mélange de parfums en % qui fait 100.
+function migrer(donnees) {
+  if ((donnees.version || 1) >= 2) return donnees;
+  donnees.formules = (donnees.formules || []).map(f => {
+    const somme = (f.parfums || []).reduce((s, l) => s + nombre(l.pct), 0);
+    const notes = [f.notes, f.tempAjout && `Parfum à ${f.tempAjout} °C`,
+      ...(f.additifs || []).filter(a => a.nom).map(a => `${a.nom} : ${a.pct} %`)].filter(Boolean).join('\n');
+    return {
+      id: f.id, nom: f.nom, cire: f.cire || '', favori: !!f.favori,
+      dosage: f.mode === 'total' ? somme : Math.round(somme / (1 + somme / 100) * 10) / 10,
+      parfums: (f.parfums || []).map(l => ({ nom: l.nom, pct: somme ? Math.round(nombre(l.pct) / somme * 1000) / 10 : '' })),
+      couches: [], design: '', prochaineFois: '', notes,
+    };
+  });
+  donnees.version = 2;
+  return donnees;
+}
+
+function depuisDonnees(donnees) {
+  const vide = etatVide();
+  const e = Object.assign(vide, migrer(donnees));
+  e.reglages = Object.assign(vide.reglages, donnees.reglages);
+  e.ui = e.ui || {};
+  return e;
 }
 
 function charger() {
   try {
     const brut = localStorage.getItem(CLE);
-    if (!brut) return etatVide();
-    return Object.assign(etatVide(), JSON.parse(brut));
+    return brut ? depuisDonnees(JSON.parse(brut)) : etatVide();
   } catch (e) {
     return etatVide();
   }
@@ -25,7 +172,7 @@ function enregistrer() {
   try {
     localStorage.setItem(CLE, JSON.stringify(etat));
   } catch (e) {
-    toast("Impossible d'enregistrer sur cet appareil");
+    toast(t('enregistrementImpossible'));
   }
 }
 
@@ -38,12 +185,16 @@ function nombre(v) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function locale() {
+  return etat.reglages.langue === 'en' ? 'en-GB' : 'fr-FR';
+}
+
 function grammes(x) {
-  return x.toLocaleString('fr-FR', { maximumFractionDigits: 1, minimumFractionDigits: x < 100 ? 1 : 0 }) + ' g';
+  return x.toLocaleString(locale(), { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + ' g';
 }
 
 function pourcent(x) {
-  return x.toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' %';
+  return x.toLocaleString(locale(), { maximumFractionDigits: 2 }) + ' %';
 }
 
 function esc(s) {
@@ -59,25 +210,18 @@ function formulesTriees() {
 
 // ---------- Calcul ----------
 
-// mode "cire" : les % s'appliquent au poids de cire (parfum = cire × %).
-// mode "total" : les % s'appliquent au poids total versé dans le contenant.
-function calculer(formule, poidsUnitaire, nombreBougies) {
-  const poidsTotal = poidsUnitaire * nombreBougies;
-  const lignes = [
-    ...formule.parfums.map(l => ({ ...l, type: 'Parfum' })),
-    ...formule.additifs.map(l => ({ ...l, type: 'Additif' })),
-  ].filter(l => l.nom || l.pct);
-  const somme = lignes.reduce((s, l) => s + nombre(l.pct), 0) / 100;
-
-  let cire;
-  if (formule.mode === 'total') {
-    lignes.forEach(l => { l.g = poidsTotal * nombre(l.pct) / 100; });
-    cire = poidsTotal - lignes.reduce((s, l) => s + l.g, 0);
-  } else {
-    cire = poidsTotal / (1 + somme);
-    lignes.forEach(l => { l.g = cire * nombre(l.pct) / 100; });
-  }
-  return { cire, lignes, poidsTotal, invalide: cire <= 0 };
+// Parfum = poids total × dosage ; cire = le reste. Chaque parfum prend sa part du mélange.
+function calculer(formule, poidsTotal) {
+  const parfum = poidsTotal * nombre(formule.dosage) / 100;
+  const melange = formule.parfums.filter(l => l.nom || l.pct);
+  const sommeMelange = melange.reduce((s, l) => s + nombre(l.pct), 0);
+  return {
+    poidsTotal,
+    parfum,
+    cire: poidsTotal - parfum,
+    sommeMelange,
+    lignes: melange.map(l => ({ nom: l.nom, pct: nombre(l.pct), g: parfum * nombre(l.pct) / 100 })),
+  };
 }
 
 // ---------- Rendu ----------
@@ -85,7 +229,13 @@ function calculer(formule, poidsUnitaire, nombreBougies) {
 const app = document.getElementById('app');
 let brouillon = null; // formule ou contenant en cours d'édition
 
+function traduireEntete() {
+  document.documentElement.lang = etat.reglages.langue;
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+}
+
 function route() {
+  traduireEntete();
   const [page, id] = location.hash.replace(/^#\/?/, '').split('/');
   document.querySelectorAll('.topbar nav a').forEach(a => {
     const onglet = a.dataset.tab;
@@ -113,50 +263,66 @@ function bandeauSauvegarde() {
   const derniere = etat.derniereSauvegarde ? new Date(etat.derniereSauvegarde) : null;
   const jours = derniere ? (Date.now() - derniere) / 864e5 : Infinity;
   if (jours < RAPPEL_SAUVEGARDE_JOURS) return '';
-  return `<div class="card"><span class="warn">${derniere ? `Dernière sauvegarde il y a ${Math.floor(jours)} jours.` : 'Aucune sauvegarde pour l’instant.'}</span>
-    Pensez à sauvegarder vos formules. <a href="#/reglages">Sauvegarder</a></div>`;
+  return `<div class="card"><span class="warn">${derniere ? t('rappelJours', Math.floor(jours)) : t('rappelJamais')}</span>
+    ${t('rappelTexte')} <a href="#/reglages">${t('sauvegarder')}</a></div>`;
+}
+
+function contenantsTries() {
+  return [...etat.contenants].sort((a, b) => nombre(a.poids) - nombre(b.poids));
+}
+
+function poidsLigne(l) {
+  return l.contenant === 'perso' ? nombre(l.poids) : nombre(contenantParId(l.contenant)?.poids);
+}
+
+function nomLigne(l) {
+  return l.contenant === 'perso' ? grammes(nombre(l.poids)) : contenantParId(l.contenant)?.nom;
 }
 
 function vueCalcul() {
   if (!etat.formules.length) {
-    app.innerHTML = `<div class="empty"><h2>Bienvenue</h2>
-      <p>Commencez par créer vos contenants (tailles de pots), puis vos formules.</p>
+    app.innerHTML = `<div class="empty"><h2>${t('bienvenue')}</h2>
+      <p>${t('bienvenueTexte')}</p>
       <div class="actions" style="justify-content:center">
-        <a class="btn" href="#/contenant/nouveau">Ajouter un contenant</a>
-        <a class="btn primary" href="#/formule/nouveau">Créer une formule</a>
+        <a class="btn" href="#/contenant/nouveau">${t('ajouterContenant')}</a>
+        <a class="btn primary" href="#/formule/nouveau">${t('creerFormule')}</a>
       </div></div>`;
     return;
   }
   const ui = etat.ui;
   if (!formuleParId(ui.formule)) ui.formule = formulesTriees()[0].id;
-  if (ui.contenant !== 'perso' && !contenantParId(ui.contenant)) ui.contenant = etat.contenants[0]?.id || 'perso';
-  ui.nombre = ui.nombre || 1;
+  const parDefaut = contenantsTries()[0]?.id || 'perso';
+  if (!Array.isArray(ui.lignes) || !ui.lignes.length) ui.lignes = [{ contenant: parDefaut, poids: '', n: 1 }];
+  ui.lignes.forEach(l => { if (l.contenant !== 'perso' && !contenantParId(l.contenant)) l.contenant = parDefaut; });
 
   app.innerHTML = `${bandeauSauvegarde()}
     <div class="card">
-      <label for="c-formule">Formule</label>
+      <label for="c-formule">${t('formule')}</label>
       <select id="c-formule" data-ui="formule">
         ${formulesTriees().map(f => `<option value="${f.id}" ${f.id === ui.formule ? 'selected' : ''}>${f.favori ? '★ ' : ''}${esc(f.nom)}</option>`).join('')}
       </select>
-      <div class="grid2">
-        <div>
-          <label for="c-contenant">Contenant</label>
-          <select id="c-contenant" data-ui="contenant">
-            ${etat.contenants.map(c => `<option value="${c.id}" ${c.id === ui.contenant ? 'selected' : ''}>${esc(c.nom)} (${grammes(nombre(c.poids))})</option>`).join('')}
-            <option value="perso" ${ui.contenant === 'perso' ? 'selected' : ''}>Autre poids…</option>
-          </select>
-        </div>
-        <div>
-          <label for="c-nombre">Nombre de bougies</label>
-          <div class="stepper">
-            <button data-action="moins" aria-label="Une de moins">−</button>
-            <input id="c-nombre" data-ui="nombre" inputmode="numeric" value="${ui.nombre}">
-            <button data-action="plus" aria-label="Une de plus">+</button>
+      ${ui.lignes.map((l, i) => `
+        <div class="grid2 pot">
+          <div>
+            <label for="c-contenant-${i}">${t('contenant')}</label>
+            <select id="c-contenant-${i}" data-pot="${i}" data-champ-pot="contenant">
+              ${contenantsTries().map(c => `<option value="${c.id}" ${c.id === l.contenant ? 'selected' : ''}>${esc(c.nom)} (${grammes(nombre(c.poids))})</option>`).join('')}
+              <option value="perso" ${l.contenant === 'perso' ? 'selected' : ''}>${t('autrePoids')}</option>
+            </select>
+            ${l.contenant === 'perso' ? `<label for="c-poids-${i}">${t('poidsParBougie')}</label>
+              <input id="c-poids-${i}" data-pot="${i}" data-champ-pot="poids" inputmode="decimal" value="${esc(l.poids)}" placeholder="${t('exPoids')}">` : ''}
           </div>
-        </div>
-      </div>
-      ${ui.contenant === 'perso' ? `<label for="c-poids">Poids total par bougie (g)</label>
-        <input id="c-poids" data-ui="poidsPerso" inputmode="decimal" value="${esc(ui.poidsPerso || '')}" placeholder="ex. 200">` : ''}
+          <div>
+            <label for="c-nombre-${i}">${t('nombre')}</label>
+            <div class="stepper">
+              <button data-action="moins" data-i="${i}" aria-label="−1">−</button>
+              <input id="c-nombre-${i}" data-pot="${i}" data-champ-pot="n" inputmode="numeric" value="${l.n}">
+              <button data-action="plus" data-i="${i}" aria-label="+1">+</button>
+              ${ui.lignes.length > 1 ? `<button data-action="retirer-pot" data-i="${i}" aria-label="${t('retirer')}">✕</button>` : ''}
+            </div>
+          </div>
+        </div>`).join('')}
+      <div class="actions"><button class="small" data-action="ajouter-pot">${t('ajouterPot')}</button></div>
     </div>
     <div class="card" id="resultat"></div>`;
   afficherResultat();
@@ -165,27 +331,44 @@ function vueCalcul() {
 function afficherResultat() {
   const zone = document.getElementById('resultat');
   if (!zone) return;
-  const ui = etat.ui;
-  const f = formuleParId(ui.formule);
-  const c = contenantParId(ui.contenant);
-  const poids = ui.contenant === 'perso' ? nombre(ui.poidsPerso) : nombre(c?.poids);
-  const n = Math.max(1, Math.round(nombre(ui.nombre)));
-  if (!poids) { zone.innerHTML = '<p class="muted">Indiquez un poids pour voir les quantités.</p>'; return; }
+  const f = formuleParId(etat.ui.formule);
+  const lignes = etat.ui.lignes
+    .map(l => ({ ...l, p: poidsLigne(l), n: Math.max(0, Math.round(nombre(l.n))) }))
+    .filter(l => l.p > 0 && l.n > 0);
+  const nbBougies = lignes.reduce((s, l) => s + l.n, 0);
+  const poidsTotal = lignes.reduce((s, l) => s + l.p * l.n, 0);
+  if (!poidsTotal) { zone.innerHTML = `<p class="muted">${t('indiquerPoids')}</p>`; return; }
 
-  const r = calculer(f, poids, n);
-  const meche = c?.meche || f.meche;
+  const r = calculer(f, poidsTotal);
+  const couches = (f.couches || []).filter(c => c.nom || c.pct);
+  const meches = [...new Set(lignes.map(l => contenantParId(l.contenant)?.meche).filter(Boolean))];
+  const plusieursPots = lignes.length > 1 || nbBougies > 1;
+
   zone.innerHTML = `
-    <h3 style="margin-top:0">${esc(f.nom)} — ${n} × ${grammes(poids)}</h3>
-    ${r.invalide ? '<p class="warn">Les pourcentages dépassent 100 % du poids : vérifiez la formule.</p>' : ''}
+    <h3 style="margin-top:0">${esc(f.nom)} — ${t('bougies', nbBougies)}, ${grammes(poidsTotal)}</h3>
+    ${Math.abs(r.sommeMelange - 100) > 0.05 ? `<p class="warn">${t('melangeFaux', pourcent(r.sommeMelange).replace(' %', ''))}</p>` : ''}
     <table class="result">
-      <tr><td>${esc(f.cire || 'Cire')}</td><td class="num">${grammes(r.cire)}</td></tr>
-      ${r.lignes.map(l => `<tr><td>${esc(l.nom || l.type)}<span class="pct">${pourcent(nombre(l.pct))}</span></td><td class="num">${grammes(l.g)}</td></tr>`).join('')}
-      <tr class="total"><td>Total</td><td class="num">${grammes(r.poidsTotal)}</td></tr>
+      <tr><td>${esc(f.cire || t('cire'))}</td><td class="num">${grammes(r.cire)}</td></tr>
+      <tr><td>${t('parfumTotal')}<span class="pct">${pourcent(nombre(f.dosage))} ${t('duPoidsTotal')}</span></td><td class="num">${grammes(r.parfum)}</td></tr>
+      ${r.lignes.map(l => `<tr class="sous"><td>${esc(l.nom)}<span class="pct">${pourcent(l.pct)}</span></td><td class="num">${grammes(l.g)}</td></tr>`).join('')}
+      <tr class="total"><td>${t('total')}</td><td class="num">${grammes(poidsTotal)}</td></tr>
     </table>
-    ${meche ? `<p><strong>Mèche :</strong> ${esc(meche)}</p>` : ''}
-    ${f.tempAjout ? `<p><strong>Ajout du parfum :</strong> ${esc(f.tempAjout)} °C</p>` : ''}
-    ${f.notes ? `<p class="muted" style="white-space:pre-wrap">${esc(f.notes)}</p>` : ''}
-    <p class="muted">% calculés sur le ${f.mode === 'total' ? 'poids total' : 'poids de cire'}.</p>`;
+    ${couches.length ? `<h3>${t('couches')}</h3><table class="result petit">
+      ${couches.map(c => {
+        const p = poidsTotal * nombre(c.pct) / 100;
+        return `<tr><td>${esc(c.nom)}<span class="pct">${pourcent(nombre(c.pct))}</span></td>
+          <td class="num">${grammes(p)} <span class="pct">(${t('cire').toLowerCase()} ${grammes(p - p * nombre(f.dosage) / 100)})</span></td></tr>`;
+      }).join('')}</table>` : ''}
+    ${plusieursPots ? `<h3>${t('parPot')}</h3><table class="result petit">
+      ${lignes.map(l => {
+        const rp = calculer(f, l.p);
+        return `<tr><td>${l.n} × ${esc(nomLigne(l))}</td>
+          <td class="num">${t('cire').toLowerCase()} ${grammes(rp.cire)} · ${t('parfumTotal').toLowerCase()} ${grammes(rp.parfum)}</td></tr>`;
+      }).join('')}</table>` : ''}
+    ${meches.length ? `<p><strong>${t('meche')} :</strong> ${meches.map(esc).join(', ')}</p>` : ''}
+    ${f.design ? `<p><strong>${t('design')} :</strong> ${esc(f.design)}</p>` : ''}
+    ${f.prochaineFois ? `<p><strong>${t('prochaineFois')} :</strong> <span style="white-space:pre-wrap">${esc(f.prochaineFois)}</span></p>` : ''}
+    ${f.notes ? `<p class="muted" style="white-space:pre-wrap">${esc(f.notes)}</p>` : ''}`;
 }
 
 // --- Formules ---
@@ -193,21 +376,21 @@ function afficherResultat() {
 function vueFormules(filtre = '') {
   const q = filtre.trim().toLowerCase();
   const liste = formulesTriees().filter(f => !q || [f.nom, f.cire, ...f.parfums.map(p => p.nom)].join(' ').toLowerCase().includes(q));
-  app.innerHTML = `<h2>Formules</h2>
+  app.innerHTML = `<h2>${t('formules')}</h2>
     <div class="actions" style="margin:0 0 16px">
-      <input id="recherche" type="search" placeholder="Rechercher un nom ou une senteur" value="${esc(filtre)}" style="flex:1">
-      <a class="btn primary" href="#/formule/nouveau">+ Nouvelle</a>
+      <input id="recherche" type="search" placeholder="${t('rechercher')}" value="${esc(filtre)}" style="flex:1">
+      <a class="btn primary" href="#/formule/nouveau">${t('nouvelle')}</a>
     </div>
     ${liste.length ? `<ul class="list">${liste.map(f => `
       <li>
-        <button class="star" data-action="favori" data-id="${f.id}" aria-label="Favori">${f.favori ? '★' : '☆'}</button>
+        <button class="star" data-action="favori" data-id="${f.id}" aria-label="${t('favori')}">${f.favori ? '★' : '☆'}</button>
         <a class="row" href="#/formule/${f.id}"><div class="grow">
           <div class="title">${esc(f.nom)}</div>
-          <div class="sub">${esc([f.cire, ...f.parfums.map(p => p.nom)].filter(Boolean).join(' · '))}</div>
+          <div class="sub">${esc(f.parfums.filter(p => p.nom).map(p => `${p.nom} ${p.pct} %`).join(' · '))}</div>
         </div></a>
-        <button class="small" data-action="calculer" data-id="${f.id}">Calculer</button>
+        <button class="small" data-action="calculer" data-id="${f.id}">${t('calculer')}</button>
       </li>`).join('')}</ul>`
-      : `<div class="empty">${etat.formules.length ? 'Aucune formule ne correspond.' : 'Aucune formule pour l’instant.'}</div>`}`;
+      : `<div class="empty">${etat.formules.length ? t('aucuneCorrespond') : t('aucuneFormule')}</div>`}`;
   const champ = document.getElementById('recherche');
   champ.addEventListener('input', () => {
     const pos = champ.selectionStart;
@@ -220,17 +403,17 @@ function vueFormules(filtre = '') {
 
 function suggestions() {
   const noms = new Set();
-  etat.formules.forEach(f => [...f.parfums, ...f.additifs].forEach(l => l.nom && noms.add(l.nom)));
+  etat.formules.forEach(f => f.parfums.forEach(l => l.nom && noms.add(l.nom)));
   const cires = new Set(etat.formules.map(f => f.cire).filter(Boolean));
-  return `<datalist id="dl-ingredients">${[...noms].map(n => `<option value="${esc(n)}">`).join('')}</datalist>
+  return `<datalist id="dl-parfums">${[...noms].sort().map(n => `<option value="${esc(n)}">`).join('')}</datalist>
     <datalist id="dl-cires">${[...cires].map(n => `<option value="${esc(n)}">`).join('')}</datalist>`;
 }
 
-function lignesHtml(cle, lignes) {
+function lignesHtml(cle, lignes, liste, exemple) {
   return lignes.map((l, i) => `<div class="line">
-      <input data-ligne="${cle}" data-i="${i}" data-champ="nom" list="dl-ingredients" placeholder="Nom" value="${esc(l.nom)}">
+      <input data-ligne="${cle}" data-i="${i}" data-champ="nom" ${liste ? `list="${liste}"` : ''} placeholder="${exemple}" value="${esc(l.nom)}">
       <input data-ligne="${cle}" data-i="${i}" data-champ="pct" inputmode="decimal" placeholder="%" value="${esc(l.pct)}">
-      <button data-action="retirer" data-cle="${cle}" data-i="${i}" aria-label="Retirer">✕</button>
+      <button data-action="retirer" data-cle="${cle}" data-i="${i}" aria-label="${t('retirer')}">✕</button>
     </div>`).join('');
 }
 
@@ -238,51 +421,53 @@ function vueFormule(id) {
   if (!brouillon || brouillon.id !== id) {
     const existante = formuleParId(id);
     brouillon = existante ? structuredClone(existante) : {
-      id: nouvelId(), nom: '', cire: '', meche: '', tempAjout: '', notes: '', mode: 'cire', favori: false,
-      parfums: [{ nom: '', pct: '' }], additifs: [],
+      id: nouvelId(), nom: '', cire: '', dosage: etat.reglages.dosageDefaut, favori: false,
+      parfums: [{ nom: '', pct: '' }], couches: [], design: '', prochaineFois: '', notes: '',
     };
+    brouillon.couches = brouillon.couches || [];
     brouillon.estNouvelle = !existante;
     if (!existante) history.replaceState(null, '', '#/formule/' + brouillon.id);
   }
   const f = brouillon;
+  const somme = f.parfums.reduce((s, l) => s + nombre(l.pct), 0);
   app.innerHTML = `${suggestions()}
-    <h2>${f.estNouvelle ? 'Nouvelle formule' : esc(f.nom)}</h2>
+    <h2>${f.estNouvelle ? t('nouvelleFormule') : esc(f.nom)}</h2>
     <div class="card">
-      <label for="f-nom">Nom</label>
-      <input id="f-nom" data-champ="nom" value="${esc(f.nom)}" placeholder="ex. Figue d'automne">
+      <label for="f-nom">${t('nom')}</label>
+      <input id="f-nom" data-champ="nom" value="${esc(f.nom)}" placeholder="${t('exNomFormule')}">
       <div class="grid2">
-        <div><label for="f-cire">Cire</label>
-          <input id="f-cire" data-champ="cire" list="dl-cires" value="${esc(f.cire)}" placeholder="ex. Soja C3"></div>
-        <div><label for="f-meche">Mèche par défaut</label>
-          <input id="f-meche" data-champ="meche" value="${esc(f.meche)}" placeholder="ex. ECO 6"></div>
-      </div>
-      <div class="grid2">
-        <div><label for="f-mode">Les % sont calculés sur</label>
-          <select id="f-mode" data-champ="mode">
-            <option value="cire" ${f.mode !== 'total' ? 'selected' : ''}>le poids de cire</option>
-            <option value="total" ${f.mode === 'total' ? 'selected' : ''}>le poids total</option>
-          </select></div>
-        <div><label for="f-temp">Température d'ajout du parfum (°C)</label>
-          <input id="f-temp" data-champ="tempAjout" inputmode="decimal" value="${esc(f.tempAjout)}" placeholder="ex. 70"></div>
+        <div><label for="f-cire">${t('typeCire')}</label>
+          <input id="f-cire" data-champ="cire" list="dl-cires" value="${esc(f.cire)}" placeholder="${t('exCire')}"></div>
+        <div><label for="f-dosage">${t('dosage')}</label>
+          <input id="f-dosage" data-champ="dosage" inputmode="decimal" value="${esc(f.dosage)}" placeholder="8"></div>
       </div>
     </div>
     <div class="card lines">
-      <h3 style="margin-top:0">Parfums</h3>
-      ${lignesHtml('parfums', f.parfums)}
-      <button class="small" data-action="ajouter" data-cle="parfums">+ Parfum</button>
-      <h3>Additifs</h3>
-      ${lignesHtml('additifs', f.additifs)}
-      <button class="small" data-action="ajouter" data-cle="additifs">+ Additif</button>
+      <h3 style="margin-top:0">${t('melange')}</h3>
+      <p class="muted">${t('melangeAide')}</p>
+      ${lignesHtml('parfums', f.parfums, 'dl-parfums', t('nom'))}
+      <div class="actions" style="margin-top:8px;align-items:center">
+        <button class="small" data-action="ajouter" data-cle="parfums">${t('ajouterParfum')}</button>
+        <span id="somme-melange" class="${Math.abs(somme - 100) > 0.05 ? 'warn' : 'muted'}">${t('total')} : ${pourcent(somme)}</span>
+      </div>
+      <h3>${t('couches')}</h3>
+      <p class="muted">${t('couchesAide')}</p>
+      ${lignesHtml('couches', f.couches, null, t('exCouche'))}
+      <button class="small" data-action="ajouter" data-cle="couches">${t('ajouterCouche')}</button>
     </div>
     <div class="card">
-      <label for="f-notes" style="margin-top:0">Notes</label>
-      <textarea id="f-notes" data-champ="notes" placeholder="Étapes, astuces, fournisseurs…">${esc(f.notes)}</textarea>
+      <label for="f-design" style="margin-top:0">${t('design')}</label>
+      <textarea id="f-design" data-champ="design" placeholder="${t('exDesign')}">${esc(f.design)}</textarea>
+      <label for="f-prochaine">${t('prochaineFois')}</label>
+      <textarea id="f-prochaine" data-champ="prochaineFois" placeholder="${t('exProchaineFois')}">${esc(f.prochaineFois)}</textarea>
+      <label for="f-notes">${t('notes')}</label>
+      <textarea id="f-notes" data-champ="notes" placeholder="${t('exNotes')}">${esc(f.notes)}</textarea>
     </div>
     <div class="actions">
-      <button class="primary" data-action="enregistrer-formule">Enregistrer</button>
-      ${f.estNouvelle ? '' : `<button data-action="dupliquer-formule">Dupliquer</button>
-        <button class="danger" data-action="supprimer-formule">Supprimer</button>`}
-      <a class="btn" href="#/formules">Annuler</a>
+      <button class="primary" data-action="enregistrer-formule">${t('enregistrer')}</button>
+      ${f.estNouvelle ? '' : `<button data-action="dupliquer-formule">${t('dupliquer')}</button>
+        <button class="danger" data-action="supprimer-formule">${t('supprimer')}</button>`}
+      <a class="btn" href="#/formules">${t('annuler')}</a>
     </div>`;
 }
 
@@ -295,57 +480,75 @@ function lireFormulaire() {
 // --- Contenants ---
 
 function vueContenants() {
-  const liste = [...etat.contenants].sort((a, b) => nombre(a.poids) - nombre(b.poids));
-  app.innerHTML = `<h2>Contenants</h2>
-    <p class="muted">Vos tailles de pots, avec le poids total (cire + parfum) que vous versez dedans.</p>
-    <div class="actions" style="margin:0 0 16px"><a class="btn primary" href="#/contenant/nouveau">+ Nouveau contenant</a></div>
-    ${liste.length ? `<ul class="list">${liste.map(c => `<li><a class="row" href="#/contenant/${c.id}"><div class="grow">
+  app.innerHTML = `<h2>${t('contenants')}</h2>
+    <p class="muted">${t('contenantsAide')}</p>
+    <div class="actions" style="margin:0 0 16px"><a class="btn primary" href="#/contenant/nouveau">${t('ajouterContenantBtn')}</a></div>
+    ${etat.contenants.length ? `<ul class="list">${contenantsTries().map(c => `<li><a class="row" href="#/contenant/${c.id}"><div class="grow">
         <div class="title">${esc(c.nom)}</div>
-        <div class="sub">${grammes(nombre(c.poids))}${c.meche ? ' · mèche ' + esc(c.meche) : ''}</div>
+        <div class="sub">${grammes(nombre(c.poids))}${c.volume ? ` · ${esc(c.volume)} ml` : ''}${c.meche ? ` · ${t('meche').toLowerCase()} ${esc(c.meche)}` : ''}</div>
       </div></a></li>`).join('')}</ul>`
-      : '<div class="empty">Aucun contenant pour l’instant.</div>'}`;
+      : `<div class="empty">${t('aucunContenant')}</div>`}`;
 }
 
 function vueContenant(id) {
   if (!brouillon || brouillon.id !== id) {
     const existant = contenantParId(id);
-    brouillon = existant ? structuredClone(existant) : { id: nouvelId(), nom: '', poids: '', meche: '', notes: '' };
+    brouillon = existant ? structuredClone(existant) : { id: nouvelId(), nom: '', poids: '', volume: '', meche: '', notes: '' };
     brouillon.estNouvelle = !existant;
     if (!existant) history.replaceState(null, '', '#/contenant/' + brouillon.id);
   }
   const c = brouillon;
-  app.innerHTML = `<h2>${c.estNouvelle ? 'Nouveau contenant' : esc(c.nom)}</h2>
+  app.innerHTML = `<h2>${c.estNouvelle ? t('nouveauContenant') : esc(c.nom)}</h2>
     <div class="card">
-      <label for="k-nom">Nom</label>
-      <input id="k-nom" data-champ="nom" value="${esc(c.nom)}" placeholder="ex. Pot ambré moyen">
+      <label for="k-nom">${t('nom')}</label>
+      <input id="k-nom" data-champ="nom" value="${esc(c.nom)}" placeholder="${t('exNomContenant')}">
       <div class="grid2">
-        <div><label for="k-poids">Poids total versé (g)</label>
-          <input id="k-poids" data-champ="poids" inputmode="decimal" value="${esc(c.poids)}" placeholder="ex. 180"></div>
-        <div><label for="k-meche">Mèche conseillée</label>
-          <input id="k-meche" data-champ="meche" value="${esc(c.meche)}" placeholder="ex. ECO 6"></div>
+        <div><label for="k-volume">${t('volumeEau')}</label>
+          <div class="stepper">
+            <input id="k-volume" data-champ="volume" inputmode="decimal" value="${esc(c.volume)}" placeholder="180" style="max-width:none">
+            <button class="small" data-action="convertir" style="width:auto;padding:0 12px;font-size:15px">${t('convertir', etat.reglages.densite)}</button>
+          </div></div>
+        <div><label for="k-poids">${t('poidsVerse')}</label>
+          <input id="k-poids" data-champ="poids" inputmode="decimal" value="${esc(c.poids)}" placeholder="${t('exPoids')}"></div>
       </div>
-      <label for="k-notes">Notes</label>
-      <textarea id="k-notes" data-champ="notes" placeholder="Fournisseur, dimensions…">${esc(c.notes)}</textarea>
+      <label for="k-meche">${t('mecheConseillee')}</label>
+      <input id="k-meche" data-champ="meche" value="${esc(c.meche)}" placeholder="${t('exMeche')}">
+      <label for="k-notes">${t('notes')}</label>
+      <textarea id="k-notes" data-champ="notes" placeholder="${t('exNotesContenant')}">${esc(c.notes)}</textarea>
     </div>
     <div class="actions">
-      <button class="primary" data-action="enregistrer-contenant">Enregistrer</button>
-      ${c.estNouvelle ? '' : '<button class="danger" data-action="supprimer-contenant">Supprimer</button>'}
-      <a class="btn" href="#/contenants">Annuler</a>
+      <button class="primary" data-action="enregistrer-contenant">${t('enregistrer')}</button>
+      ${c.estNouvelle ? '' : `<button class="danger" data-action="supprimer-contenant">${t('supprimer')}</button>`}
+      <a class="btn" href="#/contenants">${t('annuler')}</a>
     </div>`;
 }
 
-// --- Sauvegarde ---
+// --- Réglages et sauvegarde ---
 
 function vueReglages() {
-  const d = etat.derniereSauvegarde ? new Date(etat.derniereSauvegarde).toLocaleDateString('fr-FR', { dateStyle: 'long' }) : 'jamais';
-  app.innerHTML = `<h2>Sauvegarde</h2>
+  const r = etat.reglages;
+  const d = etat.derniereSauvegarde ? new Date(etat.derniereSauvegarde).toLocaleDateString(locale(), { dateStyle: 'long' }) : t('jamais');
+  app.innerHTML = `<h2>${t('reglages')}</h2>
     <div class="card">
-      <p>Les formules sont enregistrées <strong>uniquement sur cet iPad</strong>. Si l'app est supprimée de l'écran d'accueil ou si les données de Safari sont effacées, elles disparaissent.
-      Sauvegardez régulièrement le fichier dans Fichiers ou iCloud Drive.</p>
-      <p class="muted">Dernière sauvegarde : ${d} · ${etat.formules.length} formule(s), ${etat.contenants.length} contenant(s)</p>
+      <label for="r-langue" style="margin-top:0">${t('langue')}</label>
+      <select id="r-langue" data-reglage="langue">
+        <option value="fr" ${r.langue === 'fr' ? 'selected' : ''}>Français</option>
+        <option value="en" ${r.langue === 'en' ? 'selected' : ''}>English</option>
+      </select>
+      <div class="grid2">
+        <div><label for="r-dosage">${t('dosageDefaut')}</label>
+          <input id="r-dosage" data-reglage="dosageDefaut" inputmode="decimal" value="${esc(r.dosageDefaut)}"></div>
+        <div><label for="r-densite">${t('densite')}</label>
+          <input id="r-densite" data-reglage="densite" inputmode="decimal" value="${esc(r.densite)}"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">${t('sauvegarde')}</h3>
+      <p>${t('sauvegardeTexte')}</p>
+      <p class="muted">${t('derniereSauvegarde')} : ${d} · ${t('compte', etat.formules.length, etat.contenants.length)}</p>
       <div class="actions">
-        <button class="primary" data-action="exporter">Sauvegarder mes données</button>
-        <button data-action="importer">Restaurer une sauvegarde</button>
+        <button class="primary" data-action="exporter">${t('sauvegarderDonnees')}</button>
+        <button data-action="importer">${t('restaurer')}</button>
         <input type="file" id="fichier-import" accept=".json,application/json" hidden>
       </div>
     </div>`;
@@ -370,9 +573,9 @@ async function exporter() {
     etat.derniereSauvegarde = new Date().toISOString();
     enregistrer();
     vueReglages();
-    toast('Sauvegarde créée');
+    toast(t('sauvegardeCreee'));
   } catch (e) {
-    if (e.name !== 'AbortError') toast('La sauvegarde a échoué');
+    if (e.name !== 'AbortError') toast(t('sauvegardeEchouee'));
   }
 }
 
@@ -384,13 +587,17 @@ function importer(ev) {
     try {
       const donnees = JSON.parse(lecteur.result);
       if (!Array.isArray(donnees.formules) || !Array.isArray(donnees.contenants)) throw new Error('format');
-      if (!confirm(`Remplacer les données actuelles par cette sauvegarde (${donnees.formules.length} formules, ${donnees.contenants.length} contenants) ?`)) return;
-      etat = Object.assign(etatVide(), donnees, { ui: {} });
+      if (!confirm(t('confirmerRestauration', donnees.formules.length, donnees.contenants.length))) return;
+      // La langue choisie sur cet appareil reste celle en cours.
+      const langue = etat.reglages.langue;
+      etat = depuisDonnees(donnees);
+      etat.reglages.langue = langue;
+      etat.ui = {};
       enregistrer();
-      toast('Sauvegarde restaurée');
+      toast(t('sauvegardeRestauree'));
       aller('#/calcul');
     } catch (e) {
-      toast("Ce fichier n'est pas une sauvegarde valide");
+      toast(t('fichierInvalide'));
     }
   };
   lecteur.readAsText(fichier);
@@ -406,11 +613,23 @@ app.addEventListener('click', ev => {
 
   switch (action) {
     case 'plus':
-    case 'moins':
-      etat.ui.nombre = Math.max(1, Math.round(nombre(etat.ui.nombre)) + (action === 'plus' ? 1 : -1));
-      document.getElementById('c-nombre').value = etat.ui.nombre;
+    case 'moins': {
+      const l = etat.ui.lignes[i];
+      l.n = Math.max(1, Math.round(nombre(l.n)) + (action === 'plus' ? 1 : -1));
+      document.getElementById('c-nombre-' + i).value = l.n;
       enregistrer();
       afficherResultat();
+      break;
+    }
+    case 'ajouter-pot':
+      etat.ui.lignes.push({ contenant: contenantsTries()[0]?.id || 'perso', poids: '', n: 1 });
+      enregistrer();
+      vueCalcul();
+      break;
+    case 'retirer-pot':
+      etat.ui.lignes.splice(i, 1);
+      enregistrer();
+      vueCalcul();
       break;
     case 'favori': {
       const f = formuleParId(id);
@@ -437,50 +656,55 @@ app.addEventListener('click', ev => {
       break;
     case 'enregistrer-formule': {
       lireFormulaire();
-      if (!brouillon.nom) { toast('Donnez un nom à la formule'); return; }
+      if (!brouillon.nom) { toast(t('nommerFormule')); return; }
       const { estNouvelle, ...f } = brouillon;
       f.parfums = f.parfums.filter(l => l.nom || l.pct);
-      f.additifs = f.additifs.filter(l => l.nom || l.pct);
+      f.couches = f.couches.filter(l => l.nom || l.pct);
       const idx = etat.formules.findIndex(x => x.id === f.id);
       if (idx >= 0) etat.formules[idx] = f; else etat.formules.push(f);
       enregistrer();
       brouillon = null;
-      toast('Formule enregistrée');
+      toast(t('formuleEnregistree'));
       aller('#/formules');
       break;
     }
     case 'dupliquer-formule': {
       lireFormulaire();
       const { estNouvelle, ...f } = brouillon;
-      const copie = { ...structuredClone(f), id: nouvelId(), nom: f.nom + ' (copie)', favori: false };
+      const copie = { ...structuredClone(f), id: nouvelId(), nom: `${f.nom} ${t('copie')}`, favori: false };
       etat.formules.push(copie);
       enregistrer();
       brouillon = null;
-      toast('Formule dupliquée');
+      toast(t('formuleDupliquee'));
       aller('#/formule/' + copie.id);
       break;
     }
     case 'supprimer-formule':
-      if (!confirm(`Supprimer la formule « ${brouillon.nom} » ?`)) return;
+      if (!confirm(t('supprimerFormule', brouillon.nom))) return;
       etat.formules = etat.formules.filter(f => f.id !== brouillon.id);
       enregistrer();
       brouillon = null;
       aller('#/formules');
       break;
+    case 'convertir': {
+      const ml = nombre(document.getElementById('k-volume').value);
+      if (ml) document.getElementById('k-poids').value = Math.round(ml * nombre(etat.reglages.densite) * 10) / 10;
+      break;
+    }
     case 'enregistrer-contenant': {
       lireFormulaire();
-      if (!brouillon.nom || !nombre(brouillon.poids)) { toast('Indiquez un nom et un poids'); return; }
+      if (!brouillon.nom || !nombre(brouillon.poids)) { toast(t('nomEtPoids')); return; }
       const { estNouvelle, ...c } = brouillon;
       const idx = etat.contenants.findIndex(x => x.id === c.id);
       if (idx >= 0) etat.contenants[idx] = c; else etat.contenants.push(c);
       enregistrer();
       brouillon = null;
-      toast('Contenant enregistré');
+      toast(t('contenantEnregistre'));
       aller('#/contenants');
       break;
     }
     case 'supprimer-contenant':
-      if (!confirm(`Supprimer le contenant « ${brouillon.nom} » ?`)) return;
+      if (!confirm(t('supprimerContenant', brouillon.nom))) return;
       etat.contenants = etat.contenants.filter(c => c.id !== brouillon.id);
       enregistrer();
       brouillon = null;
@@ -495,22 +719,38 @@ app.addEventListener('click', ev => {
   }
 });
 
-// Champs de l'écran Calculer : on recalcule à chaque frappe.
 app.addEventListener('input', ev => {
-  const cle = ev.target.dataset.ui;
-  if (!cle) return;
-  etat.ui[cle] = ev.target.value;
-  enregistrer();
-  if (cle === 'contenant') vueCalcul(); else afficherResultat();
+  const el = ev.target;
+  // Écran Calculer : on recalcule à chaque frappe.
+  if (el.dataset.ui) {
+    etat.ui[el.dataset.ui] = el.value;
+    enregistrer();
+    afficherResultat();
+  } else if (el.dataset.pot !== undefined) {
+    etat.ui.lignes[el.dataset.pot][el.dataset.champPot] = el.value;
+    enregistrer();
+    if (el.dataset.champPot === 'contenant') vueCalcul(); else afficherResultat();
+  } else if (el.dataset.reglage) {
+    const cle = el.dataset.reglage;
+    etat.reglages[cle] = cle === 'langue' ? el.value : nombre(el.value);
+    enregistrer();
+    if (cle === 'langue') route();
+  } else if (el.dataset.ligne === 'parfums') {
+    // Total du mélange mis à jour en direct dans le formulaire.
+    const somme = [...app.querySelectorAll('[data-ligne="parfums"][data-champ="pct"]')].reduce((s, x) => s + nombre(x.value), 0);
+    const zone = document.getElementById('somme-melange');
+    zone.textContent = `${t('total')} : ${pourcent(somme)}`;
+    zone.className = Math.abs(somme - 100) > 0.05 ? 'warn' : 'muted';
+  }
 });
 
 let minuteurToast;
 function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
   clearTimeout(minuteurToast);
-  minuteurToast = setTimeout(() => t.classList.remove('show'), 2200);
+  minuteurToast = setTimeout(() => el.classList.remove('show'), 2200);
 }
 
 window.addEventListener('hashchange', () => {
