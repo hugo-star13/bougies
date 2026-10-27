@@ -56,6 +56,26 @@ const TEXTES = {
     aucunePhoto: 'Pas encore de photo.', supprimerPhoto: 'Supprimer cette photo ?', photoAjoutee: n => `${n} photo(s) ajoutée(s)`,
     photoImpossible: 'Impossible d’ajouter cette photo', fermer: 'Fermer',
     photosAide: 'Les photos se gèrent depuis la fiche de la recette, une fois enregistrée.',
+    fabriquer: '▶ Lancer la fabrication', fabrication: 'Fabrication', reprendre: 'Reprendre la fabrication',
+    enCours: n => `Fabrication en cours : ${n}`, etapesFaites: (a, b) => `${a} / ${b} étapes`,
+    rappelProchaineFois: 'Rappel de la dernière fois',
+    etPot: tp => `Préchauffer les pots à ${tp} °C (pas plus)`,
+    etPeserCire: 'Peser la cire', etFondre: tp => `Faire fondre la cire à ${tp} °C`,
+    etCouleur: tp => `Ajouter la couleur à ${tp} °C`,
+    etPeserParfum: 'Peser les parfums (préparer le mélange)',
+    etParfum: tp => `Ajouter le parfum à ${tp} °C et mélanger doucement 2 minutes`,
+    etRepartir: 'Répartir le mélange de parfums par couche',
+    etCouler: tp => `Couler à ${tp} °C`, etCoulerDetail: 'Poids à verser dans chaque pot :',
+    etFinir: 'Laisser refroidir, puis décorer',
+    notesFournee: 'Comment s’est passée cette fournée ?', exNotesFournee: 'Ce qui a marché, ce qu’il faut changer…',
+    terminer: 'Terminer et enregistrer', abandonner: 'Abandonner',
+    abandonnerConfirmer: 'Abandonner cette fabrication ?', fourneeEnregistree: 'Fournée notée dans la recette',
+    fournee: (d, n) => `${d}, ${n} bougie(s)`,
+    temperatures: 'Températures de fabrication (°C)',
+    tPot: 'Préchauffer les pots', tFonte: 'Fonte de la cire', tCouleur: 'Ajout de la couleur', tParfum: 'Ajout du parfum', tCoulage: 'Coulage',
+    pourCouche: n => `couche ${n}`,
+    fabricationRecette: 'Fabrication', tempsAide: 'Laissez vide pour utiliser les températures par défaut (Réglages).',
+    etapesPerso: 'Étapes particulières', exEtapesPerso: 'Une étape par ligne, ex. « Fouetter la cire à 45 °C pour la couche du dessus »',
   },
   en: {
     navCalcul: 'Calculate', navFormules: 'Recipes', navContenants: 'Jars', navReglages: 'Settings',
@@ -110,6 +130,26 @@ const TEXTES = {
     aucunePhoto: 'No photos yet.', supprimerPhoto: 'Delete this photo?', photoAjoutee: n => `${n} photo(s) added`,
     photoImpossible: 'Could not add this photo', fermer: 'Close',
     photosAide: 'Photos are managed from the recipe page once it is saved.',
+    fabriquer: '▶ Start making', fabrication: 'Making', reprendre: 'Resume making',
+    enCours: n => `In progress: ${n}`, etapesFaites: (a, b) => `${a} / ${b} steps`,
+    rappelProchaineFois: 'Reminder from last time',
+    etPot: tp => `Pre-warm the jars to ${tp} °C (not hotter)`,
+    etPeserCire: 'Weigh the wax', etFondre: tp => `Melt the wax at ${tp} °C`,
+    etCouleur: tp => `Add colour at ${tp} °C`,
+    etPeserParfum: 'Weigh the scents (prepare the blend)',
+    etParfum: tp => `Add the scent at ${tp} °C and stir gently for 2 minutes`,
+    etRepartir: 'Split the scent blend between layers',
+    etCouler: tp => `Pour at ${tp} °C`, etCoulerDetail: 'Weight to pour into each jar:',
+    etFinir: 'Let it cool, then decorate',
+    notesFournee: 'How did this batch go?', exNotesFournee: 'What worked, what to change…',
+    terminer: 'Finish and save', abandonner: 'Cancel',
+    abandonnerConfirmer: 'Cancel this batch?', fourneeEnregistree: 'Batch noted in the recipe',
+    fournee: (d, n) => `${d}, ${n} candle(s)`,
+    temperatures: 'Making temperatures (°C)',
+    tPot: 'Pre-warm jars', tFonte: 'Melt wax', tCouleur: 'Add colour', tParfum: 'Add scent', tCoulage: 'Pour',
+    pourCouche: n => `layer ${n}`,
+    fabricationRecette: 'Making', tempsAide: 'Leave empty to use the default temperatures (Settings).',
+    etapesPerso: 'Extra steps', exEtapesPerso: 'One step per line, e.g. “Whip the wax at 45 °C for the top layer”',
   },
 };
 
@@ -133,6 +173,8 @@ function etatVide() {
       langue: (navigator.language || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en',
       dosageDefaut: 8,
       densite: 0.9,
+      // Valeurs de ses notes (Violet Lemonade).
+      temperatures: { pot: '35-40', fonte: '70', couleur: '65', parfum: '60-65', coulage: '55-60' },
     },
     ui: {},
   };
@@ -161,6 +203,7 @@ function depuisDonnees(donnees) {
   const vide = etatVide();
   const e = Object.assign(vide, migrer(donnees));
   e.reglages = Object.assign(vide.reglages, donnees.reglages);
+  e.reglages.temperatures = Object.assign(etatVide().reglages.temperatures, e.reglages.temperatures);
   e.ui = e.ui || {};
   return e;
 }
@@ -328,6 +371,7 @@ function route() {
     case 'contenants': return vueContenants();
     case 'contenant': return vueContenant(id);
     case 'reglages': return vueReglages();
+    case 'fabrication': return vueFabrication();
     default: return vueCalcul();
   }
 }
@@ -375,7 +419,10 @@ function vueCalcul() {
   if (!Array.isArray(ui.lignes) || !ui.lignes.length) ui.lignes = [{ contenant: parDefaut, poids: '', n: 1 }];
   ui.lignes.forEach(l => { if (l.contenant !== 'perso' && !contenantParId(l.contenant)) l.contenant = parDefaut; });
 
+  const fab = etat.ui.fabrication;
   app.innerHTML = `${bandeauSauvegarde()}
+    ${fab && formuleParId(fab.formule) ? `<div class="card bandeau-fab"><span>${t('enCours', esc(formuleParId(fab.formule).nom))}</span>
+      <a class="btn primary small" href="#/fabrication">${t('reprendre')}</a></div>` : ''}
     <div class="card">
       <label for="c-formule">${t('formule')}</label>
       <select id="c-formule" data-ui="formule">
@@ -448,7 +495,8 @@ function afficherResultat() {
     ${meches.length ? `<p><strong>${t('meche')} :</strong> ${meches.map(esc).join(', ')}</p>` : ''}
     ${f.design ? `<p><strong>${t('design')} :</strong> ${esc(f.design)}</p>` : ''}
     ${f.prochaineFois ? `<p><strong>${t('prochaineFois')} :</strong> <span style="white-space:pre-wrap">${esc(f.prochaineFois)}</span></p>` : ''}
-    ${f.notes ? `<p class="muted" style="white-space:pre-wrap">${esc(f.notes)}</p>` : ''}`;
+    ${f.notes ? `<p class="muted" style="white-space:pre-wrap">${esc(f.notes)}</p>` : ''}
+    <div class="actions"><button class="primary" data-action="fabriquer">${t('fabriquer')}</button></div>`;
 }
 
 // --- Formules ---
@@ -526,8 +574,10 @@ function vueFiche(id) {
       ${couches.length ? `<h3>${t('couches')}</h3><table class="result">
         ${couches.map(c => `<tr><td>${esc(c.nom)}</td><td class="num">${pourcent(nombre(c.pct))}</td></tr>`).join('')}</table>` : ''}
     </div>
-    ${f.design || f.prochaineFois || f.notes ? `<div class="card texte-fiche">
-      ${texte(t('design'), f.design)}${texte(t('prochaineFois'), f.prochaineFois)}${texte(t('notes'), f.notes)}
+    ${f.design || f.prochaineFois || f.notes || f.etapes || Object.values(f.temperatures || {}).some(Boolean) ? `<div class="card texte-fiche">
+      ${texte(t('design'), f.design)}${texte(t('prochaineFois'), f.prochaineFois)}${texte(t('notes'), f.notes)}${texte(t('etapesPerso'), f.etapes)}
+      ${texte(t('temperatures'), [['pot', 'tPot'], ['fonte', 'tFonte'], ['couleur', 'tCouleur'], ['parfum', 'tParfum'], ['coulage', 'tCoulage']]
+        .filter(([k]) => f.temperatures?.[k]).map(([k, l]) => `${t(l)} : ${f.temperatures[k]} °C`).join('\n'))}
     </div>` : ''}
     <div class="card">
       <h3 style="margin-top:0">${t('photos')}</h3>
@@ -618,6 +668,17 @@ function vueFormule(id) {
       <label for="f-notes">${t('notes')}</label>
       <textarea id="f-notes" data-champ="notes" placeholder="${t('exNotes')}">${esc(f.notes)}</textarea>
     </div>
+    <div class="card">
+      <h3 style="margin-top:0">${t('fabricationRecette')}</h3>
+      <p class="muted">${t('tempsAide')}</p>
+      <div class="grid-temp">
+        ${[['pot', 'tPot'], ['fonte', 'tFonte'], ['couleur', 'tCouleur'], ['parfum', 'tParfum'], ['coulage', 'tCoulage']].map(([k, l]) => `
+          <div><label for="f-t-${k}">${t(l)} (°C)</label>
+            <input id="f-t-${k}" data-champ-temp="${k}" value="${esc(f.temperatures?.[k])}" placeholder="${esc(etat.reglages.temperatures[k])}"></div>`).join('')}
+      </div>
+      <label for="f-etapes">${t('etapesPerso')}</label>
+      <textarea id="f-etapes" data-champ="etapes" placeholder="${t('exEtapesPerso')}">${esc(f.etapes)}</textarea>
+    </div>
     <div class="actions">
       <button class="primary" data-action="enregistrer-formule">${t('enregistrer')}</button>
       ${f.estNouvelle ? '' : `<button data-action="dupliquer-formule">${t('dupliquer')}</button>
@@ -631,6 +692,10 @@ function lireFormulaire() {
   if (!brouillon) return;
   app.querySelectorAll('[data-champ]:not([data-ligne])').forEach(el => { brouillon[el.dataset.champ] = el.value.trim(); });
   app.querySelectorAll('[data-ligne]').forEach(el => { brouillon[el.dataset.ligne][el.dataset.i][el.dataset.champ] = el.value.trim(); });
+  app.querySelectorAll('[data-champ-temp]').forEach(el => {
+    brouillon.temperatures = brouillon.temperatures || {};
+    brouillon.temperatures[el.dataset.champTemp] = el.value.trim();
+  });
 }
 
 // --- Contenants ---
@@ -696,6 +761,12 @@ function vueReglages() {
           <input id="r-dosage" data-reglage="dosageDefaut" inputmode="decimal" value="${esc(r.dosageDefaut)}"></div>
         <div><label for="r-densite">${t('densite')}</label>
           <input id="r-densite" data-reglage="densite" inputmode="decimal" value="${esc(r.densite)}"></div>
+      </div>
+      <h3>${t('temperatures')}</h3>
+      <div class="grid-temp">
+        ${[['pot', 'tPot'], ['fonte', 'tFonte'], ['couleur', 'tCouleur'], ['parfum', 'tParfum'], ['coulage', 'tCoulage']].map(([k, l]) => `
+          <div><label for="r-t-${k}">${t(l)}</label>
+            <input id="r-t-${k}" data-temp="${k}" value="${esc(r.temperatures[k])}"></div>`).join('')}
       </div>
     </div>
     <div class="card">
@@ -765,6 +836,80 @@ function importer(ev) {
     }
   };
   lecteur.readAsText(fichier);
+}
+
+// --- Fabrication ---
+
+function etapesFabrication(f, lignes) {
+  // Une température vide dans la recette reprend celle des Réglages.
+  const tp = { ...etat.reglages.temperatures };
+  Object.entries(f.temperatures || {}).forEach(([k, v]) => { if (v) tp[k] = v; });
+  const poidsTotal = lignes.reduce((s, l) => s + l.p * l.n, 0);
+  const r = calculer(f, poidsTotal);
+  const dosage = nombre(f.dosage) / 100;
+  const couches = (f.couches || []).filter(c => c.nom || c.pct);
+  const liste = items => `<table class="result petit">${items.map(([nom, g]) => `<tr><td>${nom}</td><td class="num">${grammes(g)}</td></tr>`).join('')}</table>`;
+  const etapes = [{ titre: t('etPot', tp.pot) }];
+  etapes.push({
+    titre: t('etPeserCire'),
+    detail: couches.length
+      ? liste(couches.map(c => [esc(c.nom), poidsTotal * nombre(c.pct) / 100 * (1 - dosage)]))
+      : liste([[esc(f.cire || t('cire')), r.cire]]),
+  });
+  etapes.push({ titre: t('etFondre', tp.fonte) });
+  if (f.design || couches.length) etapes.push({ titre: t('etCouleur', tp.couleur), detail: f.design ? `<p class="muted">${esc(f.design)}</p>` : '' });
+  etapes.push({ titre: t('etPeserParfum'), detail: liste([...r.lignes.map(l => [`${esc(l.nom)} <span class="pct">${pourcent(l.pct)}</span>`, l.g]), [`<strong>${t('total')}</strong>`, r.parfum]]) });
+  if (couches.length > 1) etapes.push({ titre: t('etRepartir'), detail: liste(couches.map(c => [esc(c.nom), r.parfum * nombre(c.pct) / 100])) });
+  etapes.push({ titre: t('etParfum', tp.parfum) });
+  etapes.push({
+    titre: t('etCouler', tp.coulage),
+    detail: `<p class="muted">${t('etCoulerDetail')}</p>` + liste(lignes.map(l => [`${l.n} × ${esc(nomLigne(l))}`, l.p])),
+  });
+  (f.etapes || '').split('\n').map(e => e.trim()).filter(Boolean).forEach(e => etapes.push({ titre: esc(e) }));
+  etapes.push({ titre: t('etFinir') });
+  return { etapes, poidsTotal, nb: lignes.reduce((s, l) => s + l.n, 0) };
+}
+
+let verrouEcran;
+async function garderEcranAllume() {
+  try { verrouEcran = await navigator.wakeLock?.request('screen'); } catch (e) { /* pas grave */ }
+}
+function liberer() {
+  verrouEcran?.release?.();
+  verrouEcran = null;
+}
+
+function vueFabrication() {
+  const fab = etat.ui.fabrication;
+  const f = fab && formuleParId(fab.formule);
+  if (!f) { delete etat.ui.fabrication; return aller('#/calcul'); }
+  const lignes = fab.lignes
+    .map(l => ({ ...l, p: poidsLigne(l), n: Math.max(0, Math.round(nombre(l.n))) }))
+    .filter(l => l.p > 0 && l.n > 0);
+  const { etapes, poidsTotal, nb } = etapesFabrication(f, lignes);
+  fab.nbEtapes = etapes.length;
+  const faites = etapes.filter((_, i) => fab.coches[i]).length;
+  app.innerHTML = `
+    <h2>${t('fabrication')} : ${esc(f.nom)}</h2>
+    <p class="muted">${t('bougies', nb)}, ${grammes(poidsTotal)} · <span id="progression">${t('etapesFaites', faites, etapes.length)}</span></p>
+    ${f.prochaineFois ? `<div class="card rappel"><strong>${t('rappelProchaineFois')} :</strong>
+      <span style="white-space:pre-wrap">${esc(f.prochaineFois)}</span></div>` : ''}
+    <ol class="etapes">
+      ${etapes.map((e, i) => `<li class="etape card ${fab.coches[i] ? 'faite' : ''}">
+        <label class="coche"><input type="checkbox" data-etape="${i}" ${fab.coches[i] ? 'checked' : ''}>
+          <span><span class="num-etape">${i + 1}</span> ${e.titre}</span></label>
+        ${e.detail ? `<div class="detail-etape">${e.detail}</div>` : ''}
+      </li>`).join('')}
+    </ol>
+    <div class="card">
+      <label for="notes-fournee" style="margin-top:0">${t('notesFournee')}</label>
+      <textarea id="notes-fournee" placeholder="${t('exNotesFournee')}">${esc(fab.notes)}</textarea>
+      <div class="actions">
+        <button class="primary" data-action="terminer-fabrication">${t('terminer')}</button>
+        <button class="danger" data-action="abandonner-fabrication">${t('abandonner')}</button>
+      </div>
+    </div>`;
+  garderEcranAllume();
 }
 
 // ---------- Événements ----------
@@ -864,6 +1009,28 @@ app.addEventListener('click', ev => {
     case 'voir-photo':
       voirPhoto(location.hash.split('/')[2], id);
       break;
+    case 'fabriquer':
+      etat.ui.fabrication = { formule: etat.ui.formule, lignes: structuredClone(etat.ui.lignes), coches: [], notes: '' };
+      enregistrer();
+      aller('#/fabrication');
+      break;
+    case 'terminer-fabrication':
+    case 'abandonner-fabrication': {
+      const fab = etat.ui.fabrication;
+      if (action === 'abandonner-fabrication' && !confirm(t('abandonnerConfirmer'))) return;
+      const f = formuleParId(fab.formule);
+      if (action === 'terminer-fabrication' && f && fab.notes?.trim()) {
+        const n = fab.lignes.reduce((s, l) => s + Math.round(nombre(l.n)), 0);
+        const date = new Date().toLocaleDateString(locale());
+        f.notes = [f.notes, `${t('fournee', date, n)} : ${fab.notes.trim()}`].filter(Boolean).join('\n');
+        toast(t('fourneeEnregistree'));
+      }
+      delete etat.ui.fabrication;
+      enregistrer();
+      liberer();
+      aller(action === 'terminer-fabrication' && f ? '#/formule/' + f.id : '#/calcul');
+      break;
+    }
     case 'convertir': {
       const ml = nombre(document.getElementById('k-volume').value);
       if (ml) document.getElementById('k-poids').value = Math.round(ml * nombre(etat.reglages.densite) * 10) / 10;
@@ -908,6 +1075,18 @@ app.addEventListener('input', ev => {
     etat.ui.lignes[el.dataset.pot][el.dataset.champPot] = el.value;
     enregistrer();
     if (el.dataset.champPot === 'contenant') vueCalcul(); else afficherResultat();
+  } else if (el.dataset.temp) {
+    etat.reglages.temperatures[el.dataset.temp] = el.value.trim();
+    enregistrer();
+  } else if (el.dataset.etape !== undefined) {
+    const fab = etat.ui.fabrication;
+    fab.coches[el.dataset.etape] = el.checked;
+    enregistrer();
+    el.closest('.etape').classList.toggle('faite', el.checked);
+    document.getElementById('progression').textContent = t('etapesFaites', fab.coches.filter(Boolean).length, fab.nbEtapes);
+  } else if (el.id === 'notes-fournee') {
+    etat.ui.fabrication.notes = el.value;
+    enregistrer();
   } else if (el.dataset.reglage) {
     const cle = el.dataset.reglage;
     etat.reglages[cle] = cle === 'langue' ? el.value : nombre(el.value);
