@@ -115,7 +115,16 @@ const TEXTES = {
     retourBougies: '‹ Mes bougies', bougieEnregistree: 'Enregistré', annulerVente: 'Annuler cette vente ? (la bougie revient en stock)',
     navAlertes: 'Alertes', alertes: 'Alertes de stock', seuil: u => `M’alerter en dessous de (${u})`,
     aucuneAlerte: 'Rien à racheter pour l’instant.', alertesAide: 'Articles passés sous leur seuil d’alerte. Le seuil se règle dans chaque article du stock.',
-    reste: q => `il reste ${q}`, racheter: 'Noter un achat', stockBas: n => `${n} article(s) à racheter : voir Alertes`,
+    reste: q => `il reste ${q}`, racheter: 'Noter un achat', stockBas: n => `${n} article(s) à racheter : voir Stock`,
+    navRapport: 'Rapport', rapport: 'Rapport', rapportAide: 'Ce qui entre (ventes) et ce qui sort (achats du stock et autres dépenses).',
+    annee: 'Année', entrees: 'Entrées', sorties: 'Sorties', solde: 'Solde', mois: 'Mois', mouvements: 'Mouvements',
+    aucunMouvement: 'Aucun mouvement sur cette année.', autreMouvement: 'Autre dépense ou recette',
+    sortie: 'Dépense', entree: 'Recette', libelle: 'Libellé', exLibelle: 'ex. Frais de marché, étiquettes…', montant: 'Montant (€)',
+    ajouterMouvement: '+ Ajouter', mouvementAjoute: 'Mouvement ajouté', libelleMontant: 'Indiquez un libellé et un montant',
+    supprimerMouvement: 'Supprimer ce mouvement ?', exporterCsv: 'Exporter pour Excel', exportCree: 'Fichier créé',
+    achatDe: n => `Achat : ${n}`, venteDe: n => `Vente : ${n}`,
+    paiement: 'Paiement', modes: { especes: 'Espèces', carte: 'Carte', virement: 'Virement', cheque: 'Chèque', autre: 'Autre' },
+    venteTitre: n => `Vente : ${n}`, valider: 'Valider',
   },
   en: {
     navCalcul: 'Calculate', navFormules: 'Recipes', navContenants: 'Jars', navReglages: 'Settings',
@@ -229,7 +238,16 @@ const TEXTES = {
     retourBougies: '‹ My candles', bougieEnregistree: 'Saved', annulerVente: 'Cancel this sale? (the candle goes back in stock)',
     navAlertes: 'Alerts', alertes: 'Stock alerts', seuil: u => `Alert me below (${u})`,
     aucuneAlerte: 'Nothing to restock for now.', alertesAide: 'Items below their alert level. Set the level in each stock item.',
-    reste: q => `${q} left`, racheter: 'Record a purchase', stockBas: n => `${n} item(s) to restock: see Alerts`,
+    reste: q => `${q} left`, racheter: 'Record a purchase', stockBas: n => `${n} item(s) to restock: see Stock`,
+    navRapport: 'Report', rapport: 'Report', rapportAide: 'Money in (sales) and money out (stock purchases and other expenses).',
+    annee: 'Year', entrees: 'In', sorties: 'Out', solde: 'Balance', mois: 'Month', mouvements: 'Entries',
+    aucunMouvement: 'No entries this year.', autreMouvement: 'Other expense or income',
+    sortie: 'Expense', entree: 'Income', libelle: 'Description', exLibelle: 'e.g. Market fee, labels…', montant: 'Amount (€)',
+    ajouterMouvement: '+ Add', mouvementAjoute: 'Entry added', libelleMontant: 'Enter a description and an amount',
+    supprimerMouvement: 'Delete this entry?', exporterCsv: 'Export for Excel', exportCree: 'File created',
+    achatDe: n => `Purchase: ${n}`, venteDe: n => `Sale: ${n}`,
+    paiement: 'Payment', modes: { especes: 'Cash', carte: 'Card', virement: 'Transfer', cheque: 'Cheque', autre: 'Other' },
+    venteTitre: n => `Sale: ${n}`, valider: 'Confirm',
   },
 };
 
@@ -250,6 +268,7 @@ function etatVide() {
     contenants: [],
     stock: [],
     produits: [],
+    mouvements: [],
     derniereSauvegarde: null,
     reglages: {
       langue: (navigator.language || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en',
@@ -290,6 +309,7 @@ function depuisDonnees(donnees) {
   e.ui = e.ui || {};
   e.stock = e.stock || [];
   e.produits = e.produits || [];
+  e.mouvements = e.mouvements || [];
   return e;
 }
 
@@ -554,7 +574,8 @@ function route() {
     case 'contenants': return vueContenants();
     case 'contenant': return vueContenant(id);
     case 'stock': return id ? vueArticle(id) : vueStock();
-    case 'alertes': return vueAlertes();
+    case 'alertes': return aller('#/stock');
+    case 'rapport': return vueRapport();
     case 'bougies': return vueBougies();
     case 'bougie': return vueBougie(id);
     case 'reglages': return vueReglages();
@@ -1069,7 +1090,7 @@ function vueBougie(id) {
       <table class="result petit">${[...p.entrees].reverse().map(e => `<tr><td>${date(e.date)}<span class="pct">${t('bougies', e.n)}</span></td>
         <td class="num">${e.complet ? '' : '≥ '}${euros(e.cout / e.n)} <span class="pct">/ ${t('coutUnite')}</span></td></tr>`).join('')}</table>
       <h3>${t('ventes')}</h3>
-      ${p.ventes.length ? `<table class="result petit">${p.ventes.map((v, i) => [v, i]).reverse().map(([v, i]) => `<tr><td>${date(v.date)}<span class="pct">× ${v.n}</span></td>
+      ${p.ventes.length ? `<table class="result petit">${p.ventes.map((v, i) => [v, i]).reverse().map(([v, i]) => `<tr><td>${date(v.date)}<span class="pct">× ${v.n}${v.mode ? ' · ' + t('modes')[v.mode] : ''}</span></td>
         <td class="num">${euros(nombre(v.prix))} <button class="small" data-action="annuler-vente" data-id="${p.id}" data-i="${i}" aria-label="${t('supprimer')}">✕</button></td></tr>`).join('')}</table>`
         : `<p class="muted">${t('aucuneVente')}</p>`}
     </div>`;
@@ -1080,6 +1101,7 @@ function vueBougie(id) {
 function vueStock() {
   app.innerHTML = `<h2>${t('stock')}</h2>
     <p class="muted">${t('stockAide')}</p>
+    ${alertesHtml()}
     <div class="actions" style="margin:0 0 16px">
       <a class="btn primary" href="#/stock/nouveau">${t('nouvelArticle')}</a>
       <button data-action="stock-depuis-recettes">${t('depuisRecettes')}</button>
@@ -1195,17 +1217,128 @@ function stockDepuisRecettes() {
   vueStock();
 }
 
-function vueAlertes() {
+// Articles à racheter, affichés en haut de la page Stock.
+function alertesHtml() {
   const liste = enAlerte();
-  app.innerHTML = `<h2>${t('alertes')}</h2>
-    <p class="muted">${t('alertesAide')}</p>
-    ${liste.length ? `<ul class="list">${liste.map(a => `
+  return liste.length ? `<div class="card rappel"><h3 style="margin-top:0">${t('alertes')}</h3>
+    <ul class="list">${liste.map(a => `
       <li><div class="grow">
         <div class="title">${esc(a.nom)} <span class="muted" style="font-weight:400">· ${t('typeNom')[a.type]}</span></div>
         <div class="sub warn">${a.quantite > 0 ? t('reste', quantiteTexte(a.quantite, UNITE[a.type])) : t('epuise')}</div>
       </div>
-      <a class="btn small" href="#/stock/${a.id}">${t('racheter')}</a></li>`).join('')}</ul>`
-      : `<div class="empty">${t('aucuneAlerte')}</div>`}`;
+      <a class="btn small" href="#/stock/${a.id}">${t('racheter')}</a></li>`).join('')}</ul></div>` : '';
+}
+
+// --- Rapport (entrées et sorties) ---
+
+// Tous les mouvements d'argent : achats du stock, ventes de bougies, et ceux ajoutés à la main.
+function tousMouvements() {
+  return [
+    ...etat.stock.flatMap(a => a.achats.map(x => ({ date: x.date, libelle: t('achatDe', a.nom), montant: -nombre(x.prix) }))),
+    ...etat.produits.flatMap(p => p.ventes.map(v => ({ date: v.date, libelle: t('venteDe', p.nom), montant: nombre(v.prix), mode: v.mode }))),
+    ...etat.mouvements.map(m => ({ ...m, manuel: true, montant: m.sens === 'sortie' ? -nombre(m.montant) : nombre(m.montant) })),
+  ].sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function vueRapport() {
+  const tous = tousMouvements();
+  const annees = [...new Set([String(new Date().getFullYear()), ...tous.map(m => m.date.slice(0, 4))])].sort().reverse();
+  const annee = annees.includes(etat.ui.annee) ? etat.ui.annee : annees[0];
+  const liste = tous.filter(m => m.date.startsWith(annee));
+  const totaux = l => ({ e: l.filter(m => m.montant > 0).reduce((s, m) => s + m.montant, 0), s: -l.filter(m => m.montant < 0).reduce((s, m) => s + m.montant, 0) });
+  const an = totaux(liste);
+  const mois = [...new Set(liste.map(m => m.date.slice(0, 7)))].sort().reverse();
+  const nomMois = m => new Date(m + '-15').toLocaleDateString(locale(), { month: 'long' });
+  const signe = x => `<span class="${x < 0 ? 'warn' : ''}">${euros(x)}</span>`;
+  app.innerHTML = `<h2>${t('rapport')}</h2>
+    <p class="muted">${t('rapportAide')}</p>
+    <div class="actions" style="margin:0 0 16px;align-items:center">
+      <select data-ui="annee" aria-label="${t('annee')}" style="width:auto">${annees.map(a => `<option ${a === annee ? 'selected' : ''}>${a}</option>`).join('')}</select>
+      <button data-action="exporter-csv">${t('exporterCsv')}</button>
+    </div>
+    <div class="card">
+      <table class="result">
+        <tr><td>${t('entrees')}</td><td class="num">${euros(an.e)}</td></tr>
+        <tr><td>${t('sorties')}</td><td class="num">${euros(-an.s)}</td></tr>
+        <tr class="total"><td>${t('solde')}</td><td class="num">${signe(an.e - an.s)}</td></tr>
+      </table>
+      ${mois.length ? `<h3>${t('mois')}</h3><table class="result petit">
+        <tr><td></td><td class="num muted">${t('entrees')}</td><td class="num muted">${t('sorties')}</td><td class="num muted">${t('solde')}</td></tr>
+        ${mois.map(m => { const x = totaux(liste.filter(v => v.date.startsWith(m))); return `<tr><td>${nomMois(m)}</td>
+          <td class="num">${euros(x.e)}</td><td class="num">${euros(-x.s)}</td><td class="num">${signe(x.e - x.s)}</td></tr>`; }).join('')}
+      </table>` : ''}
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">${t('autreMouvement')}</h3>
+      <div class="grid2">
+        <div><label for="m-sens">${t('type')}</label>
+          <select id="m-sens"><option value="sortie">${t('sortie')}</option><option value="entree">${t('entree')}</option></select></div>
+        <div><label for="m-date">${t('date')}</label><input id="m-date" type="date" value="${new Date().toISOString().slice(0, 10)}"></div>
+      </div>
+      <div class="grid3">
+        <div><label for="m-libelle">${t('libelle')}</label><input id="m-libelle" placeholder="${t('exLibelle')}"></div>
+        <div><label for="m-montant">${t('montant')}</label><input id="m-montant" inputmode="decimal"></div>
+        <div><label for="m-mode">${t('paiement')}</label><select id="m-mode">${optionsModes(etat.reglages.dernierMode || 'especes')}</select></div>
+      </div>
+      <div class="actions"><button data-action="ajouter-mouvement">${t('ajouterMouvement')}</button></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">${t('mouvements')}</h3>
+      ${liste.length ? `<table class="result petit">${liste.map(m => `<tr>
+        <td>${esc(m.libelle)}<span class="pct">${new Date(m.date).toLocaleDateString(locale())}${m.mode ? ' · ' + t('modes')[m.mode] : ''}</span></td>
+        <td class="num">${signe(m.montant)}${m.manuel ? ` <button class="small" data-action="supprimer-mouvement" data-id="${m.id}" aria-label="${t('supprimer')}">✕</button>` : ''}</td></tr>`).join('')}
+      </table>` : `<p class="muted">${t('aucunMouvement')}</p>`}
+    </div>`;
+}
+
+const optionsModes = choisi => Object.entries(t('modes')).map(([k, v]) => `<option value="${k}" ${k === choisi ? 'selected' : ''}>${v}</option>`).join('');
+
+// Le livre des recettes demande le moyen de paiement de chaque vente.
+function fenetreVente(p) {
+  const fond = document.createElement('div');
+  fond.className = 'visionneuse';
+  const prix = p.prixVente === '' ? '' : String(p.prixVente).replace('.', etat.reglages.langue === 'fr' ? ',' : '.');
+  fond.innerHTML = `<div class="card fenetre">
+    <h3 style="margin-top:0">${t('venteTitre', esc(p.nom))}</h3>
+    <div class="grid2">
+      <div><label for="v-prix">${t('prixVente')}</label><input id="v-prix" inputmode="decimal" value="${esc(prix)}"></div>
+      <div><label for="v-mode">${t('paiement')}</label><select id="v-mode">${optionsModes(etat.reglages.dernierMode || 'especes')}</select></div>
+    </div>
+    <div class="actions">
+      <button class="primary" data-v="valider">${t('valider')}</button>
+      <button data-v="annuler">${t('annuler')}</button>
+    </div></div>`;
+  document.body.appendChild(fond);
+  fond.querySelector('#v-prix').focus();
+  fond.addEventListener('click', ev => {
+    const choix = ev.target.dataset.v;
+    if (choix === 'annuler' || ev.target === fond) { fond.remove(); return; }
+    if (choix !== 'valider') return;
+    const montant = nombre(fond.querySelector('#v-prix').value);
+    const mode = fond.querySelector('#v-mode').value;
+    p.ventes.push({ date: new Date().toISOString().slice(0, 10), n: 1, prix: montant, mode });
+    p.quantite = Math.max(0, p.quantite - 1);
+    if (p.prixVente === '' && montant) p.prixVente = montant;
+    etat.reglages.dernierMode = mode;
+    enregistrer();
+    fond.remove();
+    toast(p.quantite ? t('venteNotee') : `${t('venteNotee')} · ${t('plusEnStock')}`);
+    route();
+  });
+}
+
+// Point-virgule et virgule décimale : ce qu'attend Excel en français.
+function exporterCsv() {
+  const fr = etat.reglages.langue === 'fr';
+  const sep = fr ? ';' : ',';
+  const cellule = v => `"${String(v).replace(/"/g, '""')}"`;
+  const lignes = [[t('date'), t('libelle'), t('paiement'), t('montant')].map(cellule).join(sep),
+    ...tousMouvements().map(m => [m.date, cellule(m.libelle), cellule(m.mode ? t('modes')[m.mode] : ''),
+      fr ? m.montant.toFixed(2).replace('.', ',') : m.montant.toFixed(2)].join(sep))];
+  const nom = `bougies-rapport-${new Date().toISOString().slice(0, 10)}.csv`;
+  partagerFichier(new File(['﻿' + lignes.join('\r\n')], nom, { type: 'text/csv' }))
+    .then(ok => ok && toast(t('exportCree')))
+    .catch(() => toast(t('sauvegardeEchouee')));
 }
 
 // --- Réglages et sauvegarde ---
@@ -1261,21 +1394,33 @@ async function exporter() {
   const nom = `bougies-sauvegarde-${date}.json`;
   const fichier = new File([JSON.stringify(donnees, null, 2)], nom, { type: 'application/json' });
   try {
-    if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
-      await navigator.share({ files: [fichier], title: nom });
-    } else {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(fichier);
-      a.download = nom;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    }
+    if (!await partagerFichier(fichier)) return;
     etat.derniereSauvegarde = new Date().toISOString();
     enregistrer();
     vueReglages();
     toast(t('sauvegardeCreee'));
   } catch (e) {
-    if (e.name !== 'AbortError') toast(t('sauvegardeEchouee'));
+    toast(t('sauvegardeEchouee'));
+  }
+}
+
+// Sur iPad, la feuille de partage permet d'enregistrer dans Fichiers ; ailleurs, un téléchargement.
+// Renvoie false si la personne a fermé la feuille sans rien faire.
+async function partagerFichier(fichier) {
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
+      await navigator.share({ files: [fichier], title: fichier.name });
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(fichier);
+      a.download = fichier.name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
+    return true;
+  } catch (e) {
+    if (e.name === 'AbortError') return false;
+    throw e;
   }
 }
 
@@ -1576,18 +1721,9 @@ app.addEventListener('click', ev => {
       brouillon = null;
       aller('#/contenants');
       break;
-    case 'vendre': {
-      const p = produitParId(id);
-      const reponse = prompt(t('demanderPrixVente'), p.prixVente === '' ? '' : String(p.prixVente).replace('.', etat.reglages.langue === 'fr' ? ',' : '.'));
-      if (reponse === null) return;
-      p.ventes.push({ date: new Date().toISOString().slice(0, 10), n: 1, prix: nombre(reponse) });
-      p.quantite = Math.max(0, p.quantite - 1);
-      if (p.prixVente === '' && nombre(reponse)) p.prixVente = nombre(reponse);
-      enregistrer();
-      toast(p.quantite ? t('venteNotee') : `${t('venteNotee')} · ${t('plusEnStock')}`);
-      route();
+    case 'vendre':
+      fenetreVente(produitParId(id));
       break;
-    }
     case 'annuler-vente': {
       if (!confirm(t('annulerVente'))) return;
       const p = produitParId(id);
@@ -1615,6 +1751,26 @@ app.addEventListener('click', ev => {
       aller('#/bougies');
       break;
     }
+    case 'exporter-csv':
+      exporterCsv();
+      break;
+    case 'ajouter-mouvement': {
+      const libelle = document.getElementById('m-libelle').value.trim();
+      const montant = nombre(document.getElementById('m-montant').value);
+      if (!libelle || !(montant > 0)) { toast(t('libelleMontant')); return; }
+      etat.mouvements.push({ id: nouvelId(), date: document.getElementById('m-date').value || new Date().toISOString().slice(0, 10),
+        sens: document.getElementById('m-sens').value, libelle, montant, mode: document.getElementById('m-mode').value });
+      enregistrer();
+      toast(t('mouvementAjoute'));
+      vueRapport();
+      break;
+    }
+    case 'supprimer-mouvement':
+      if (!confirm(t('supprimerMouvement'))) return;
+      etat.mouvements = etat.mouvements.filter(m => m.id !== id);
+      enregistrer();
+      vueRapport();
+      break;
     case 'stock-depuis-recettes':
       stockDepuisRecettes();
       break;
@@ -1667,7 +1823,7 @@ app.addEventListener('input', ev => {
   if (el.dataset.ui) {
     etat.ui[el.dataset.ui] = el.value;
     enregistrer();
-    afficherResultat();
+    if (el.dataset.ui === 'annee') vueRapport(); else afficherResultat();
   } else if (el.dataset.pot !== undefined) {
     etat.ui.lignes[el.dataset.pot][el.dataset.champPot] = el.value;
     enregistrer();
