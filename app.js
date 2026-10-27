@@ -123,7 +123,7 @@ const TEXTES = {
     ajouterMouvement: '+ Ajouter', mouvementAjoute: 'Mouvement ajouté', libelleMontant: 'Indiquez un libellé et un montant',
     supprimerMouvement: 'Supprimer ce mouvement ?', exporterCsv: 'Exporter pour Excel', exportCree: 'Fichier créé',
     achatDe: n => `Achat : ${n}`, venteDe: n => `Vente : ${n}`,
-    paiement: 'Paiement', modes: { especes: 'Espèces', carte: 'Carte', virement: 'Virement', cheque: 'Chèque', autre: 'Autre' },
+    devise: 'Devise', paiement: 'Paiement', modes: { especes: 'Espèces', carte: 'Carte', virement: 'Virement', cheque: 'Chèque', autre: 'Autre' },
     venteTitre: n => `Vente : ${n}`, valider: 'Valider',
   },
   en: {
@@ -246,14 +246,16 @@ const TEXTES = {
     ajouterMouvement: '+ Add', mouvementAjoute: 'Entry added', libelleMontant: 'Enter a description and an amount',
     supprimerMouvement: 'Delete this entry?', exporterCsv: 'Export for Excel', exportCree: 'File created',
     achatDe: n => `Purchase: ${n}`, venteDe: n => `Sale: ${n}`,
-    paiement: 'Payment', modes: { especes: 'Cash', carte: 'Card', virement: 'Transfer', cheque: 'Cheque', autre: 'Other' },
+    devise: 'Currency', paiement: 'Payment', modes: { especes: 'Cash', carte: 'Card', virement: 'Transfer', cheque: 'Cheque', autre: 'Other' },
     venteTitre: n => `Sale: ${n}`, valider: 'Confirm',
   },
 };
 
+// Les textes écrivent « € » ; on affiche la devise choisie dans les Réglages.
 function t(cle, ...args) {
   const v = TEXTES[etat.reglages.langue][cle] ?? TEXTES.fr[cle];
-  return typeof v === 'function' ? v(...args) : v;
+  const r = typeof v === 'function' ? v(...args) : v;
+  return typeof r === 'string' ? r.replace(/€/g, etat.reglages.devise) : r;
 }
 
 // ---------- Données ----------
@@ -275,6 +277,7 @@ function etatVide() {
       dosageDefaut: 8,
       densite: 0.9,
       densiteParfum: 1,
+      devise: 'CHF',
       // Valeurs de ses notes (Violet Lemonade).
       temperatures: { pot: '35-40', fonte: '70', couleur: '65', parfum: '60-65', coulage: '55-60' },
     },
@@ -414,7 +417,8 @@ function nombre(v) {
 }
 
 function locale() {
-  return etat.reglages.langue === 'en' ? 'en-GB' : 'fr-FR';
+  if (etat.reglages.langue === 'en') return 'en-GB';
+  return etat.reglages.devise === 'CHF' ? 'fr-CH' : 'fr-FR';
 }
 
 function grammes(x) {
@@ -495,7 +499,7 @@ function majBadge() {
 }
 
 function euros(x) {
-  return x.toLocaleString(locale(), { style: 'currency', currency: 'EUR' });
+  return x.toLocaleString(locale(), { style: 'currency', currency: etat.reglages.devise });
 }
 
 function quantiteTexte(q, unite) {
@@ -1058,7 +1062,7 @@ function vueBougies() {
         const incomplet = p.entrees.some(e => !e.complet);
         return `<li class="${p.quantite ? '' : 'vide'}"><a class="row" href="#/bougie/${p.id}"><div class="grow">
           <div class="title">${esc(p.nom)}</div>
-          <div class="sub">${cout !== null ? `${t('coutUnite')} ${incomplet ? '≥ ' : ''}${euros(cout)}` : ''}${p.prixVente !== '' ? ` · ${t('prixVente').replace(' (€)', '')} ${euros(nombre(p.prixVente))}` : ''}</div>
+          <div class="sub">${cout !== null ? `${t('coutUnite')} ${incomplet ? '≥ ' : ''}${euros(cout)}` : ''}${p.prixVente !== '' ? ` · ${t('prixVente').replace(/ \(.*\)$/, '')} ${euros(nombre(p.prixVente))}` : ''}</div>
         </div><div style="white-space:nowrap" class="${p.quantite ? '' : 'muted'}">${t('enStockN', p.quantite)}</div></a>
         <button class="small" data-action="vendre" data-id="${p.id}" ${p.quantite ? '' : 'disabled'}>${t('vendu')}</button></li>`;
       }).join('')}</ul>`
@@ -1297,7 +1301,7 @@ const optionsModes = choisi => Object.entries(t('modes')).map(([k, v]) => `<opti
 function fenetreVente(p) {
   const fond = document.createElement('div');
   fond.className = 'visionneuse';
-  const prix = p.prixVente === '' ? '' : String(p.prixVente).replace('.', etat.reglages.langue === 'fr' ? ',' : '.');
+  const prix = p.prixVente === '' ? '' : String(p.prixVente).replace('.', locale() === 'fr-FR' ? ',' : '.');
   fond.innerHTML = `<div class="card fenetre">
     <h3 style="margin-top:0">${t('venteTitre', esc(p.nom))}</h3>
     <div class="grid2">
@@ -1327,14 +1331,15 @@ function fenetreVente(p) {
   });
 }
 
-// Point-virgule et virgule décimale : ce qu'attend Excel en français.
+// Point-virgule en français ; virgule décimale seulement pour Excel réglé en France.
 function exporterCsv() {
   const fr = etat.reglages.langue === 'fr';
   const sep = fr ? ';' : ',';
+  const virgule = fr && etat.reglages.devise === 'EUR';
   const cellule = v => `"${String(v).replace(/"/g, '""')}"`;
   const lignes = [[t('date'), t('libelle'), t('paiement'), t('montant')].map(cellule).join(sep),
     ...tousMouvements().map(m => [m.date, cellule(m.libelle), cellule(m.mode ? t('modes')[m.mode] : ''),
-      fr ? m.montant.toFixed(2).replace('.', ',') : m.montant.toFixed(2)].join(sep))];
+      virgule ? m.montant.toFixed(2).replace('.', ',') : m.montant.toFixed(2)].join(sep))];
   const nom = `bougies-rapport-${new Date().toISOString().slice(0, 10)}.csv`;
   partagerFichier(new File(['﻿' + lignes.join('\r\n')], nom, { type: 'text/csv' }))
     .then(ok => ok && toast(t('exportCree')))
@@ -1352,6 +1357,10 @@ function vueReglages() {
       <select id="r-langue" data-reglage="langue">
         <option value="fr" ${r.langue === 'fr' ? 'selected' : ''}>Français</option>
         <option value="en" ${r.langue === 'en' ? 'selected' : ''}>English</option>
+      </select>
+      <label for="r-devise">${t('devise')}</label>
+      <select id="r-devise" data-reglage="devise">
+        ${['CHF', 'EUR'].map(d => `<option ${r.devise === d ? 'selected' : ''}>${d}</option>`).join('')}
       </select>
       <div class="grid2">
         <div><label for="r-dosage">${t('dosageDefaut')}</label>
@@ -1842,9 +1851,9 @@ app.addEventListener('input', ev => {
     enregistrer();
   } else if (el.dataset.reglage) {
     const cle = el.dataset.reglage;
-    etat.reglages[cle] = cle === 'langue' ? el.value : nombre(el.value);
+    etat.reglages[cle] = cle === 'langue' || cle === 'devise' ? el.value : nombre(el.value);
     enregistrer();
-    if (cle === 'langue') route();
+    if (cle === 'langue' || cle === 'devise') route();
   } else if (el.dataset.ligne === 'parfums') {
     // Total du mélange mis à jour en direct dans le formulaire.
     const somme = [...app.querySelectorAll('[data-ligne="parfums"][data-champ="pct"]')].reduce((s, x) => s + nombre(x.value), 0);
