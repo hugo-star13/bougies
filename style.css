@@ -265,3 +265,7 @@ button:disabled { opacity: .4; cursor: default; }
 .attente { animation: attente 1.6s ease-in-out infinite; }
 @keyframes attente { 50% { opacity: .45; } }
 @media (prefers-reduced-motion: reduce) { .attente { animation: none; } }
+
+/* Réglages : numéro de version et lien vers les nouveautés */
+.version-app { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.version-app .btn { width: auto; min-height: 44px; padding: 6px 14px; }

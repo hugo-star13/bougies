@@ -1,8 +1,8 @@
 // Garde l'app disponible hors ligne. Réseau d'abord pour recevoir les mises à jour,
 // copie locale si l'iPad n'a pas internet.
-const CACHE = 'bougies-v14';
+const CACHE = 'bougies-v15';
 const FICHIERS = [
-  './', 'index.html', 'style.css', 'app.js', 'facture.js', 'manifest.webmanifest',
+  './', 'index.html', 'style.css', 'app.js', 'versions.js', 'facture.js', 'manifest.webmanifest',
   'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/nunito.woff2', 'fonts/dm-serif-display.woff2',
 ];

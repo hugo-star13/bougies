@@ -41,6 +41,7 @@ const TEXTES = {
     contenantEnregistre: 'Contenant enregistré', nomEtPoids: 'Indiquez un nom et un poids',
     supprimerContenant: n => `Supprimer le contenant « ${n} » ?`,
     reglages: 'Réglages', langue: 'Langue',
+    versionApp: v => `Version V${v}`, voirNouveautes: 'Voir les nouveautés', nouveautes: 'Nouveautés', retourReglages: '← Réglages',
     dosageDefaut: 'Parfum par défaut pour une nouvelle formule (% du poids total)',
     densite: 'Conversion ml d’eau → g de cire (densité)',
     sauvegarde: 'Sauvegarde',
@@ -166,6 +167,7 @@ const TEXTES = {
     contenantEnregistre: 'Jar saved', nomEtPoids: 'Enter a name and a weight',
     supprimerContenant: n => `Delete the jar “${n}”?`,
     reglages: 'Settings', langue: 'Language',
+    versionApp: v => `Version V${v}`, voirNouveautes: 'See what’s new', nouveautes: 'What’s new (in French)', retourReglages: '← Settings',
     dosageDefaut: 'Default scent for a new recipe (% of total weight)',
     densite: 'Water ml → wax g conversion (density)',
     sauvegarde: 'Backup',
@@ -662,7 +664,7 @@ function route() {
   const [page, id, mode] = location.hash.replace(/^#\/?/, '').split('/');
   document.querySelectorAll('.topbar nav a').forEach(a => {
     const onglet = a.dataset.tab;
-    const actif = onglet === page || (onglet === 'formules' && page === 'formule') || (onglet === 'contenants' && page === 'contenant') || (onglet === 'bougies' && page === 'bougie') || (onglet === 'stock' && page === 'facture') || (onglet === 'calcul' && !['formules', 'formule', 'contenants', 'contenant', 'stock', 'facture', 'rapport', 'bougies', 'bougie', 'reglages'].includes(page));
+    const actif = onglet === page || (onglet === 'formules' && page === 'formule') || (onglet === 'contenants' && page === 'contenant') || (onglet === 'bougies' && page === 'bougie') || (onglet === 'stock' && page === 'facture') || (onglet === 'reglages' && page === 'versions') || (onglet === 'calcul' && !['formules', 'formule', 'contenants', 'contenant', 'stock', 'facture', 'rapport', 'bougies', 'bougie', 'reglages', 'versions'].includes(page));
     a.classList.toggle('active', actif);
     if (actif) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
@@ -680,6 +682,7 @@ function route() {
     case 'bougies': return vueBougies();
     case 'bougie': return vueBougie(id);
     case 'reglages': return vueReglages();
+    case 'versions': return vueVersions();
     case 'fabrication': return vueFabrication();
     default: return vueCalcul();
   }
@@ -1504,8 +1507,23 @@ function vueReglages() {
         <button data-action="charger-recettes">${t('chargerRecettes')}</button>
         <input type="file" id="fichier-import" accept=".json,application/json" hidden>
       </div>
+    </div>
+    <div class="card version-app">
+      <span class="muted">${t('versionApp', VERSIONS[0].v)}</span>
+      <a class="btn" href="#/versions">${t('voirNouveautes')}</a>
     </div>`;
   document.getElementById('fichier-import').addEventListener('change', importer);
+}
+
+function vueVersions() {
+  const date = d => new Date(d + 'T12:00:00').toLocaleDateString(locale(), { dateStyle: 'long' });
+  app.innerHTML = `<p><a href="#/reglages">${t('retourReglages')}</a></p>
+    <h2>${t('nouveautes')}</h2>
+    ${VERSIONS.map(x => `<div class="card">
+      <h3 style="margin-top:0">V${esc(x.v)} · ${esc(x.titre)}</h3>
+      <p class="muted">${date(x.date)}</p>
+      <ul>${x.details.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
+    </div>`).join('')}`;
 }
 
 async function exporter() {
