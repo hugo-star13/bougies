@@ -7,6 +7,10 @@ Petite web app pour iPad : formules de bougies artisanales et calcul des quantit
 - Lecture des factures (onglet Stock) : le PDF de la facture est lu sur l'appareil, sans IA ni envoi sur internet. Les lignes repérées doivent être vérifiées et validées avant d'entrer dans le stock.
 - HTML, CSS et JavaScript simples, sans outil de compilation. Hébergée sur GitHub Pages.
 
+## Versions
+
+La version affichée dans Réglages est `V1.<numéro de la PR mergée>`. À chaque nouvelle PR, ajouter une entrée en haut de `versions.js` (numéro, date, titre, changements en langage simple) : elle apparaît dans Réglages > « Voir les nouveautés ».
+
 ## Crédits
 
 - Polices DM Serif Display et Nunito (licence SIL Open Font License), copiées dans `fonts/` pour fonctionner hors ligne.
