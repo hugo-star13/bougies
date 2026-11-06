@@ -37,6 +37,7 @@ const TEXTES_FACTURE = {
     erreurScan: 'Ce PDF ne contient pas de texte (c’est une image scannée). Il faut le PDF envoyé par le fournisseur, ou saisir l’achat à la main dans l’article.',
     erreurChargement: 'Le lecteur de PDF n’a pas pu se charger. Vérifiez la connexion internet (nécessaire la première fois).',
     abandonnerFacture: 'Abandonner cette facture ? Rien n’a été ajouté au stock.',
+    offertDetail: 'offert',
   },
   en: {
     lireFacture: 'Read an invoice',
@@ -64,6 +65,7 @@ const TEXTES_FACTURE = {
     erreurScan: 'This PDF has no text (it is a scanned image). Use the PDF sent by the supplier, or enter the purchase by hand in the item.',
     erreurChargement: 'The PDF reader could not load. Check the internet connection (needed the first time).',
     abandonnerFacture: 'Drop this invoice? Nothing has been added to stock.',
+    offertDetail: 'free',
   },
 };
 Object.assign(TEXTES.fr, TEXTES_FACTURE.fr);
@@ -188,6 +190,8 @@ function devinerType(description) {
 const EXCLUS = /(sous[- ]?total|subtotal|zwischensumme|\btotal\b|\btotaux\b|summe|gesamt|\btva\b|\bmwst\b|\bvat\b|\btaxe|\bremise\b|\brabais\b|discount|\biban\b|\bbic\b|\bswift\b|acompte|deja paye|montant du|net a payer|a payer|solde|arrondi|\bpage\b|\btel\b|telephone|e-?mail|www\.|n° ?(de )?(tva|ide|facture|commande|client)|\bide\b|\bche-\d)/;
 const FRAIS_MOTS = /(frais de port|\bport\b|livraison|expedition|envoi|shipping|versand|porto|emballage|douane|zoll|frais de traitement)/;
 const TOTAL_MOTS = /(total|a payer|montant du|gesamt|summe|amount due)/;
+// Produit offert (ligne à 0.00, ou mention « offert » sans prix) : ajouté au stock quand même (il sera utilisé), à prix 0.
+const OFFERT = /(offert|gratuit|cadeau|echantillon|kostenlos|geschenk|gratis)/;
 const NON_TOTAL = /(sous[- ]?total|subtotal|zwischensumme|hors taxe|\bht\b|netto|\btva\b|\bmwst\b|\bvat\b)/;
 
 // Conditionnement écrit sur la ligne, ramené en g, ml ou pièces.
@@ -237,6 +241,7 @@ function nomPropose(description, liste, type) {
     .replace(/\b(?=[A-Z0-9-]*\d)[A-Z0-9-]{4,}\b/g, ' ') // références
     .replace(/\b\d+\b/g, m => (/\d/.test(m) ? m : ''))
     .replace(/\b(chf|eur|usd|gbp|fr\.)\b|[€$£]/gi, ' ')
+    .replace(/[-–(:]?\s*\b(offerte?s?|gratuite?s?|cadeau|gift|free|gratis|kostenlos)\b\s*\)?/gi, ' ')
     .replace(/\s{2,}.*$/, '') // colonnes après le libellé
     .replace(/[|_*]+/g, ' ').replace(/\s+/g, ' ').replace(/^[\s\-–:.,]+|[\s\-–:.,]+$/g, '');
   s = s.length > 50 ? s.slice(0, 50).replace(/\s\S*$/, '') : s;
@@ -293,13 +298,14 @@ function analyserFacture(lignesTexte) {
   let tva = 0;
   for (const ligne of lignes) {
     const liste = montants(ligne);
-    if (!liste.length) continue;
     const bas = sansAccents(ligne);
-    const dernier = liste[liste.length - 1].valeur;
+    const offert = OFFERT.test(bas);
+    if (!liste.length && !offert) continue;
+    const dernier = liste.length ? liste[liste.length - 1].valeur : 0;
     if (TOTAL_MOTS.test(bas) && !NON_TOTAL.test(bas)) { totaux.push(dernier); continue; }
     if (/\b(tva|mwst|vat)\b/.test(bas) && !/inclu|incl\b|enthalten|included/.test(bas)) { tva += dernier; continue; }
-    if (FRAIS_MOTS.test(bas) && !/gratuit|offert|free|kostenlos/.test(bas)) { resultat.frais += dernier; continue; }
-    if (EXCLUS.test(bas) || (bas.match(/[a-z]/g) || []).length < 3 || !(dernier > 0)) continue;
+    if (FRAIS_MOTS.test(bas)) { resultat.frais += dernier; continue; }
+    if (EXCLUS.test(bas) || (bas.match(/[a-z]/g) || []).length < 3) continue;
     const description = ligne.trim();
     const existant = articleProche(description);
     const type = existant?.type || devinerType(description);
@@ -311,7 +317,7 @@ function analyserFacture(lignesTexte) {
       article_id: existant?.id || '',
       nom: existant?.nom || nomPropose(description, liste, type),
       quantite: Math.round(quantite * 10) / 10,
-      detail_quantite: cond ? `${nb} × ${cond.texte}` : (UNITE[type] === 'u' ? `${nb}` : '?'),
+      detail_quantite: [cond ? `${nb} × ${cond.texte}` : (UNITE[type] === 'u' ? `${nb}` : '?'), !(dernier > 0) && t('offertDetail')].filter(Boolean).join(' · '),
       prix: dernier,
     });
   }
@@ -351,7 +357,7 @@ function preparerVerification(lu, apercus, texte) {
         cible: existant ? existant.id : (articleNomme(type, l.nom)?.id || ''),
         nom: l.nom || '',
         quantite: nombre(l.quantite) || '',
-        prix: nombre(l.prix) || '',
+        prix: l.prix === 0 ? 0 : (nombre(l.prix) || ''),
       };
     }),
   };
