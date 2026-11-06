@@ -1493,7 +1493,6 @@ function vueReglages() {
             <input id="r-t-${k}" data-temp="${k}" value="${esc(r.temperatures[k])}"></div>`).join('')}
       </div>
     </div>
-    ${reglagesFactureHtml()}
     <div class="card">
       <h3 style="margin-top:0">${t('sauvegarde')}</h3>
       <p>${t('sauvegardeTexte')}</p>

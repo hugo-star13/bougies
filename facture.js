@@ -1,14 +1,12 @@
 // ---------- Lecture des factures ----------
-// Une photo (ou un PDF) de facture fournisseur est lue par Claude, l'IA d'Anthropic,
-// qui propose les lignes d'achat. Rien n'entre dans le stock avant que la personne
-// ait vérifié et validé les lignes.
+// Le PDF d'une facture fournisseur (reçu par mail) contient déjà son texte : il est lu
+// sur l'iPad avec pdf.js, sans IA et sans rien envoyer sur internet. Des règles simples
+// repèrent ensuite les lignes d'article, les prix, les quantités, la date et la devise.
+// La lecture peut se tromper : rien n'entre dans le stock avant que la personne ait
+// vérifié et validé les lignes.
 //
-// La clé API est gardée à part, seulement sur cet iPad : elle n'est ni dans les
-// données sauvegardées ni dans le dépôt (qui est public).
+// pdf.js (pdfjs-dist 3.11.174, licence Apache 2.0) est copié dans lib/pdfjs.
 
-const CLE_API = 'bougies-cle-claude';
-const MODELE_FACTURE = 'claude-opus-5-5';
-const FACTURE_COTE_MAX = 1568; // au-delà, l'IA réduit l'image elle-même : inutile d'envoyer plus
 const DEVISES_FACTURE = ['CHF', 'EUR', 'USD', 'GBP'];
 const FRAIS = ['repartir', 'depense', 'ignorer'];
 
@@ -16,265 +14,331 @@ const TEXTES_FACTURE = {
   fr: {
     lireFacture: 'Lire une facture',
     factureTitre: 'Lire une facture',
-    factureAide: 'Prenez en photo la facture (ou choisissez une capture d’écran ou un PDF). Les lignes sont pré-remplies : vérifiez-les, puis validez. Le stock ne change qu’après validation.',
-    choisirFacture: 'Choisir la photo ou le PDF',
-    plusieursPages: 'Plusieurs pages ? Sélectionnez-les ensemble.',
-    lectureEnCours: 'Lecture de la facture… (environ 20 secondes)',
-    cleManquante: 'Pour lire les factures, l’app a besoin d’une clé API Claude. Elle se règle une seule fois.',
-    cleAide: 'Créez un compte sur console.anthropic.com, achetez un petit crédit (quelques centimes par facture), puis créez une clé dans « API Keys » et collez-la ici. Elle reste sur cet iPad et n’est pas incluse dans les sauvegardes.',
-    cleApi: 'Clé API Claude', cleEnregistree: 'Clé enregistrée', cleSupprimee: 'Clé supprimée',
-    enregistrerCle: 'Enregistrer la clé', supprimerCle: 'Supprimer la clé', cleOk: 'Clé enregistrée sur cet iPad.',
-    cleInvalide: 'Cette clé ne ressemble pas à une clé Claude (elle commence par sk-ant-).',
-    reglagesFacture: 'Lecture des factures',
+    factureAide: 'Choisissez le PDF de la facture reçu par mail (dans Fichiers, ou depuis Mail avec « Enregistrer dans Fichiers »). Les lignes sont pré-remplies : vérifiez-les, puis validez. Le stock ne change qu’après validation.',
+    factureLocale: 'La lecture se fait sur cet iPad : rien n’est envoyé sur internet.',
+    choisirFacture: 'Choisir le PDF',
+    lectureEnCours: 'Lecture de la facture…',
     fournisseur: 'Fournisseur',
-    lignesLues: n => `${n} ligne(s) lue(s). Vérifiez chaque ligne : quantité dans l’unité du stock, prix total payé pour la ligne.`,
+    lignesLues: n => `${n} ligne(s) repérée(s). La lecture automatique peut se tromper : comparez chaque ligne avec la facture (quantité dans l’unité du stock, prix total de la ligne).`,
+    aucuneLigneLue: 'Aucune ligne d’article repérée. Ajoutez-les à la main avec le bouton ci-dessous, en vous aidant du texte lu.',
     inclure: 'Ajouter', lu: 'Sur la facture', article: 'Article du stock',
-    nouvelArticleNom: n => `+ Nouvel article : ${n}`, nomNouvel: 'Nom du nouvel article',
+    nouvelArticleNom: n => `+ Nouvel article${n ? ` : ${n}` : ''}`, nomNouvel: 'Nom du nouvel article',
     quantiteStock: u => `Quantité (${u})`, prixLigne: d => `Prix de la ligne (${d})`,
+    ajouterLigne: '+ Ajouter une ligne', ligneManuelle: 'ligne ajoutée à la main',
+    texteLu: 'Texte lu sur la facture',
     fraisLus: d => `Frais de port et autres frais (${d})`, fraisQuoi: 'Ces frais',
     fraisChoix: { repartir: 'Répartir sur les articles (coût plus juste)', depense: 'Noter comme dépense dans Rapport', ignorer: 'Ne pas compter' },
-    totalLignes: 'Total des lignes', totalFacture: 'Total de la facture', ecart: 'écart à vérifier',
+    totalLignes: 'Total des lignes', totalFacture: 'Total lu sur la facture', ecart: 'écart à vérifier',
     ajouterAuStock: n => `Ajouter ${n} achat(s) au stock`, aucuneLigne: 'Aucune ligne cochée',
     lignesAjoutees: n => `${n} achat(s) ajouté(s) au stock`, fraisDe: n => `Frais de port : ${n}`,
-    autreFacture: 'Lire une autre facture', recommencer: 'Réessayer',
+    recommencer: 'Réessayer',
     ligneIncomplete: n => `Ligne ${n} : indiquez une quantité, un prix et un nom`,
-    erreurCle: 'La clé API est refusée. Vérifiez-la dans Réglages.',
-    erreurCredit: 'Le crédit du compte Claude est épuisé. Rechargez-le sur console.anthropic.com.',
-    erreurOccupe: 'Le service est surchargé. Réessayez dans une minute.',
-    erreurReseau: 'Pas de connexion internet : la lecture des factures en a besoin.',
-    erreurLecture: 'La facture n’a pas pu être lue. Essayez une photo plus nette, bien à plat.',
-    erreurAutre: m => `Erreur : ${m}`,
+    erreurLecture: 'Ce fichier n’a pas pu être lu. Vérifiez qu’il s’agit bien du PDF de la facture.',
+    erreurScan: 'Ce PDF ne contient pas de texte (c’est une image scannée). Il faut le PDF envoyé par le fournisseur, ou saisir l’achat à la main dans l’article.',
+    erreurChargement: 'Le lecteur de PDF n’a pas pu se charger. Vérifiez la connexion internet (nécessaire la première fois).',
     abandonnerFacture: 'Abandonner cette facture ? Rien n’a été ajouté au stock.',
-    depuisFacture: f => `Facture ${f}`,
   },
   en: {
     lireFacture: 'Read an invoice',
     factureTitre: 'Read an invoice',
-    factureAide: 'Take a photo of the invoice (or pick a screenshot or a PDF). The lines are filled in for you: check them, then confirm. Stock only changes after you confirm.',
-    choisirFacture: 'Choose the photo or PDF',
-    plusieursPages: 'Several pages? Select them together.',
-    lectureEnCours: 'Reading the invoice… (about 20 seconds)',
-    cleManquante: 'To read invoices, the app needs a Claude API key. You only set it once.',
-    cleAide: 'Create an account at console.anthropic.com, buy a small credit (a few cents per invoice), then create a key under “API Keys” and paste it here. It stays on this iPad and is not included in backups.',
-    cleApi: 'Claude API key', cleEnregistree: 'Key saved', cleSupprimee: 'Key removed',
-    enregistrerCle: 'Save the key', supprimerCle: 'Remove the key', cleOk: 'Key saved on this iPad.',
-    cleInvalide: 'This does not look like a Claude key (it starts with sk-ant-).',
-    reglagesFacture: 'Invoice reading',
+    factureAide: 'Choose the invoice PDF you got by email (in Files, or from Mail with “Save to Files”). The lines are filled in for you: check them, then confirm. Stock only changes after you confirm.',
+    factureLocale: 'Reading happens on this iPad: nothing is sent over the internet.',
+    choisirFacture: 'Choose the PDF',
+    lectureEnCours: 'Reading the invoice…',
     fournisseur: 'Supplier',
-    lignesLues: n => `${n} line(s) read. Check each line: quantity in the stock unit, total price paid for the line.`,
+    lignesLues: n => `${n} line(s) found. Automatic reading can be wrong: compare each line with the invoice (quantity in the stock unit, total price of the line).`,
+    aucuneLigneLue: 'No item line found. Add them by hand with the button below, using the text that was read.',
     inclure: 'Add', lu: 'On the invoice', article: 'Stock item',
-    nouvelArticleNom: n => `+ New item: ${n}`, nomNouvel: 'Name of the new item',
+    nouvelArticleNom: n => `+ New item${n ? `: ${n}` : ''}`, nomNouvel: 'Name of the new item',
     quantiteStock: u => `Quantity (${u})`, prixLigne: d => `Line price (${d})`,
+    ajouterLigne: '+ Add a line', ligneManuelle: 'line added by hand',
+    texteLu: 'Text read from the invoice',
     fraisLus: d => `Shipping and other fees (${d})`, fraisQuoi: 'These fees',
     fraisChoix: { repartir: 'Spread over the items (truer cost)', depense: 'Record as an expense in Report', ignorer: 'Do not count' },
-    totalLignes: 'Lines total', totalFacture: 'Invoice total', ecart: 'difference to check',
+    totalLignes: 'Lines total', totalFacture: 'Total read on the invoice', ecart: 'difference to check',
     ajouterAuStock: n => `Add ${n} purchase(s) to stock`, aucuneLigne: 'No line ticked',
     lignesAjoutees: n => `${n} purchase(s) added to stock`, fraisDe: n => `Shipping: ${n}`,
-    autreFacture: 'Read another invoice', recommencer: 'Try again',
+    recommencer: 'Try again',
     ligneIncomplete: n => `Line ${n}: enter a quantity, a price and a name`,
-    erreurCle: 'The API key was refused. Check it in Settings.',
-    erreurCredit: 'The Claude account has run out of credit. Top it up at console.anthropic.com.',
-    erreurOccupe: 'The service is overloaded. Try again in a minute.',
-    erreurReseau: 'No internet connection: reading invoices needs one.',
-    erreurLecture: 'The invoice could not be read. Try a sharper photo, taken flat.',
-    erreurAutre: m => `Error: ${m}`,
+    erreurLecture: 'This file could not be read. Check that it is the invoice PDF.',
+    erreurScan: 'This PDF has no text (it is a scanned image). Use the PDF sent by the supplier, or enter the purchase by hand in the item.',
+    erreurChargement: 'The PDF reader could not load. Check the internet connection (needed the first time).',
     abandonnerFacture: 'Drop this invoice? Nothing has been added to stock.',
-    depuisFacture: f => `Invoice ${f}`,
   },
 };
 Object.assign(TEXTES.fr, TEXTES_FACTURE.fr);
 Object.assign(TEXTES.en, TEXTES_FACTURE.en);
 
-function cleApi() {
-  try { return localStorage.getItem(CLE_API) || ''; } catch (e) { return ''; }
-}
-
-// Facture en cours de vérification. Gardée en mémoire seulement : si l'app est fermée,
-// on recommence la lecture.
+// Facture en cours. Gardée en mémoire seulement : si l'app est fermée, on relit la facture.
 let facture = null;
 
-// --- Envoi à Claude ---
+// --- Chargement des bibliothèques, seulement quand on lit une facture ---
 
-const SCHEMA_FACTURE = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['fournisseur', 'date', 'devise', 'total', 'frais', 'lignes'],
-  properties: {
-    fournisseur: { type: 'string' },
-    date: { type: 'string', description: 'Date de la facture au format AAAA-MM-JJ, ou chaîne vide.' },
-    devise: { type: 'string', enum: DEVISES_FACTURE },
-    total: { type: 'number', description: 'Total payé, toutes taxes et frais compris.' },
-    frais: { type: 'number', description: 'Frais de port, d’emballage, de douane… toutes taxes comprises. 0 si aucun.' },
-    lignes: {
-      type: 'array',
-      items: {
-        type: 'object',
-        additionalProperties: false,
-        required: ['description', 'type', 'article_id', 'nom', 'quantite', 'detail_quantite', 'prix'],
-        properties: {
-          description: { type: 'string' },
-          type: { type: 'string', enum: TYPES },
-          article_id: { type: 'string' },
-          nom: { type: 'string' },
-          quantite: { type: 'number' },
-          detail_quantite: { type: 'string' },
-          prix: { type: 'number' },
-        },
-      },
-    },
-  },
-};
-
-function consigneFacture() {
-  const articles = etat.stock.map(a => ({ id: a.id, type: a.type, nom: a.nom, unite: UNITE[a.type] }));
-  return `Tu lis une facture d'achat de matériel pour une fabrication artisanale de bougies (en Suisse).
-Rends chaque article acheté sous forme de ligne.
-
-Pour chaque ligne :
-- description : le texte de la ligne tel qu'écrit sur la facture.
-- type : cire, parfum (huiles parfumées, senteurs, huiles essentielles), couleur (colorants, pigments), pot (pots, contenants, verrines, couvercles vendus avec le pot), meche (mèches, supports de mèche), autre (tout le reste : étiquettes, emballages, outils, moules).
-- article_id : l'id de l'article du stock existant qui correspond à ce produit (même produit, même senteur, même taille), sinon "". Ne rapproche pas deux produits différents.
-- nom : un nom court et clair pour le stock, en français, sans la référence ni le conditionnement (ex. « Cire de soja », « Vanille Bourbon », « Pot ambré 180 ml »). Si article_id est rempli, reprends le nom de cet article.
-- quantite : la quantité TOTALE achetée sur cette ligne, convertie dans l'unité du stock : grammes pour cire et couleur, millilitres pour parfum, pièces pour pot, meche et autre. Multiplie par le nombre d'unités commandées (ex. 3 × flacon 100 ml = 300 ; 2 × sac 5 kg = 10000 ; lot de 12 pots × 2 = 24). Pour un parfum vendu au poids, compte ${etat.reglages.densiteParfum || 1} g par ml.
-- detail_quantite : le calcul en clair (ex. « 2 × 5 kg »).
-- prix : le prix TOTAL payé pour cette ligne, remises déduites, TVA comprise. Si la facture montre des prix hors taxe avec une TVA globale, répartis la TVA au prorata des lignes.
-
-Les frais de port, d'emballage ou de douane ne sont pas des lignes : additionne-les dans frais (TVA comprise).
-total : le montant total payé indiqué sur la facture.
-date : la date de la facture (AAAA-MM-JJ). devise : la devise de la facture.
-Si un chiffre est illisible, fais au mieux : la personne vérifiera chaque ligne.
-
-Articles déjà dans le stock (JSON) :
-${JSON.stringify(articles)}`;
-}
-
-function lireEnBase64(fichier) {
-  return new Promise((ok, ko) => {
-    const lecteur = new FileReader();
-    lecteur.onload = () => ok(lecteur.result);
-    lecteur.onerror = () => ko(lecteur.error);
-    lecteur.readAsDataURL(fichier);
+const scriptsCharges = {};
+function chargerScript(src) {
+  scriptsCharges[src] = scriptsCharges[src] || new Promise((ok, ko) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = ok;
+    s.onerror = () => { delete scriptsCharges[src]; ko(new Error(src)); };
+    document.head.appendChild(s);
   });
+  return scriptsCharges[src];
 }
 
-async function blocsFacture(fichiers) {
-  const blocs = [];
-  const apercus = [];
-  for (const f of fichiers) {
-    if (f.type === 'application/pdf') {
-      const url = await lireEnBase64(f);
-      blocs.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: url.split(',')[1] } });
-      apercus.push({ pdf: f.name });
-    } else {
-      const url = await reduireImage(f, FACTURE_COTE_MAX, 0.85);
-      blocs.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: url.split(',')[1] } });
-      apercus.push({ image: url });
-    }
-  }
-  return { blocs, apercus };
-}
-
-function reduireImage(fichier, coteMax, qualite) {
-  return new Promise((ok, ko) => {
-    const img = new Image();
-    const url = URL.createObjectURL(fichier);
-    img.onload = () => {
-      const echelle = Math.min(1, coteMax / Math.max(img.width, img.height));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(img.width * echelle);
-      canvas.height = Math.round(img.height * echelle);
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#fff'; // fond blanc pour les captures PNG transparentes
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      URL.revokeObjectURL(url);
-      ok(canvas.toDataURL('image/jpeg', qualite));
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); ko(new Error('image')); };
-    img.src = url;
-  });
+async function pdfjs() {
+  await chargerScript('lib/pdfjs/pdf.min.js');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdfjs/pdf.worker.min.js';
+  return pdfjsLib;
 }
 
 class ErreurFacture extends Error {}
 
-// Avec secours, un refus de la part de l'IA est relancé automatiquement sur un autre
-// modèle. Si cette option (récente) est refusée, on renvoie la demande sans elle.
-async function envoyerAClaude(blocs, avecSecours) {
-  return fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': cleApi(),
-      'anthropic-version': '2023-06-01',
-      // Appel direct depuis l'app, sans serveur : la clé est celle de l'utilisatrice, sur son iPad.
-      'anthropic-dangerous-direct-browser-access': 'true',
-      ...(avecSecours && { 'anthropic-beta': 'server-side-fallback-2026-07-01' }),
-    },
-    body: JSON.stringify({
-      model: MODELE_FACTURE,
-      max_tokens: 16000,
-      ...(avecSecours && { fallbacks: 'default' }),
-      output_config: { effort: 'low', format: { type: 'json_schema', schema: SCHEMA_FACTURE } },
-      messages: [{ role: 'user', content: [...blocs, { type: 'text', text: consigneFacture() }] }],
-    }),
-  });
+function apercu(source) {
+  const echelle = Math.min(1, 900 / Math.max(source.width, source.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(source.width * echelle);
+  c.height = Math.round(source.height * echelle);
+  c.getContext('2d').drawImage(source, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.8);
 }
 
-async function demanderAClaude(blocs) {
-  let rep;
-  try {
-    rep = await envoyerAClaude(blocs, true);
-    if (rep.status === 400) {
-      const message = (await rep.clone().json().catch(() => ({}))).error?.message || '';
-      if (/fallback|beta/i.test(message)) rep = await envoyerAClaude(blocs, false);
+// Texte d'un PDF : les morceaux de même hauteur forment une ligne, de gauche à droite.
+async function textePdf(fichier, apercus, lib) {
+  const doc = await lib.getDocument({ data: new Uint8Array(await fichier.arrayBuffer()) }).promise;
+  const lignes = [];
+  for (let n = 1; n <= doc.numPages; n++) {
+    const page = await doc.getPage(n);
+    const vue = page.getViewport({ scale: 2 });
+    const canvas = document.createElement('canvas');
+    canvas.width = vue.width;
+    canvas.height = vue.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vue }).promise;
+    apercus.push(apercu(canvas));
+    const contenu = await page.getTextContent();
+    const morceaux = contenu.items.filter(i => i.str.trim()).map(i => ({ x: i.transform[4], y: i.transform[5], fin: i.transform[4] + i.width, str: i.str }));
+    if (!morceaux.length) continue;
+    morceaux.sort((a, b) => b.y - a.y || a.x - b.x);
+    let ligne = [];
+    const finir = () => {
+      if (!ligne.length) return;
+      ligne.sort((a, b) => a.x - b.x);
+      lignes.push(ligne.reduce((s, m, i) => s + (i && m.x - ligne[i - 1].fin > 2 ? '  ' : '') + m.str, ''));
+      ligne = [];
+    };
+    for (const m of morceaux) {
+      if (ligne.length && Math.abs(ligne[0].y - m.y) > 3) finir();
+      ligne.push(m);
     }
-  } catch (e) {
-    try { rep = await envoyerAClaude(blocs, false); } catch (e2) { throw new ErreurFacture(t('erreurReseau')); }
+    finir();
   }
-  const corps = await rep.json().catch(() => ({}));
-  if (!rep.ok) {
-    const message = corps.error?.message || `HTTP ${rep.status}`;
-    if (rep.status === 401 || rep.status === 403) throw new ErreurFacture(t('erreurCle'));
-    if (/credit balance/i.test(message)) throw new ErreurFacture(t('erreurCredit'));
-    if (rep.status === 429 || rep.status === 529 || rep.status >= 500) throw new ErreurFacture(t('erreurOccupe'));
-    throw new ErreurFacture(t('erreurAutre', message));
-  }
-  if (corps.stop_reason === 'refusal' || corps.stop_reason === 'max_tokens') throw new ErreurFacture(t('erreurLecture'));
-  const texte = (corps.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-  try {
-    return JSON.parse(texte);
-  } catch (e) {
-    throw new ErreurFacture(t('erreurLecture'));
-  }
+  if (!lignes.length) throw new ErreurFacture(t('erreurScan'));
+  return lignes;
 }
 
 async function lireFacture(fichiers) {
   facture = { etape: 'lecture', apercus: [] };
   vueFacture();
   try {
-    const { blocs, apercus } = await blocsFacture(fichiers);
-    facture.apercus = apercus;
-    vueFacture();
-    const lu = await demanderAClaude(blocs);
-    preparerVerification(lu, apercus);
+    let lib;
+    try { lib = await pdfjs(); } catch (e) { throw new ErreurFacture(t('erreurChargement')); }
+    const lignes = [];
+    for (const f of fichiers) lignes.push(...await textePdf(f, facture.apercus, lib));
+    preparerVerification(analyserFacture(lignes), facture.apercus, lignes);
   } catch (e) {
-    facture = { etape: 'erreur', erreur: e instanceof ErreurFacture ? e.message : t('erreurLecture'), apercus: facture?.apercus || [] };
+    console.error(e);
+    facture = { etape: 'erreur', erreur: e instanceof ErreurFacture ? e.message : t('erreurLecture') };
   }
   if (location.hash.startsWith('#/facture')) vueFacture();
 }
 
-function preparerVerification(lu, apercus) {
+// --- Règles de lecture ---
+
+const sansAccents = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+// Montants à deux décimales : 45.00, 45,00, 1'234.50, 1 234,50, 1.234,50.
+const MONTANT = /(?<![\d'’.,])(\d{1,3}(?:[ '’. ]\d{3})+|\d+)[.,](\d{2})(?![\d])(?!\s?%)/g;
+const DATE_TEXTE = /\b\d{1,2}[./-]\d{1,2}[./-](?:20)?\d{2}\b|\b20\d{2}-\d{2}-\d{2}\b/g;
+function montants(ligne) {
+  const sansDates = ligne.replace(DATE_TEXTE, m => ' '.repeat(m.length));
+  return [...sansDates.matchAll(MONTANT)].map(m => ({ valeur: Number(m[1].replace(/[^\d]/g, '') + '.' + m[2]), index: m.index, texte: m[0] }));
+}
+
+const MOTS_TYPE = {
+  meche: ['meche', 'wick', 'docht', 'support de meche', 'pastille'],
+  couleur: ['colorant', 'pigment', 'teinture', 'dye', 'farbe', 'mica'],
+  parfum: ['parfum', 'fragrance', 'senteur', 'huile essentielle', 'huile parfumee', 'essential oil', 'duftol', 'duft', 'fragrance oil'],
+  pot: ['pot', 'verrine', 'verre', 'bocal', 'jar', 'glas', 'contenant', 'boite', 'tin', 'couvercle', 'flacon vide'],
+  cire: ['cire', 'wax', 'wachs', 'soja', 'soy', 'colza', 'paraffine', 'coco', 'abeille'],
+};
+
+// Le type dont un mot-clé apparaît en premier dans la ligne (le nom du produit vient d'abord).
+function devinerType(description) {
+  const texte = ' ' + sansAccents(description).replace(/[^a-z0-9]+/g, ' ') + ' ';
+  let meilleur = { type: 'autre', pos: Infinity };
+  for (const [type, mots] of Object.entries(MOTS_TYPE)) {
+    for (const mot of mots) {
+      const pos = texte.indexOf(' ' + mot);
+      if (pos >= 0 && pos < meilleur.pos) meilleur = { type, pos };
+    }
+  }
+  return meilleur.type;
+}
+
+const EXCLUS = /(sous[- ]?total|subtotal|zwischensumme|\btotal\b|\btotaux\b|summe|gesamt|\btva\b|\bmwst\b|\bvat\b|\btaxe|\bremise\b|\brabais\b|discount|\biban\b|\bbic\b|\bswift\b|acompte|deja paye|montant du|net a payer|a payer|solde|arrondi|\bpage\b|\btel\b|telephone|e-?mail|www\.|n° ?(de )?(tva|ide|facture|commande|client)|\bide\b|\bche-\d)/;
+const FRAIS_MOTS = /(frais de port|\bport\b|livraison|expedition|envoi|shipping|versand|porto|emballage|douane|zoll|frais de traitement)/;
+const TOTAL_MOTS = /(total|a payer|montant du|gesamt|summe|amount due)/;
+const NON_TOTAL = /(sous[- ]?total|subtotal|zwischensumme|hors taxe|\bht\b|netto|\btva\b|\bmwst\b|\bvat\b)/;
+
+// Conditionnement écrit sur la ligne, ramené en g, ml ou pièces.
+function conditionnement(description, type) {
+  const d = sansAccents(description);
+  if (['cire', 'couleur', 'parfum'].includes(type)) {
+    const m = d.match(/(\d+(?:[.,]\d+)?)\s*(kg|kilo|g|gr|grammes?|l|litres?|cl|ml)\b/);
+    if (!m) return null;
+    const v = Number(m[1].replace(',', '.'));
+    const u = m[2];
+    const poids = /^kg|^kilo/.test(u) ? v * 1000 : /^g/.test(u) ? v : null;
+    const volume = /^l/.test(u) ? v * 1000 : u === 'cl' ? v * 10 : u === 'ml' ? v : null;
+    if (type === 'parfum') return { valeur: volume ?? poids / (nombre(etat.reglages.densiteParfum) || 1), texte: m[0] };
+    // Un colorant liquide pèse environ 1 g par ml ; une cire, sa densité des Réglages.
+    return { valeur: poids ?? volume * (type === 'couleur' ? 1 : (nombre(etat.reglages.densite) || 0.9)), texte: m[0] };
+  }
+  const m = d.match(/(?:lot|pack|set|carton|paquet|sachet|boite)\s*(?:de|of|a|von)?\s*(\d+)/) || d.match(/(\d+)\s*(?:pcs|pce|pc|pieces?|stk|stuck|unites|u\.)\b/) || d.match(/\bx\s?(\d+)\b/);
+  return m ? { valeur: Number(m[1]), texte: m[0] } : null;
+}
+
+// Nombre d'unités commandées : quantité × prix unitaire = prix de la ligne, sinon « 3 x » ou le chiffre de début de ligne.
+function nombreCommande(description, liste) {
+  if (liste.length >= 2) {
+    const total = liste[liste.length - 1].valeur;
+    const unitaire = liste[liste.length - 2].valeur;
+    const avant = description.slice(0, liste[liste.length - 2].index);
+    for (const m of [...avant.matchAll(/(?<![\d.,'])(\d{1,4})(?:[.,]0+)?(?![\d.,'])/g)].reverse()) {
+      const n = Number(m[1]);
+      if (n > 0 && unitaire > 0 && Math.abs(n * unitaire - total) < 0.03) return n;
+    }
+    if (unitaire > 0 && unitaire < total) {
+      const n = Math.round(total / unitaire);
+      if (n > 1 && Math.abs(n * unitaire - total) < 0.03) return n;
+    }
+  }
+  const m = description.match(/^\s*(\d{1,4})\s*(?:x|×|pce?s?|stk)?\s+\D/i) || description.match(/(?<![\d.,])(\d{1,4})\s*[x×]\s/i);
+  return m ? Number(m[1]) : 1;
+}
+
+function nomPropose(description, liste, type) {
+  let s = liste.length ? description.slice(0, liste[0].index) : description;
+  // Le conditionnement n'est pas dans le nom (sauf pour un pot, où « 180 ml » est sa taille).
+  if (type !== 'pot') s = s.replace(/[-–(,]?\s*(?:(?:lot|pack|set|carton|paquet|sachet|bo[iî]te|sac|bidon|flacon)\s*(?:de|of)?\s*)?\d+(?:[.,]\d+)?\s*(?:kg|g|gr|l|cl|ml|pcs|pi[eè]ces)?\b\)?\s*$/i, '')
+    .replace(/[-–(,]?\s*(?:lot|pack|set|carton|paquet|sachet|bo[iî]te|sac|bidon|flacon)\s*(?:de|of)?\s*\d+\s*\)?/gi, ' ')
+    .replace(/\d+(?:[.,]\d+)?\s*(?:kg|g|gr|l|cl|ml)\b/gi, ' ');
+  s = s.replace(/^\s*\d{1,4}\s*(?:x|×|pce?s?|stk)?\s+/i, '')
+    .replace(/\b(?=[A-Z0-9-]*\d)[A-Z0-9-]{4,}\b/g, ' ') // références
+    .replace(/\b\d+\b/g, m => (/\d/.test(m) ? m : ''))
+    .replace(/\b(chf|eur|usd|gbp|fr\.)\b|[€$£]/gi, ' ')
+    .replace(/\s{2,}.*$/, '') // colonnes après le libellé
+    .replace(/[|_*]+/g, ' ').replace(/\s+/g, ' ').replace(/^[\s\-–:.,]+|[\s\-–:.,]+$/g, '');
+  s = s.length > 50 ? s.slice(0, 50).replace(/\s\S*$/, '') : s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// L'article du stock dont le nom se retrouve le mieux dans la ligne.
+function articleProche(description) {
+  const mots = new Set(sansAccents(description).split(/[^a-z0-9]+/).filter(m => m.length >= 3));
+  let meilleur = null;
+  for (const a of etat.stock) {
+    const siens = sansAccents(a.nom).split(/[^a-z0-9]+/).filter(m => m.length >= 3);
+    if (!siens.length) continue;
+    const score = siens.filter(m => mots.has(m)).length / siens.length;
+    if (score >= 0.6 && (!meilleur || score > meilleur.score)) meilleur = { a, score };
+  }
+  return meilleur?.a || null;
+}
+
+const MOIS = ['janv', 'fevr', 'mars', 'avr', 'mai', 'juin', 'juil', 'aout', 'sept', 'oct', 'nov', 'dec'];
+function trouverDate(texte) {
+  const d = sansAccents(texte);
+  let m = d.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m = d.match(/\b(\d{1,2})[./-](\d{1,2})[./-](20\d{2}|\d{2})\b/);
+  if (m && Number(m[2]) <= 12) return `${m[3].length === 2 ? '20' + m[3] : m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  m = d.match(new RegExp(`\\b(\\d{1,2})(?:er)?\\s+(${MOIS.join('|')})[a-z]*\\.?\\s+(20\\d{2})\\b`));
+  if (m) return `${m[3]}-${String(MOIS.indexOf(m[2]) + 1).padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  return '';
+}
+
+function trouverDevise(texte) {
+  const compte = {
+    CHF: (texte.match(/\bCHF\b|\bFr\.\s?\d|SFr/g) || []).length,
+    EUR: (texte.match(/\bEUR\b|€/g) || []).length,
+    USD: (texte.match(/\bUSD\b|US\$/g) || []).length,
+    GBP: (texte.match(/\bGBP\b|£/g) || []).length,
+  };
+  const [devise, n] = Object.entries(compte).sort((a, b) => b[1] - a[1])[0];
+  return n ? devise : etat.reglages.devise;
+}
+
+// Transforme les lignes de texte lues en proposition de facture (même forme pour photo et PDF).
+function analyserFacture(lignesTexte) {
+  const lignes = lignesTexte.map(l => l.replace(/\s+$/, '')).filter(l => l.trim());
+  const texte = lignes.join('\n');
+  const resultat = {
+    fournisseur: (lignes.find(l => /[a-z]{3}/i.test(l) && !/facture|invoice|rechnung|^\s*(page|date)/i.test(l)) || '').trim().slice(0, 60),
+    date: trouverDate(texte),
+    devise: trouverDevise(texte),
+    total: 0, frais: 0, lignes: [],
+  };
+  const totaux = [];
+  let tva = 0;
+  for (const ligne of lignes) {
+    const liste = montants(ligne);
+    if (!liste.length) continue;
+    const bas = sansAccents(ligne);
+    const dernier = liste[liste.length - 1].valeur;
+    if (TOTAL_MOTS.test(bas) && !NON_TOTAL.test(bas)) { totaux.push(dernier); continue; }
+    if (/\b(tva|mwst|vat)\b/.test(bas) && !/inclu|incl\b|enthalten|included/.test(bas)) { tva += dernier; continue; }
+    if (FRAIS_MOTS.test(bas) && !/gratuit|offert|free|kostenlos/.test(bas)) { resultat.frais += dernier; continue; }
+    if (EXCLUS.test(bas) || (bas.match(/[a-z]/g) || []).length < 3 || !(dernier > 0)) continue;
+    const description = ligne.trim();
+    const existant = articleProche(description);
+    const type = existant?.type || devinerType(description);
+    const nb = nombreCommande(description, liste);
+    const cond = conditionnement(description, type);
+    const quantite = cond ? nb * cond.valeur : (UNITE[type] === 'u' ? nb : 0);
+    resultat.lignes.push({
+      description, type,
+      article_id: existant?.id || '',
+      nom: existant?.nom || nomPropose(description, liste, type),
+      quantite: Math.round(quantite * 10) / 10,
+      detail_quantite: cond ? `${nb} × ${cond.texte}` : (UNITE[type] === 'u' ? `${nb}` : '?'),
+      prix: dernier,
+    });
+  }
+  resultat.total = totaux.length ? Math.max(...totaux) : 0;
+  // Prix hors taxe + TVA à part : on répartit la TVA au prorata, pour garder le prix réellement payé.
+  const ht = resultat.lignes.reduce((s, l) => s + l.prix, 0) + resultat.frais;
+  if (tva > 0 && ht > 0 && resultat.total && Math.abs(ht + tva - resultat.total) < 0.06) {
+    const k = (ht + tva) / ht;
+    resultat.lignes.forEach(l => { l.prix = Math.round(l.prix * k * 100) / 100; });
+    resultat.frais = Math.round(resultat.frais * k * 100) / 100;
+  }
+  return resultat;
+}
+
+function preparerVerification(lu, apercus, texte) {
   const aujourdhui = new Date().toISOString().slice(0, 10);
   facture = {
     etape: 'verif',
     apercus,
+    texte,
     fournisseur: lu.fournisseur || '',
-    date: /^\d{4}-\d{2}-\d{2}$/.test(lu.date) && lu.date <= aujourdhui ? lu.date : aujourdhui,
+    date: /^\d{4}-\d{2}-\d{2}$/.test(lu.date) && lu.date <= aujourdhui && !isNaN(new Date(lu.date)) ? lu.date : aujourdhui,
     devise: DEVISES_FACTURE.includes(lu.devise) ? lu.devise : etat.reglages.devise,
     taux: '',
     tauxNote: '',
     total: nombre(lu.total),
-    frais: nombre(lu.frais),
+    frais: Math.round(nombre(lu.frais) * 100) / 100,
     choixFrais: 'repartir',
     lignes: (lu.lignes || []).map(l => {
       const existant = l.article_id && articleParId(l.article_id);
@@ -285,7 +349,7 @@ function preparerVerification(lu, apercus) {
         detail: l.detail_quantite || '',
         type,
         cible: existant ? existant.id : (articleNomme(type, l.nom)?.id || ''),
-        nom: l.nom || l.description || '',
+        nom: l.nom || '',
         quantite: nombre(l.quantite) || '',
         prix: nombre(l.prix) || '',
       };
@@ -298,17 +362,12 @@ function preparerVerification(lu, apercus) {
 
 function vueFacture() {
   const retour = `<div class="entete-fiche"><a class="btn small" href="#/stock">${t('retourStock')}</a></div>`;
-  if (!cleApi()) {
-    app.innerHTML = `${retour}<h2>${t('factureTitre')}</h2>
-      <div class="card"><p style="margin-top:0">${t('cleManquante')}</p>${champCleHtml()}</div>`;
-    return;
-  }
   if (!facture || facture.etape === 'choix') {
     app.innerHTML = `${retour}<h2>${t('factureTitre')}</h2>
       <div class="card"><p style="margin-top:0">${t('factureAide')}</p>
         <div class="actions"><button class="primary" data-action="choisir-facture">${t('choisirFacture')}</button></div>
-        <p class="muted">${t('plusieursPages')}</p>
-        <input type="file" id="fichier-facture" accept="image/*,application/pdf" multiple hidden>
+        <p class="muted">${t('factureLocale')}</p>
+        <input type="file" id="fichier-facture" accept="application/pdf,.pdf" hidden>
       </div>`;
     document.getElementById('fichier-facture').addEventListener('change', ev => {
       const fichiers = [...ev.target.files];
@@ -318,7 +377,7 @@ function vueFacture() {
   }
   if (facture.etape === 'lecture') {
     app.innerHTML = `${retour}<h2>${t('factureTitre')}</h2>
-      <div class="card"><p style="margin-top:0" class="attente">${t('lectureEnCours')}</p>${apercusHtml()}</div>`;
+      <div class="card"><p style="margin-top:0" class="attente" id="progression-facture">${t('lectureEnCours')}</p></div>`;
     return;
   }
   if (facture.etape === 'erreur') {
@@ -348,13 +407,14 @@ function vueFacture() {
           <input id="f-taux" data-f="taux" inputmode="decimal" value="${esc(f.taux)}">
           <p class="muted" style="margin:4px 0 0">${esc(f.tauxNote)}</p></div></div>` : ''}
       ${apercusHtml()}
+      ${f.texte?.length ? `<details class="texte-lu"><summary>${t('texteLu')}</summary><pre>${esc(f.texte.join('\n'))}</pre></details>` : ''}
     </div>
-    <p class="muted">${t('lignesLues', f.lignes.length)}</p>
+    <p class="muted">${f.lignes.length ? t('lignesLues', f.lignes.length) : t('aucuneLigneLue')}</p>
     ${f.lignes.map((l, i) => {
       const articles = etat.stock.filter(a => a.type === l.type).sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
       return `<div class="card ligne-facture ${l.inclure ? '' : 'exclue'}">
         <label class="coche"><input type="checkbox" data-fl="inclure" data-i="${i}" ${l.inclure ? 'checked' : ''}> ${t('inclure')}</label>
-        <p class="lu"><span class="muted">${t('lu')} :</span> ${esc(l.description)}${l.detail ? ` <span class="muted">(${esc(l.detail)})</span>` : ''}</p>
+        <p class="lu"><span class="muted">${t('lu')} :</span> ${l.description ? esc(l.description) : `<span class="muted">${t('ligneManuelle')}</span>`}${l.detail ? ` <span class="muted">(${esc(l.detail)})</span>` : ''}</p>
         <div class="grid2">
           <div><label for="fl-type-${i}">${t('type')}</label>
             <select id="fl-type-${i}" data-fl="type" data-i="${i}">
@@ -367,7 +427,7 @@ function vueFacture() {
             </select></div>
         </div>
         ${l.cible ? '' : `<label for="fl-nom-${i}">${t('nomNouvel')}</label>
-          <input id="fl-nom-${i}" data-fl="nom" data-i="${i}" value="${esc(l.nom)}">`}
+          <input id="fl-nom-${i}" data-fl="nom" data-i="${i}" value="${esc(l.nom)}" placeholder="${t('exNomArticle')}">`}
         <div class="grid2">
           <div><label for="fl-qte-${i}">${t('quantiteStock', unite(l.type))}</label>
             <input id="fl-qte-${i}" data-fl="quantite" data-i="${i}" inputmode="decimal" value="${esc(l.quantite)}"></div>
@@ -376,6 +436,7 @@ function vueFacture() {
         </div>
       </div>`;
     }).join('')}
+    <div class="actions" style="margin:0 0 16px"><button data-action="ajouter-ligne-facture">${t('ajouterLigne')}</button></div>
     <div class="card">
       <div class="grid2">
         <div><label for="f-frais">${t('fraisLus', f.devise)}</label>
@@ -396,10 +457,7 @@ function vueFacture() {
 
 function apercusHtml() {
   const liste = facture?.apercus || [];
-  if (!liste.length) return '';
-  return `<div class="apercus-facture">${liste.map(a => a.image
-    ? `<img src="${a.image}" alt="">`
-    : `<span class="pastille">PDF · ${esc(a.pdf)}</span>`).join('')}</div>`;
+  return liste.length ? `<div class="apercus-facture">${liste.map(src => `<a href="${src}" target="_blank" rel="noopener"><img src="${src}" alt=""></a>`).join('')}</div>` : '';
 }
 
 function montantFacture(x, devise = facture.devise) {
@@ -411,8 +469,7 @@ function majResumeFacture() {
   if (!zone) return;
   const f = facture;
   const cochees = f.lignes.filter(l => l.inclure);
-  const somme = f.lignes.reduce((s, l) => s + nombre(l.prix), 0);
-  const calcule = somme + nombre(f.frais);
+  const calcule = cochees.reduce((s, l) => s + nombre(l.prix), 0) + nombre(f.frais);
   const ecart = f.total && Math.abs(calcule - f.total) > 0.05;
   const enDevise = f.devise !== etat.reglages.devise && nombre(f.taux) > 0
     ? ` · ${t('soit')} ${euros(calcule * nombre(f.taux))}` : '';
@@ -483,13 +540,13 @@ function validerFacture() {
 // Relit un champ de l'écran de vérification dans la facture en cours.
 function lireChampFacture(el) {
   const f = facture;
-  if (!f || f.etape !== 'verif') return false;
+  if (!f || f.etape !== 'verif') return;
   if (el.dataset.f) {
     f[el.dataset.f] = el.value;
     if (el.dataset.f === 'taux') f.tauxNote = '';
     if (el.dataset.f === 'devise' || el.dataset.f === 'date') { f.taux = ''; majTauxFacture(); }
     if (el.dataset.f === 'devise') vueFacture(); else majResumeFacture();
-    return true;
+    return;
   }
   if (el.dataset.fl) {
     const l = f.lignes[el.dataset.i];
@@ -497,28 +554,10 @@ function lireChampFacture(el) {
     l[champ] = champ === 'inclure' ? el.checked : el.value;
     if (champ === 'type') l.cible = articleNomme(l.type, l.nom)?.id || '';
     if (champ === 'cible' && l.cible) l.nom = articleParId(l.cible)?.nom || l.nom;
-    if (champ === 'type' || champ === 'cible') { vueFacture(); return true; }
+    if (champ === 'type' || champ === 'cible') { vueFacture(); return; }
     if (champ === 'inclure') el.closest('.ligne-facture').classList.toggle('exclue', !el.checked);
     majResumeFacture();
-    return true;
   }
-  return false;
-}
-
-// --- Réglages : la clé API ---
-
-function champCleHtml() {
-  const presente = !!cleApi();
-  return `<p class="muted">${t('cleAide')} <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a></p>
-    ${presente ? `<p>${t('cleOk')}</p>
-      <div class="actions"><button class="danger" data-action="supprimer-cle">${t('supprimerCle')}</button></div>`
-    : `<label for="cle-api">${t('cleApi')}</label>
-      <input id="cle-api" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-ant-…">
-      <div class="actions"><button class="primary" data-action="enregistrer-cle">${t('enregistrerCle')}</button></div>`}`;
-}
-
-function reglagesFactureHtml() {
-  return `<div class="card"><h3 style="margin-top:0">${t('reglagesFacture')}</h3>${champCleHtml()}</div>`;
 }
 
 // --- Évènements propres à cet écran ---
@@ -534,6 +573,11 @@ app.addEventListener('click', ev => {
       facture = null;
       vueFacture();
       break;
+    case 'ajouter-ligne-facture':
+      facture.lignes.push({ inclure: true, description: '', detail: '', type: 'cire', cible: '', nom: '', quantite: '', prix: '' });
+      vueFacture();
+      document.getElementById(`fl-type-${facture.lignes.length - 1}`)?.focus();
+      break;
     case 'valider-facture':
       validerFacture();
       break;
@@ -542,22 +586,8 @@ app.addEventListener('click', ev => {
       facture = null;
       aller('#/stock');
       break;
-    case 'enregistrer-cle': {
-      const cle = document.getElementById('cle-api').value.trim();
-      if (!cle.startsWith('sk-ant-')) { toast(t('cleInvalide')); return; }
-      try { localStorage.setItem(CLE_API, cle); } catch (e) { return; }
-      toast(t('cleEnregistree'));
-      route();
-      break;
-    }
-    case 'supprimer-cle':
-      try { localStorage.removeItem(CLE_API); } catch (e) { /* rien */ }
-      toast(t('cleSupprimee'));
-      route();
-      break;
   }
 });
 
 app.addEventListener('input', ev => { lireChampFacture(ev.target); });
-
 app.addEventListener('change', ev => { if (ev.target.type === 'checkbox') lireChampFacture(ev.target); });
