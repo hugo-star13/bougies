@@ -4,6 +4,7 @@ Petite web app pour iPad : formules de bougies artisanales et calcul des quantit
 
 - Fonctionne hors ligne une fois installée (Safari → Partager → « Sur l'écran d'accueil »).
 - Les données restent sur l'appareil et ne sont jamais envoyées ici. Pensez à les sauvegarder depuis l'onglet « Sauvegarde ».
+- Lecture des factures (onglet Stock) : la photo est envoyée à l'API Claude avec la clé saisie dans Réglages. Cette clé reste sur l'appareil, jamais dans ce dépôt ni dans les sauvegardes. Les lignes lues doivent être validées avant d'entrer dans le stock.
 - HTML, CSS et JavaScript simples, sans outil de compilation. Hébergée sur GitHub Pages.
 
 ## Crédits

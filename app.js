@@ -662,7 +662,7 @@ function route() {
   const [page, id, mode] = location.hash.replace(/^#\/?/, '').split('/');
   document.querySelectorAll('.topbar nav a').forEach(a => {
     const onglet = a.dataset.tab;
-    const actif = onglet === page || (onglet === 'formules' && page === 'formule') || (onglet === 'contenants' && page === 'contenant') || (onglet === 'bougies' && page === 'bougie') || (onglet === 'calcul' && !['formules', 'formule', 'contenants', 'contenant', 'stock', 'rapport', 'bougies', 'bougie', 'reglages'].includes(page));
+    const actif = onglet === page || (onglet === 'formules' && page === 'formule') || (onglet === 'contenants' && page === 'contenant') || (onglet === 'bougies' && page === 'bougie') || (onglet === 'stock' && page === 'facture') || (onglet === 'calcul' && !['formules', 'formule', 'contenants', 'contenant', 'stock', 'facture', 'rapport', 'bougies', 'bougie', 'reglages'].includes(page));
     a.classList.toggle('active', actif);
     if (actif) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
@@ -674,6 +674,7 @@ function route() {
     case 'contenants': return vueContenants();
     case 'contenant': return vueContenant(id);
     case 'stock': return id ? vueArticle(id) : vueStock();
+    case 'facture': return vueFacture();
     case 'alertes': return aller('#/stock');
     case 'rapport': return vueRapport();
     case 'bougies': return vueBougies();
@@ -1221,6 +1222,7 @@ function vueStock() {
     ${alertesHtml()}
     <div class="actions" style="margin:0 0 16px">
       <a class="btn primary" href="#/stock/nouveau">${t('nouvelArticle')}</a>
+      <a class="btn" href="#/facture">${t('lireFacture')}</a>
       <button data-action="stock-depuis-recettes">${t('depuisRecettes')}</button>
     </div>
     ${etat.stock.length ? TYPES.filter(ty => etat.stock.some(a => a.type === ty)).map(ty => `
@@ -1491,6 +1493,7 @@ function vueReglages() {
             <input id="r-t-${k}" data-temp="${k}" value="${esc(r.temperatures[k])}"></div>`).join('')}
       </div>
     </div>
+    ${reglagesFactureHtml()}
     <div class="card">
       <h3 style="margin-top:0">${t('sauvegarde')}</h3>
       <p>${t('sauvegardeTexte')}</p>
@@ -2016,7 +2019,8 @@ window.addEventListener('hashchange', () => {
   if (!/^#\/(formule\/[^/]+\/modifier|contenant\/|stock\/)/.test(location.hash)) brouillon = null;
   route();
 });
-route();
+// Après le chargement de tous les scripts (facture.js complète app.js).
+document.addEventListener('DOMContentLoaded', route);
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
