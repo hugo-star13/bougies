@@ -2,6 +2,12 @@
 // Numéro : V1.<numéro de la PR mergée>. À CHAQUE nouvelle PR, ajouter une entrée
 // EN HAUT de la liste (la première entrée donne la version affichée dans l'app).
 const VERSIONS = [
+  { v: '1.16', date: '2026-11-08', titre: 'Idées de bougies selon le stock', details: [
+    'Formules (ou Stock) > « Idées selon mon stock » : les recettes faisables avec les senteurs, la cire, les couleurs, les pots et les mèches en stock.',
+    'Pour chaque recette, le nombre maximum de bougies par taille de pot. Toucher une taille ouvre le calcul.',
+    'Les recettes où il manque une ou deux senteurs, et les senteurs en stock qui ne sont dans aucune recette.',
+    'Un filtre pour voir les recettes avec une senteur précise.',
+  ] },
   { v: '1.14', date: '2026-11-06', titre: 'Numéro de version et nouveautés', details: [
     'Le numéro de version est affiché en bas des Réglages.',
     'Le bouton « Voir les nouveautés » liste tout ce qui a changé depuis la première version.',
