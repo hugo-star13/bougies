@@ -129,7 +129,7 @@ const TEXTES = {
     tauxInconnu: 'pas de connexion : saisissez le taux', tauxManquant: 'Indiquez le taux de change', soit: 'soit', origine: 'Montant d’origine', modes: { especes: 'Espèces', carte: 'Carte', virement: 'Virement', cheque: 'Chèque', autre: 'Autre' },
     venteTitre: n => `Vente : ${n}`, valider: 'Valider',
     idees: 'Que faire avec mon stock ?', ideesCourt: 'Idées selon mon stock',
-    ideesAide: 'Les recettes possibles avec les senteurs, la cire, les couleurs, les pots et les mèches en stock. Touchez une taille pour la calculer.',
+    ideesAide: 'Les recettes possibles avec les senteurs en stock (la cire, les pots et les mèches ne sont pas comptés). Touchez une taille pour la calculer.',
     ideesAvec: 'Avec la senteur', toutes: 'Toutes',
     faisables: 'Faisables maintenant', presque: 'Il manque peu', senteursLibres: 'Senteurs en stock sans recette',
     senteursLibresAide: 'Une idée pour une nouvelle recette ?',
@@ -266,7 +266,7 @@ const TEXTES = {
     tauxInconnu: 'offline: enter the rate', tauxManquant: 'Enter the exchange rate', soit: 'i.e.', origine: 'Original amount', modes: { especes: 'Cash', carte: 'Card', virement: 'Transfer', cheque: 'Cheque', autre: 'Other' },
     venteTitre: n => `Sale: ${n}`, valider: 'Confirm',
     idees: 'What can I make with my stock?', ideesCourt: 'Ideas from my stock',
-    ideesAide: 'Recipes you can make with the scents, wax, colours, jars and wicks in stock. Tap a size to calculate it.',
+    ideesAide: 'Recipes you can make with the scents in stock (wax, jars and wicks are not counted). Tap a size to calculate it.',
     ideesAvec: 'With the scent', toutes: 'All',
     faisables: 'Possible now', presque: 'Almost there', senteursLibres: 'Scents in stock with no recipe',
     senteursLibresAide: 'An idea for a new recipe?',
@@ -1250,7 +1250,8 @@ function vueBougie(id) {
 // ajouté au stock ne bloque pas (on ne sait pas s'il en reste) mais est signalé.
 function possibles(f, contenant) {
   const p = nombre(contenant.poids);
-  const { postes } = consommation(f, [{ contenant: contenant.id, p, n: 1 }]);
+  // Seules les senteurs comptent : cire, couleurs, pots et mèches sont ignorés.
+  const postes = consommation(f, [{ contenant: contenant.id, p, n: 1 }]).postes.filter(x => x.type === 'parfum');
   let max = Infinity;
   const limites = [];
   const manquants = [];
@@ -1302,7 +1303,6 @@ function vueIdees() {
   presque.sort((a, b) => (a.manquants.length - b.manquants.length) || a.f.nom.localeCompare(b.f.nom, 'fr'));
   const presqueAffiches = presque.filter(x => x.manquants.length && x.manquants.length <= 2);
 
-  const nonSuivis = [...new Set([...faisables, ...presque].flatMap(x => x.nonSuivis))];
   const libres = senteursStock.filter(a => !etat.formules.some(f => f.parfums.some(l => memeNom(l.nom, a.nom))));
 
   const tailleBouton = (f, x) => `<button class="small" data-action="calculer-idee" data-id="${f.id}" data-contenant="${x.c.id}" data-n="${x.max || 1}">
@@ -1327,7 +1327,6 @@ function vueIdees() {
       </select>` : ''}
     <h3>${t('faisables')}</h3>
     ${faisables.length ? `<ul class="list">${faisables.map(x => carte(x, true)).join('')}</ul>` : `<div class="empty">${t('aucuneIdee')}</div>`}
-    ${nonSuivis.length ? `<p class="muted">${t('nonSuivi', nonSuivis.map(esc).join(', '))}</p>` : ''}
     ${presqueAffiches.length ? `<h3>${t('presque')}</h3><ul class="list">${presqueAffiches.map(x => carte(x, false)).join('')}</ul>` : ''}
     ${libres.length && !filtre ? `<h3>${t('senteursLibres')}</h3><p class="muted">${t('senteursLibresAide')}</p>
       <div class="pastilles">${libres.map(a => `<span class="pastille">${esc(a.nom)} <b>${quantiteTexte(a.quantite, 'ml')}</b></span>`).join('')}</div>` : ''}`;
