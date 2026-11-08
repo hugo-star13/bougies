@@ -128,6 +128,17 @@ const TEXTES = {
     taux: (de, vers) => `Taux ${de} → ${vers}`, tauxDu: d => `cours du ${d}`, tauxHorsLigne: 'pas de connexion : dernier taux connu, à vérifier',
     tauxInconnu: 'pas de connexion : saisissez le taux', tauxManquant: 'Indiquez le taux de change', soit: 'soit', origine: 'Montant d’origine', modes: { especes: 'Espèces', carte: 'Carte', virement: 'Virement', cheque: 'Chèque', autre: 'Autre' },
     venteTitre: n => `Vente : ${n}`, valider: 'Valider',
+    idees: 'Que faire avec mon stock ?', ideesCourt: 'Idées selon mon stock',
+    ideesAide: 'Les recettes possibles avec les senteurs, la cire, les couleurs, les pots et les mèches en stock. Touchez une taille pour la calculer.',
+    ideesAvec: 'Avec la senteur', toutes: 'Toutes',
+    faisables: 'Faisables maintenant', presque: 'Il manque peu', senteursLibres: 'Senteurs en stock sans recette',
+    senteursLibresAide: 'Une idée pour une nouvelle recette ?',
+    maxBougies: n => `jusqu’à ${n}`, limitePar: n => `Limité par : ${n}`,
+    manque: n => `Manque : ${n}`, pasAssez: n => `${n} (pas assez)`,
+    aucuneIdee: 'Aucune recette n’est faisable avec le stock actuel.',
+    ideesSansStock: 'Ajoutez d’abord vos senteurs dans le Stock pour voir les idées.',
+    ideesSansContenant: 'Ajoutez vos contenants pour voir combien de bougies sont possibles.',
+    nonSuivi: n => `Pas suivi dans le stock : ${n}`,
   },
   en: {
     navCalcul: 'Calculate', navFormules: 'Recipes', navContenants: 'Jars', navReglages: 'Settings',
@@ -254,6 +265,17 @@ const TEXTES = {
     taux: (de, vers) => `Rate ${de} → ${vers}`, tauxDu: d => `rate of ${d}`, tauxHorsLigne: 'offline: last known rate, please check',
     tauxInconnu: 'offline: enter the rate', tauxManquant: 'Enter the exchange rate', soit: 'i.e.', origine: 'Original amount', modes: { especes: 'Cash', carte: 'Card', virement: 'Transfer', cheque: 'Cheque', autre: 'Other' },
     venteTitre: n => `Sale: ${n}`, valider: 'Confirm',
+    idees: 'What can I make with my stock?', ideesCourt: 'Ideas from my stock',
+    ideesAide: 'Recipes you can make with the scents, wax, colours, jars and wicks in stock. Tap a size to calculate it.',
+    ideesAvec: 'With the scent', toutes: 'All',
+    faisables: 'Possible now', presque: 'Almost there', senteursLibres: 'Scents in stock with no recipe',
+    senteursLibresAide: 'An idea for a new recipe?',
+    maxBougies: n => `up to ${n}`, limitePar: n => `Limited by: ${n}`,
+    manque: n => `Missing: ${n}`, pasAssez: n => `${n} (not enough)`,
+    aucuneIdee: 'No recipe can be made with the current stock.',
+    ideesSansStock: 'Add your scents to the Stock first to see ideas.',
+    ideesSansContenant: 'Add your containers to see how many candles are possible.',
+    nonSuivi: n => `Not tracked in stock: ${n}`,
   },
 };
 
@@ -664,7 +686,7 @@ function route() {
   const [page, id, mode] = location.hash.replace(/^#\/?/, '').split('/');
   document.querySelectorAll('.topbar nav a').forEach(a => {
     const onglet = a.dataset.tab;
-    const actif = onglet === page || (onglet === 'formules' && page === 'formule') || (onglet === 'contenants' && page === 'contenant') || (onglet === 'bougies' && page === 'bougie') || (onglet === 'stock' && page === 'facture') || (onglet === 'reglages' && page === 'versions') || (onglet === 'calcul' && !['formules', 'formule', 'contenants', 'contenant', 'stock', 'facture', 'rapport', 'bougies', 'bougie', 'reglages', 'versions'].includes(page));
+    const actif = onglet === page || (onglet === 'formules' && (page === 'formule' || page === 'idees')) || (onglet === 'contenants' && page === 'contenant') || (onglet === 'bougies' && page === 'bougie') || (onglet === 'stock' && page === 'facture') || (onglet === 'reglages' && page === 'versions') || (onglet === 'calcul' && !['formules', 'formule', 'idees', 'contenants', 'contenant', 'stock', 'facture', 'rapport', 'bougies', 'bougie', 'reglages', 'versions'].includes(page));
     a.classList.toggle('active', actif);
     if (actif) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
@@ -672,6 +694,7 @@ function route() {
   majBadge();
   switch (page) {
     case 'formules': return vueFormules();
+    case 'idees': return vueIdees();
     case 'formule': return mode === 'modifier' || !formuleParId(id) ? vueFormule(id) : vueFiche(id);
     case 'contenants': return vueContenants();
     case 'contenant': return vueContenant(id);
@@ -835,6 +858,7 @@ function vueFormules(filtre = '') {
     <div class="actions" style="margin:0 0 16px">
       <input id="recherche" type="search" placeholder="${t('rechercher')}" value="${esc(filtre)}" style="flex:1">
       <a class="btn primary" href="#/formule/nouveau">${t('nouvelle')}</a>
+      ${etat.formules.length ? `<a class="btn" href="#/idees">${t('ideesCourt')}</a>` : ''}
     </div>
     ${liste.length ? `<ul class="list">${liste.map(f => `
       <li>
@@ -1219,6 +1243,96 @@ function vueBougie(id) {
 
 // --- Stock ---
 
+// --- Idées selon le stock ---
+
+// Pour une recette et un contenant : combien de bougies le stock permet, et ce qui bloque.
+// Une senteur absente du stock bloque ; une cire, couleur, un pot ou une mèche jamais
+// ajouté au stock ne bloque pas (on ne sait pas s'il en reste) mais est signalé.
+function possibles(f, contenant) {
+  const p = nombre(contenant.poids);
+  const { postes } = consommation(f, [{ contenant: contenant.id, p, n: 1 }]);
+  let max = Infinity;
+  const limites = [];
+  const manquants = [];
+  const nonSuivis = [];
+  postes.forEach(x => {
+    if (!x.article) {
+      if (x.type === 'parfum') { manquants.push(x.nom); max = 0; } else nonSuivis.push(x.nom);
+      return;
+    }
+    const n = Math.floor(Math.max(0, nombre(x.article.quantite)) / x.quantite + 1e-9);
+    if (n < max) { max = n; limites.length = 0; }
+    if (n === max) limites.push(x.type === 'pot' ? t('typeNom').pot.toLowerCase() + 's' : x.type === 'meche' ? `${t('typeNom').meche.toLowerCase()} ${x.nom}` : x.nom);
+    if (n === 0) manquants.push(x.type === 'parfum' && nombre(x.article.quantite) > 0 ? t('pasAssez', x.nom) : x.nom);
+  });
+  return { max: max === Infinity ? null : max, limites, manquants, nonSuivis };
+}
+
+function vueIdees() {
+  const ui = etat.ui;
+  const senteursStock = etat.stock.filter(a => a.type === 'parfum' && nombre(a.quantite) > 0)
+    .sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+  if (ui.ideeSenteur && !senteursStock.some(a => memeNom(a.nom, ui.ideeSenteur))) ui.ideeSenteur = '';
+  const contenants = contenantsTries().filter(c => nombre(c.poids) > 0);
+  const filtre = ui.ideeSenteur;
+  const formules = formulesTriees().filter(f => !filtre || f.parfums.some(l => memeNom(l.nom, filtre)));
+
+  const faisables = [];
+  const presque = [];
+  formules.forEach(f => {
+    if (!contenants.length) {
+      // Sans contenant, on regarde seulement si les senteurs sont en stock.
+      const manquants = f.parfums.filter(l => l.nom && !etat.stock.some(a => a.type === 'parfum' && memeNom(a.nom, l.nom) && nombre(a.quantite) > 0)).map(l => l.nom);
+      (manquants.length ? presque : faisables).push({ f, tailles: [], manquants, nonSuivis: [] });
+      return;
+    }
+    const tailles = contenants.map(c => ({ c, ...possibles(f, c) }));
+    const ok = tailles.filter(x => x.max === null || x.max > 0);
+    const nonSuivis = [...new Set(tailles.flatMap(x => x.nonSuivis))];
+    if (ok.length) {
+      const limites = ok.filter(x => x.limites.length).map(x => `${x.c.nom} → ${x.limites.join(', ')}`);
+      faisables.push({ f, tailles: ok, limites, nonSuivis, grammes: Math.max(...ok.map(x => x.max === null ? Infinity : x.max * nombre(x.c.poids))) });
+    } else {
+      // Ce qui manque pour la plus petite taille.
+      presque.push({ f, tailles: [], manquants: tailles[0].manquants, nonSuivis });
+    }
+  });
+  // D'abord les favoris, puis celles qui permettent de couler le plus.
+  faisables.sort((a, b) => (b.f.favori - a.f.favori) || (b.grammes - a.grammes) || a.f.nom.localeCompare(b.f.nom, 'fr'));
+  presque.sort((a, b) => (a.manquants.length - b.manquants.length) || a.f.nom.localeCompare(b.f.nom, 'fr'));
+  const presqueAffiches = presque.filter(x => x.manquants.length && x.manquants.length <= 2);
+
+  const nonSuivis = [...new Set([...faisables, ...presque].flatMap(x => x.nonSuivis))];
+  const libres = senteursStock.filter(a => !etat.formules.some(f => f.parfums.some(l => memeNom(l.nom, a.nom))));
+
+  const tailleBouton = (f, x) => `<button class="small" data-action="calculer-idee" data-id="${f.id}" data-contenant="${x.c.id}" data-n="${x.max || 1}">
+      ${esc(x.c.nom)} · ${x.max === null ? '∞' : t('maxBougies', x.max)}</button>`;
+  const carte = (x, faisable) => `<li><div class="grow">
+      <a class="title" href="#/formule/${x.f.id}" style="color:inherit">${x.f.favori ? '★ ' : ''}${esc(x.f.nom)}</a>
+      ${pastilles(x.f.parfums)}
+      ${faisable && x.tailles.length ? `<div class="actions" style="margin-top:10px">${x.tailles.map(tt => tailleBouton(x.f, tt)).join('')}</div>` : ''}
+      ${faisable && x.limites?.length ? `<div class="sub">${t('limitePar', x.limites.map(esc).join(' · '))}</div>` : ''}
+      ${!faisable ? `<div class="sub warn">${t('manque', x.manquants.map(esc).join(', '))}</div>` : ''}
+    </div>${!faisable || !x.tailles.length ? `<button class="small" data-action="calculer" data-id="${x.f.id}">${t('calculer')}</button>` : ''}</li>`;
+
+  app.innerHTML = `<p><a href="#/formules">${t('retour')}</a></p>
+    <h2>${t('idees')}</h2>
+    <p class="muted">${t('ideesAide')}</p>
+    ${!etat.stock.some(a => a.type === 'parfum') ? `<div class="card rappel">${t('ideesSansStock')} <a href="#/stock">${t('stock')}</a></div>` : ''}
+    ${!contenants.length ? `<div class="card rappel">${t('ideesSansContenant')} <a href="#/contenants">${t('navContenants')}</a></div>` : ''}
+    ${senteursStock.length ? `<label for="idee-senteur">${t('ideesAvec')}</label>
+      <select id="idee-senteur" data-ui="ideeSenteur" style="max-width:420px">
+        <option value="">${t('toutes')}</option>
+        ${senteursStock.map(a => `<option value="${esc(a.nom)}" ${memeNom(a.nom, filtre) ? 'selected' : ''}>${esc(a.nom)} (${quantiteTexte(a.quantite, 'ml')})</option>`).join('')}
+      </select>` : ''}
+    <h3>${t('faisables')}</h3>
+    ${faisables.length ? `<ul class="list">${faisables.map(x => carte(x, true)).join('')}</ul>` : `<div class="empty">${t('aucuneIdee')}</div>`}
+    ${nonSuivis.length ? `<p class="muted">${t('nonSuivi', nonSuivis.map(esc).join(', '))}</p>` : ''}
+    ${presqueAffiches.length ? `<h3>${t('presque')}</h3><ul class="list">${presqueAffiches.map(x => carte(x, false)).join('')}</ul>` : ''}
+    ${libres.length && !filtre ? `<h3>${t('senteursLibres')}</h3><p class="muted">${t('senteursLibresAide')}</p>
+      <div class="pastilles">${libres.map(a => `<span class="pastille">${esc(a.nom)} <b>${quantiteTexte(a.quantite, 'ml')}</b></span>`).join('')}</div>` : ''}`;
+}
+
 function vueStock() {
   app.innerHTML = `<h2>${t('stock')}</h2>
     <p class="muted">${t('stockAide')}</p>
@@ -1227,6 +1341,7 @@ function vueStock() {
       <a class="btn primary" href="#/stock/nouveau">${t('nouvelArticle')}</a>
       <a class="btn" href="#/facture">${t('lireFacture')}</a>
       <button data-action="stock-depuis-recettes">${t('depuisRecettes')}</button>
+      ${etat.formules.length && etat.stock.length ? `<a class="btn" href="#/idees">${t('ideesCourt')}</a>` : ''}
     </div>
     ${etat.stock.length ? TYPES.filter(ty => etat.stock.some(a => a.type === ty)).map(ty => `
       <h3>${t('types')[ty]}</h3>
@@ -1744,6 +1859,12 @@ app.addEventListener('click', ev => {
       if (recherche) vueFormules(recherche.value); else route();
       break;
     }
+    case 'calculer-idee':
+      etat.ui.formule = id;
+      etat.ui.lignes = [{ contenant: el.dataset.contenant, poids: '', n: Math.max(1, nombre(el.dataset.n)) }];
+      enregistrer();
+      aller('#/calcul');
+      break;
     case 'calculer':
       etat.ui.formule = id;
       enregistrer();
@@ -1974,7 +2095,7 @@ app.addEventListener('input', ev => {
   if (el.dataset.ui) {
     etat.ui[el.dataset.ui] = el.value;
     enregistrer();
-    if (el.dataset.ui === 'annee') vueRapport(); else afficherResultat();
+    if (el.dataset.ui === 'annee') vueRapport(); else if (el.dataset.ui === 'ideeSenteur') vueIdees(); else afficherResultat();
   } else if (el.dataset.pot !== undefined) {
     etat.ui.lignes[el.dataset.pot][el.dataset.champPot] = el.value;
     enregistrer();
