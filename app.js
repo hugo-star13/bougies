@@ -57,6 +57,17 @@ const TEXTES = {
     aucunePhoto: 'Pas encore de photo.', supprimerPhoto: 'Supprimer cette photo ?', photoAjoutee: n => `${n} photo(s) ajoutée(s)`,
     photoImpossible: 'Impossible d’ajouter cette photo', fermer: 'Fermer',
     photosAide: 'Les photos se gèrent depuis la fiche de la recette, une fois enregistrée.',
+    aPeser: 'À peser', coutEstime: 'Coût estimé', notesTitre: 'Notes', favoris: 'Favoris', toutesLesAutres: 'Toutes les autres',
+    aRacheter: 'À racheter', calculTitre: 'Calcul', venteCourt: 'vente',
+    tEnStock: 'En stock', tBougiesPretes: 'bougies prêtes', tValeur: 'Valeur du stock', tAuCout: 'au coût de revient',
+    tVendues: 'Vendues', tDepuisDebut: 'depuis le début', tEncaisse: 'Encaissé', tTotalVentes: 'total des ventes',
+    tVentesRecettes: 'ventes et recettes', tAchatsDepenses: 'achats et dépenses', tSoldeNeg: 'dépensé en plus des ventes', tSoldePos: 'gagné en plus des dépenses',
+    autreRecette: '+ Autre recette dans la même fournée', retirerRecette: 'Retirer cette recette',
+    fourneeDe: n => `Fournée de ${n} recettes`, fabricationDe: n => `${n} recettes`, fondreEnUneFois: 'à fondre en une fois', saPart: 'sa part',
+    enUneFoisPour: l => `en une fois, pour ${l}`, uneCasserole: 'Une casserole par cire.',
+    etPeserParfums: 'Pendant que la cire fond : peser les parfums, un verre par recette',
+    etPartager: 'Partager la cire fondue : un pichet par recette',
+    phaseEnsemble: 'Ensemble', phaseFinir: 'Pour finir', recettesRangees: n => `${n} bougie(s) ajoutée(s) à Mes bougies, notes rangées dans chaque recette`,
     fabriquer: '▶ Lancer la fabrication', fabrication: 'Fabrication', reprendre: 'Reprendre la fabrication',
     enCours: n => `Fabrication en cours : ${n}`, etapesFaites: (a, b) => `${a} / ${b} étapes`,
     rappelProchaineFois: 'Rappel de la dernière fois',
@@ -127,7 +138,7 @@ const TEXTES = {
     devise: 'Devise', paiement: 'Paiement',
     taux: (de, vers) => `Taux ${de} → ${vers}`, tauxDu: d => `cours du ${d}`, tauxHorsLigne: 'pas de connexion : dernier taux connu, à vérifier',
     tauxInconnu: 'pas de connexion : saisissez le taux', tauxManquant: 'Indiquez le taux de change', soit: 'soit', origine: 'Montant d’origine', modes: { especes: 'Espèces', carte: 'Carte', virement: 'Virement', cheque: 'Chèque', autre: 'Autre' },
-    venteTitre: n => `Vente : ${n}`, valider: 'Valider',
+    venteTitre: n => `Vente : ${n}`, quantiteVendue: 'Quantité vendue', prixUnBougie: 'Prix par bougie (€)', totalVente: (n, m) => `${n} bougie(s) · total ${m}`, valider: 'Valider',
     idees: 'Que faire avec mon stock ?', ideesCourt: 'Idées selon mon stock',
     ideesAide: 'Les recettes possibles avec les senteurs en stock (la cire, les pots et les mèches ne sont pas comptés). Touchez une taille pour la calculer.',
     ideesAvec: 'Avec la senteur', toutes: 'Toutes',
@@ -194,6 +205,17 @@ const TEXTES = {
     aucunePhoto: 'No photos yet.', supprimerPhoto: 'Delete this photo?', photoAjoutee: n => `${n} photo(s) added`,
     photoImpossible: 'Could not add this photo', fermer: 'Close',
     photosAide: 'Photos are managed from the recipe page once it is saved.',
+    aPeser: 'To weigh', coutEstime: 'Estimated cost', notesTitre: 'Notes', favoris: 'Favourites', toutesLesAutres: 'All the others',
+    aRacheter: 'To restock', calculTitre: 'Calculation', venteCourt: 'sale',
+    tEnStock: 'In stock', tBougiesPretes: 'candles ready', tValeur: 'Stock value', tAuCout: 'at cost price',
+    tVendues: 'Sold', tDepuisDebut: 'since the start', tEncaisse: 'Received', tTotalVentes: 'total sales',
+    tVentesRecettes: 'sales and income', tAchatsDepenses: 'purchases and expenses', tSoldeNeg: 'spent beyond sales', tSoldePos: 'earned beyond expenses',
+    autreRecette: '+ Another recipe in the same batch', retirerRecette: 'Remove this recipe',
+    fourneeDe: n => `Batch of ${n} recipes`, fabricationDe: n => `${n} recipes`, fondreEnUneFois: 'melt in one go', saPart: 'its share',
+    enUneFoisPour: l => `in one go, for ${l}`, uneCasserole: 'One pan per wax.',
+    etPeserParfums: 'While the wax melts: weigh the scents, one glass per recipe',
+    etPartager: 'Split the melted wax: one jug per recipe',
+    phaseEnsemble: 'Together', phaseFinir: 'To finish', recettesRangees: n => `${n} candle(s) added to My candles, notes saved in each recipe`,
     fabriquer: '▶ Start making', fabrication: 'Making', reprendre: 'Resume making',
     enCours: n => `In progress: ${n}`, etapesFaites: (a, b) => `${a} / ${b} steps`,
     rappelProchaineFois: 'Reminder from last time',
@@ -264,7 +286,7 @@ const TEXTES = {
     devise: 'Currency', paiement: 'Payment',
     taux: (de, vers) => `Rate ${de} → ${vers}`, tauxDu: d => `rate of ${d}`, tauxHorsLigne: 'offline: last known rate, please check',
     tauxInconnu: 'offline: enter the rate', tauxManquant: 'Enter the exchange rate', soit: 'i.e.', origine: 'Original amount', modes: { especes: 'Cash', carte: 'Card', virement: 'Transfer', cheque: 'Cheque', autre: 'Other' },
-    venteTitre: n => `Sale: ${n}`, valider: 'Confirm',
+    venteTitre: n => `Sale: ${n}`, quantiteVendue: 'Quantity sold', prixUnBougie: 'Price per candle (€)', totalVente: (n, m) => `${n} candle(s) · total ${m}`, valider: 'Confirm',
     idees: 'What can I make with my stock?', ideesCourt: 'Ideas from my stock',
     ideesAide: 'Recipes you can make with the scents in stock (wax, jars and wicks are not counted). Tap a size to calculate it.',
     ideesAvec: 'With the scent', toutes: 'All',
@@ -751,60 +773,176 @@ function vueCalcul() {
   const ui = etat.ui;
   if (!formuleParId(ui.formule)) ui.formule = formulesTriees()[0].id;
   const parDefaut = contenantsTries()[0]?.id || 'perso';
-  if (!Array.isArray(ui.lignes) || !ui.lignes.length) ui.lignes = [{ contenant: parDefaut, poids: '', n: 1 }];
-  ui.lignes.forEach(l => { if (l.contenant !== 'perso' && !contenantParId(l.contenant)) l.contenant = parDefaut; });
-
-  const fab = etat.ui.fabrication;
-  app.innerHTML = `${bandeauSauvegarde()}
-    ${fab && formuleParId(fab.formule) ? `<div class="card bandeau-fab"><span>${t('enCours', esc(formuleParId(fab.formule).nom))}</span>
-      <a class="btn primary small" href="#/fabrication">${t('reprendre')}</a></div>` : ''}
-    <div class="duo">
-    <div class="card">
-      <label for="c-formule" style="margin-top:0">${t('formule')}</label>
-      <select id="c-formule" data-ui="formule">
-        ${formulesTriees().map(f => `<option value="${f.id}" ${f.id === ui.formule ? 'selected' : ''}>${f.favori ? '★ ' : ''}${esc(f.nom)}</option>`).join('')}
+  ui.autres = (Array.isArray(ui.autres) ? ui.autres : []).filter(x => formuleParId(x.formule)).slice(0, LETTRES.length - 1);
+  const nbLots = 1 + ui.autres.length;
+  for (let k = 0; k < nbLots; k++) {
+    const lot = lotUi(k);
+    if (!Array.isArray(lot.lignes) || !lot.lignes.length) lot.lignes = [{ contenant: parDefaut, poids: '', n: 1 }];
+    lot.lignes.forEach(l => { if (l.contenant !== 'perso' && !contenantParId(l.contenant)) l.contenant = parDefaut; });
+  }
+  const carte = k => { const lot = lotUi(k); return `<div class="card lot">
+      ${k ? `<button class="retirer-lot" data-action="retirer-recette" data-lot="${k}" aria-label="${t('retirerRecette')}">${ICONES.croix}</button>` : ''}
+      <label for="c-formule-${k}" style="margin-top:0">${nbLots > 1 ? `<span class="lettre l${LETTRES[k]}">${LETTRES[k]}</span> ` : ''}${t('formule')}</label>
+      <select id="c-formule-${k}" data-lot-formule="${k}">
+        ${formulesTriees().map(f => `<option value="${f.id}" ${f.id === lot.formule ? 'selected' : ''}>${f.favori ? '★ ' : ''}${esc(f.nom)}</option>`).join('')}
       </select>
-      ${ui.lignes.map((l, i) => `
+      ${lot.lignes.map((l, i) => `
         <div class="grid2 pot">
           <div>
-            <label for="c-contenant-${i}">${t('potOuMoule')}</label>
-            <select id="c-contenant-${i}" data-pot="${i}" data-champ-pot="contenant">
+            <label for="c-contenant-${k}-${i}">${t('potOuMoule')}</label>
+            <select id="c-contenant-${k}-${i}" data-lot="${k}" data-pot="${i}" data-champ-pot="contenant">
               ${[['pot', t('pots')], ['moule', t('moules')]].map(([g, titre]) => {
                 const liste = contenantsTries().filter(c => (c.genre || 'pot') === g);
                 return liste.length ? `<optgroup label="${titre}">${liste.map(c => `<option value="${c.id}" ${c.id === l.contenant ? 'selected' : ''}>${esc(c.nom)} (${grammes(nombre(c.poids))})</option>`).join('')}</optgroup>` : '';
               }).join('')}
               <option value="perso" ${l.contenant === 'perso' ? 'selected' : ''}>${t('autrePoids')}</option>
             </select>
-            ${l.contenant === 'perso' ? `<label for="c-poids-${i}">${t('poidsParBougie')}</label>
-              <input id="c-poids-${i}" data-pot="${i}" data-champ-pot="poids" inputmode="decimal" value="${esc(l.poids)}" placeholder="${t('exPoids')}">` : ''}
+            ${l.contenant === 'perso' ? `<label for="c-poids-${k}-${i}">${t('poidsParBougie')}</label>
+              <input id="c-poids-${k}-${i}" data-lot="${k}" data-pot="${i}" data-champ-pot="poids" inputmode="decimal" value="${esc(l.poids)}" placeholder="${t('exPoids')}">` : ''}
           </div>
           <div>
-            <label for="c-nombre-${i}">${t('nombre')}</label>
+            <label for="c-nombre-${k}-${i}">${t('nombre')}</label>
             <div class="stepper">
-              <button data-action="moins" data-i="${i}" aria-label="−1">−</button>
-              <input id="c-nombre-${i}" data-pot="${i}" data-champ-pot="n" inputmode="numeric" value="${l.n}">
-              <button data-action="plus" data-i="${i}" aria-label="+1">+</button>
-              ${ui.lignes.length > 1 ? `<button data-action="retirer-pot" data-i="${i}" aria-label="${t('retirer')}">${ICONES.croix}</button>` : ''}
+              <button data-action="moins" data-lot="${k}" data-i="${i}" aria-label="−1">−</button>
+              <input id="c-nombre-${k}-${i}" data-lot="${k}" data-pot="${i}" data-champ-pot="n" inputmode="numeric" value="${l.n}">
+              <button data-action="plus" data-lot="${k}" data-i="${i}" aria-label="+1">+</button>
+              ${lot.lignes.length > 1 ? `<button data-action="retirer-pot" data-lot="${k}" data-i="${i}" aria-label="${t('retirer')}">${ICONES.croix}</button>` : ''}
             </div>
           </div>
         </div>`).join('')}
-      <div class="actions"><button class="small" data-action="ajouter-pot">${t('ajouterPot')}</button></div>
+      <div class="actions"><button class="small" data-action="ajouter-pot" data-lot="${k}">${t('ajouterPot')}</button></div>
+    </div>`; };
+
+  const fab = etat.ui.fabrication;
+  app.innerHTML = `${bandeauSauvegarde()}
+    ${fab && formuleParId(fab.formule) ? `<div class="card bandeau-fab"><span>${t('enCours', [fab, ...(fab.autres || [])].map(x => formuleParId(x.formule)).filter(Boolean).map(f => esc(f.nom)).join(' + '))}</span>
+      <a class="btn primary small" href="#/fabrication">${t('reprendre')}</a></div>` : ''}
+    <div class="duo calc">
+    <div>
+    ${Array.from({ length: nbLots }, (_, k) => carte(k)).join('')}
+    ${nbLots < LETTRES.length && etat.formules.length > 1 ? `<button class="ajout-recette" data-action="ajouter-recette">${t('autreRecette')}</button>` : ''}
+    <div id="notes-recette"></div>
     </div>
     <div class="card colle" id="resultat"></div>
     </div>`;
   afficherResultat();
 }
 
+// Une fournée = une ou plusieurs recettes, chacune avec ses pots. Lettres A, B, C pour s'y retrouver.
+const LETTRES = 'ABCDEF';
+const lotUi = k => k ? etat.ui.autres[k - 1] : etat.ui;
+function lotsDe(src) {
+  return [{ formule: src.formule, lignes: src.lignes }, ...(src.autres || [])]
+    .map((x, idx) => ({ idx, f: formuleParId(x.formule), lignes: (x.lignes || []).map(l => ({ ...l, p: poidsLigne(l), n: Math.max(0, Math.round(nombre(l.n))) })).filter(l => l.p > 0 && l.n > 0) }))
+    .filter(x => x.f && x.lignes.length)
+    .map((x, k) => ({ ...x, lettre: LETTRES[k], poids: x.lignes.reduce((s, l) => s + l.p * l.n, 0), nb: x.lignes.reduce((s, l) => s + l.n, 0) }));
+}
+const pastilleLot = lot => `<span class="lettre l${lot.lettre}">${lot.lettre}</span>`;
+
+function afficherFournee(zone, lots) {
+  const total = lots.reduce((s, x) => s + x.poids, 0), nb = lots.reduce((s, x) => s + x.nb, 0);
+  const cires = {};
+  lots.forEach(x => { const r = calculer(x.f, x.poids); const nom = x.f.cire || t('cire'); cires[nom] = (cires[nom] || 0) + r.cire; });
+  zone.innerHTML = `<p class="surtitre">${t('aPeser')}</p>
+    <h3 class="titre-resultat">${t('fourneeDe', lots.length)}<span>${t('bougies', nb)} · ${grammes(total)}</span></h3>
+    <table class="result pesee">${Object.entries(cires).map(([nom, g]) => `<tr class="fort"><td>${esc(nom)}<span class="pct">${t('fondreEnUneFois')}</span></td><td class="num">${grammes(g)}</td></tr>`).join('')}</table>
+    ${lots.map(x => { const r = calculer(x.f, x.poids); return `<div class="bloc-lot"><h4>${pastilleLot(x)} ${esc(x.f.nom)} <span class="pct">${x.lignes.map(l => `${l.n} × ${esc(nomLigne(l))}`).join(', ')}</span></h4>
+      <table class="result pesee">
+        <tr><td>${esc(x.f.cire || t('cire'))}<span class="pct">${t('saPart')}</span></td><td class="num">${grammes(r.cire)}</td></tr>
+        <tr><td>${t('parfumTotal')}<span class="pct">${pourcent(nombre(x.f.dosage))}</span></td><td class="num">${grammes(r.parfum)}</td></tr>
+        ${r.lignes.map(l => `<tr class="sous"><td>${esc(l.nom)}<span class="pct">${pourcent(l.pct)}</span></td><td class="num">${grammes(l.g)}</td></tr>`).join('')}
+        ${r.colorants.map(l => `<tr><td>${esc(l.nom)}</td><td class="num">${grammes(l.g)}</td></tr>`).join('')}
+      </table></div>`; }).join('')}
+    <button class="primary large" data-action="fabriquer">${t('fabriquer')}</button>
+    ${coutFournee(lots)}`;
+  const zoneNotes = document.getElementById('notes-recette');
+  if (zoneNotes) zoneNotes.innerHTML = lots.some(x => x.f.prochaineFois) ? `<div class="card rappel note-fois"><h3>${t('prochaineFois')}</h3>${lots.filter(x => x.f.prochaineFois).map(x => `<p>${pastilleLot(x)} <span style="white-space:pre-wrap">${esc(x.f.prochaineFois)}</span></p>`).join('')}</div>` : '';
+}
+
+// Coût de toute la fournée, replié, avec le détail de chaque recette.
+function coutFournee(lots) {
+  const c = lots.map(x => consommation(x.f, x.lignes));
+  if (!c.some(y => y.postes.length)) return '';
+  const total = c.reduce((s, y) => s + y.total, 0), nb = lots.reduce((s, x) => s + x.nb, 0);
+  return `<details class="repli"><summary><span>${t('coutEstime')} · ${euros(total / nb)} ${t('parBougie')}</span><strong>${c.every(y => y.complet) ? '' : '≥ '}${euros(total)}</strong></summary>
+    ${lots.map(x => `<h4 class="titre-lot">${pastilleLot(x)} ${esc(x.f.nom)}</h4>${coutHtml(x.f, x.lignes, x.nb).replace(/<h3>.*?<\/h3>/, '').replace(/<p class="muted">.*?<\/p>/s, '')}`).join('')}</details>`;
+}
+
+// Étapes d'une fournée à plusieurs recettes : d'abord tout ce qui se fait en commun,
+// puis chaque recette de la couleur au coulage, pour ne pas laisser refroidir un pichet.
+function etapesFournee(lots) {
+  const tpDe = f => { const tp = { ...etat.reglages.temperatures }; Object.entries(f.temperatures || {}).forEach(([k, v]) => { if (v) tp[k] = v; }); return tp; };
+  const liste = items => `<table class="result petit">${items.map(([nom, g]) => `<tr><td>${nom}</td><td class="num">${g}</td></tr>`).join('')}</table>`;
+  const groupes = cle => { const m = new Map(); lots.forEach(x => { const v = tpDe(x.f)[cle]; m.set(v, [...(m.get(v) || []), x]); }); return [...m]; };
+  const titreTemp = (cle, fn) => groupes(cle).map(([v, ls]) => fn(v) + (groupes(cle).length > 1 ? ` (${ls.map(x => x.lettre).join(', ')})` : '')).join(' · ');
+  const calc = lots.map(x => calculer(x.f, x.poids));
+  const cires = new Map();
+  lots.forEach((x, k) => { const nom = x.f.cire || t('cire'); cires.set(nom, [...(cires.get(nom) || []), [x, calc[k].cire]]); });
+  const partage = [...cires.values()].some(v => v.length > 1);
+  const etapes = [];
+  etapes.push({ titre: titreTemp('pot', v => t('etPot', v)), detail: liste(lots.flatMap(x => x.lignes.map(l => [`${pastilleLot(x)} ${l.n} × ${esc(nomLigne(l))}`, '']))) });
+  etapes.push({ titre: t('etPeserCire'), detail: [...cires].map(([nom, v]) => liste([[`<strong>${esc(nom)}</strong>${v.length > 1 ? ' <span class="pct">' + t('enUneFoisPour', v.map(([x]) => x.lettre).join(' + ')) + '</span>' : ' ' + pastilleLot(v[0][0])}`, `<strong>${grammes(v.reduce((s, y) => s + y[1], 0))}</strong>`]])).join('') });
+  etapes.push({ titre: titreTemp('fonte', v => t('etFondre', v)), detail: partage ? '' : `<p class="muted">${t('uneCasserole')}</p>` });
+  etapes.push({ titre: t('etPeserParfums'), detail: lots.map((x, k) => `<h4>${pastilleLot(x)} ${esc(x.f.nom)}</h4>` + liste([...calc[k].lignes.map(l => [`${esc(l.nom)} <span class="pct">${pourcent(l.pct)}</span>`, grammes(l.g)]), [`<strong>${t('total')}</strong>`, grammes(calc[k].parfum)]])).join('') });
+  if (partage) etapes.push({ titre: t('etPartager'), detail: liste(lots.map((x, k) => [`${pastilleLot(x)} ${esc(x.f.nom)}`, grammes(calc[k].cire)])) });
+  lots.forEach((x, k) => {
+    const tp = tpDe(x.f), r = calc[k], couches = (x.f.couches || []).filter(c => c.nom || c.pct);
+    if (x.f.design || couches.length || r.colorants.length) etapes.push({ lot: x, titre: t('etCouleur', tp.couleur),
+      detail: (r.colorants.length ? liste(r.colorants.map(l => [esc(l.nom), grammes(l.g)])) : '') + (x.f.design ? `<p class="muted">${esc(x.f.design)}</p>` : '') });
+    etapes.push({ lot: x, titre: t('etParfum', tp.parfum) });
+    etapes.push({ lot: x, titre: t('etCouler', tp.coulage), detail: liste(x.lignes.map(l => [`${l.n} × ${esc(nomLigne(l))}`, grammes(l.p)])) });
+    (x.f.etapes || '').split('\n').map(e => e.trim()).filter(Boolean).forEach(e => etapes.push({ lot: x, titre: esc(e) }));
+  });
+  etapes.push({ titre: t('etFinir') });
+  return etapes;
+}
+
+function vueFournee(fab, lots) {
+  const etapes = etapesFournee(lots);
+  fab.nbEtapes = etapes.length;
+  const faites = etapes.filter((_, i) => fab.coches[i]).length;
+  const courante = etapes.findIndex((_, k) => !fab.coches[k]);
+  app.innerHTML = `
+    <h2>${t('fabrication')} : ${t('fabricationDe', lots.length)}</h2>
+    <p class="muted">${lots.map(x => `${pastilleLot(x)} ${esc(x.f.nom)} <span class="pct">${t('bougies', x.nb)}</span>`).join(' &nbsp; ')} · <span id="progression">${t('etapesFaites', faites, etapes.length)}</span></p>
+    ${lots.some(x => x.f.prochaineFois) ? `<div class="card rappel"><strong>${t('rappelProchaineFois')}</strong>${lots.filter(x => x.f.prochaineFois).map(x => `<p style="margin:6px 0 0">${pastilleLot(x)} <span style="white-space:pre-wrap">${esc(x.f.prochaineFois)}</span></p>`).join('')}</div>` : ''}
+    <div class="progres" aria-hidden="true"><i style="width:${faites / etapes.length * 100}%"></i></div>
+    <div class="duo fab">
+    <ol class="etapes">
+      ${etapes.map((e, i) => `${i === 0 ? `<li class="phase">${t('phaseEnsemble')}</li>` : e.lot && etapes[i - 1].lot !== e.lot ? `<li class="phase">${pastilleLot(e.lot)} ${esc(e.lot.f.nom)}</li>` : !e.lot && etapes[i - 1].lot ? `<li class="phase">${t('phaseFinir')}</li>` : ''}
+      <li class="etape card ${fab.coches[i] ? 'faite' : ''} ${i === courante ? 'courante' : ''} ${e.lot ? 'du-lot l' + e.lot.lettre : ''}">
+        <label class="coche"><input type="checkbox" data-etape="${i}" ${fab.coches[i] ? 'checked' : ''}>
+          <span><span class="num-etape">${i + 1}</span> ${e.titre}</span></label>
+        ${e.detail ? `<div class="detail-etape">${e.detail}</div>` : ''}
+      </li>`).join('')}
+    </ol>
+    <div class="colle">
+    ${(c => c ? `<div class="card cout-fournee">${c}</div>` : '')(coutFournee(lots))}
+    <div class="card">
+      <h3>${t('notesFournee')}</h3>
+      ${lots.map(x => `<label for="notes-${x.lettre}">${pastilleLot(x)} ${esc(x.f.nom)}</label>
+      <textarea id="notes-${x.lettre}" data-note-lot="${x.idx}" placeholder="${t('exNotesFournee')}" style="min-height:70px">${esc((fab.notesLots || {})[x.idx] || '')}</textarea>`).join('')}
+      <div class="actions">
+        <button class="primary" data-action="terminer-fabrication">${t('terminer')}</button>
+        <button class="danger" data-action="abandonner-fabrication">${t('abandonner')}</button>
+      </div>
+    </div>
+    </div>
+    </div>`;
+}
+
 function afficherResultat() {
   const zone = document.getElementById('resultat');
   if (!zone) return;
+  if ((etat.ui.autres || []).length) { const lots = lotsDe(etat.ui); if (lots.length > 1) return afficherFournee(zone, lots); }
   const f = formuleParId(etat.ui.formule);
   const lignes = etat.ui.lignes
     .map(l => ({ ...l, p: poidsLigne(l), n: Math.max(0, Math.round(nombre(l.n))) }))
     .filter(l => l.p > 0 && l.n > 0);
   const nbBougies = lignes.reduce((s, l) => s + l.n, 0);
   const poidsTotal = lignes.reduce((s, l) => s + l.p * l.n, 0);
-  if (!poidsTotal) { zone.innerHTML = `<p class="muted">${t('indiquerPoids')}</p>`; return; }
+  const zoneNotes = document.getElementById('notes-recette');
+  if (!poidsTotal) { zone.innerHTML = `<p class="muted">${t('indiquerPoids')}</p>`; if (zoneNotes) zoneNotes.innerHTML = ''; return; }
 
   const r = calculer(f, poidsTotal);
   const couches = (f.couches || []).filter(c => c.nom || c.pct);
@@ -812,16 +950,16 @@ function afficherResultat() {
   const plusieursPots = lignes.length > 1 || nbBougies > 1;
 
   zone.innerHTML = `
-    <h3 class="titre-resultat">${esc(f.nom)}<span>${t('bougies', nbBougies)}, ${grammes(poidsTotal)}</span></h3>
+    <p class="surtitre">${t('aPeser')}</p>
+    <h3 class="titre-resultat">${esc(f.nom)}<span>${t('bougies', nbBougies)} · ${grammes(poidsTotal)}</span></h3>
     ${Math.abs(r.sommeMelange - 100) > 0.05 ? `<p class="warn">${t('melangeFaux', pourcent(r.sommeMelange).replace(' %', ''))}</p>` : ''}
-    <table class="result">
-      <tr><td>${esc(f.cire || t('cire'))}</td><td class="num">${grammes(r.cire)}</td></tr>
-      <tr><td>${t('parfumTotal')}<span class="pct">${pourcent(nombre(f.dosage))} ${t('duPoidsTotal')}</span></td><td class="num">${grammes(r.parfum)}</td></tr>
+    <table class="result pesee">
+      <tr class="fort"><td>${esc(f.cire || t('cire'))}</td><td class="num">${grammes(r.cire)}</td></tr>
+      <tr class="fort"><td>${t('parfumTotal')}<span class="pct">${pourcent(nombre(f.dosage))} ${t('duPoidsTotal')}</span></td><td class="num">${grammes(r.parfum)}</td></tr>
       ${r.lignes.map(l => `<tr class="sous"><td>${esc(l.nom)}<span class="pct">${pourcent(l.pct)}</span></td><td class="num">${grammes(l.g)}</td></tr>`).join('')}
       ${r.colorants.map(l => `<tr><td>${esc(l.nom)}<span class="pct">${pourcent(l.pct)} ${t('duPoidsTotal')}</span></td><td class="num">${grammes(l.g)}</td></tr>`).join('')}
       <tr class="total"><td>${t('total')}</td><td class="num">${grammes(poidsTotal)}</td></tr>
     </table>
-    <div class="actions"><button class="primary" data-action="fabriquer">${t('fabriquer')}</button></div>
     ${couches.length ? `<h3>${t('couches')}</h3><table class="result petit">
       ${couches.map(c => {
         const p = poidsTotal * nombre(c.pct) / 100;
@@ -834,11 +972,15 @@ function afficherResultat() {
         return `<tr><td>${l.n} × ${esc(nomLigne(l))}</td>
           <td class="num">${t('cire').toLowerCase()} ${grammes(rp.cire)} · ${t('parfumTotal').toLowerCase()} ${grammes(rp.parfum)}</td></tr>`;
       }).join('')}</table>` : ''}
-    ${meches.length ? `<p><strong>${t('meche')} :</strong> ${meches.map(esc).join(', ')}</p>` : ''}
-    ${f.design ? `<p><strong>${t('design')} :</strong> ${esc(f.design)}</p>` : ''}
-    ${f.prochaineFois ? `<p><strong>${t('prochaineFois')} :</strong> <span style="white-space:pre-wrap">${esc(f.prochaineFois)}</span></p>` : ''}
-    ${f.notes ? `<p class="muted" style="white-space:pre-wrap">${esc(f.notes)}</p>` : ''}
-    ${coutHtml(f, lignes, nbBougies)}`;
+    <button class="primary large" data-action="fabriquer">${t('fabriquer')}</button>
+    ${(() => { const c = consommation(f, lignes); if (!c.postes.length) return '';
+      return `<details class="repli"><summary><span>${t('coutEstime')}${nbBougies > 1 ? ` · ${euros(c.total / nbBougies)} ${t('parBougie')}` : ''}</span><strong>${c.complet ? '' : '≥ '}${euros(c.total)}</strong></summary>
+        ${coutHtml(f, lignes, nbBougies).replace(/<h3>.*?<\/h3>/, '')}</details>`; })()}`;
+  if (zoneNotes) zoneNotes.innerHTML = (f.prochaineFois ? `<div class="card rappel note-fois"><h3>${t('prochaineFois')}</h3><p style="white-space:pre-wrap">${esc(f.prochaineFois)}</p></div>` : '')
+    + (meches.length || f.design || f.notes ? `<div class="card texte-fiche">
+      ${meches.length ? `<h3>${t('meche')}</h3><p>${meches.map(esc).join(', ')}</p>` : ''}
+      ${f.design ? `<h3>${t('design')}</h3><p>${esc(f.design)}</p>` : ''}
+      ${f.notes ? `<h3>${t('notesTitre')}</h3><p class="muted" style="white-space:pre-wrap">${esc(f.notes)}</p>` : ''}</div>` : '');
 }
 
 // --- Formules ---
@@ -860,17 +1002,17 @@ function vueFormules(filtre = '') {
       <a class="btn primary" href="#/formule/nouveau">${t('nouvelle')}</a>
       ${etat.formules.length ? `<a class="btn" href="#/idees">${t('ideesCourt')}</a>` : ''}
     </div>
-    ${liste.length ? `<ul class="list">${liste.map(f => `
+    ${liste.length ? [[t('favoris'), liste.filter(f => f.favori)], [liste.some(f => f.favori) ? t('toutesLesAutres') : '', liste.filter(f => !f.favori)]].filter(g => g[1].length).map(([titre, groupe]) => `${titre ? `<h3>${titre} <span class="compte">${groupe.length}</span></h3>` : ''}<ul class="list recettes">${groupe.map(f => `
       <li>
         <button class="star" data-action="favori" data-id="${f.id}" aria-label="${t('favori')}" aria-pressed="${!!f.favori}">${f.favori ? ICONES.etoilePleine : ICONES.etoile}</button>
         <a class="row" href="#/formule/${f.id}">
           ${(f.photos || []).length ? `<img class="mini" data-photo="${f.photos[0]}" alt="">` : ''}
           <div class="grow">
           <div class="title">${esc(f.nom)}</div>
-          ${pastilles(f.parfums)}
+          <div class="sub senteurs">${f.parfums.filter(p => p.nom).map(p => `${esc(p.nom)}${p.pct ? ` <b>${esc(p.pct)}</b>` : ''}`).join('<i> · </i>')}</div>
         </div></a>
         <button class="small" data-action="calculer" data-id="${f.id}">${t('calculer')}</button>
-      </li>`).join('')}</ul>`
+      </li>`).join('')}</ul>`).join('')
       : `<div class="empty">${etat.formules.length ? t('aucuneCorrespond') : t('aucuneFormule')}</div>`}`;
   afficherPhotos();
   const champ = document.getElementById('recherche');
@@ -1196,16 +1338,19 @@ function vueBougies() {
   const ventes = etat.produits.flatMap(p => p.ventes);
   app.innerHTML = `<h2>${t('mesBougies')}</h2>
     <p class="muted">${t('mesBougiesAide')}</p>
-    ${liste.length ? `<div class="card"><strong>${t('resumeBougies', enStock, euros(valeur))}</strong><br>
-      <span class="muted">${t('resumeVentes', somme(ventes, 'n'), euros(somme(ventes, 'prix')))}</span></div>
-      <ul class="list">${liste.map(p => {
+    ${liste.length ? `<div class="tuiles">
+      <div class="tuile"><span class="l">${t('tEnStock')}</span><span class="v">${enStock}</span><span class="d">${t('tBougiesPretes')}</span></div>
+      <div class="tuile"><span class="l">${t('tValeur')}</span><span class="v">${euros(valeur)}</span><span class="d">${t('tAuCout')}</span></div>
+      <div class="tuile"><span class="l">${t('tVendues')}</span><span class="v">${somme(ventes, 'n')}</span><span class="d">${t('tDepuisDebut')}</span></div>
+      <div class="tuile"><span class="l">${t('tEncaisse')}</span><span class="v">${euros(somme(ventes, 'prix'))}</span><span class="d">${t('tTotalVentes')}</span></div></div>
+      <ul class="list bougies">${liste.map(p => {
         const cout = coutProduit(p);
         const incomplet = p.entrees.some(e => !e.complet);
-        return `<li class="${p.quantite ? '' : 'vide'}"><a class="row" href="#/bougie/${p.id}"><div class="grow">
-          <div class="title">${esc(p.nom)}</div>
-          <div class="sub">${cout !== null ? `${t('coutUnite')} ${incomplet ? '≥ ' : ''}${euros(cout)}` : ''}${p.prixVente !== '' ? ` · ${t('prixVente').replace(/ \(.*\)$/, '')} ${euros(nombre(p.prixVente))}` : ''}</div>
-        </div><div style="white-space:nowrap" class="${p.quantite ? '' : 'muted'}">${t('enStockN', p.quantite)}</div></a>
-        <button class="small" data-action="vendre" data-id="${p.id}" ${p.quantite ? '' : 'disabled'}>${t('vendu')}</button></li>`;
+        return `<li class="${p.quantite ? '' : 'vide'}"><a class="row" href="#/bougie/${p.id}"><span class="nb">${p.quantite}</span><div class="grow">
+          <div class="title">${esc(p.nom.split(' · ')[0])}</div>
+          <div class="sub">${esc(p.nom.split(' · ').slice(1).join(' · '))}${cout !== null ? ' · ' : ''}${cout !== null ? `${t('coutUnite')} ${incomplet ? '≥ ' : ''}${euros(cout)}` : ''}${p.prixVente !== '' ? ` · ${t('venteCourt')} ${euros(nombre(p.prixVente))}` : ''}</div>
+        </div></a>
+        <button class="small doux" data-action="vendre" data-id="${p.id}" ${p.quantite ? '' : 'disabled'}>${t('vendu')}</button></li>`;
       }).join('')}</ul>`
       : `<div class="empty">${t('aucuneBougie')}</div>`}`;
 }
@@ -1339,17 +1484,18 @@ function vueStock() {
     <div class="actions" style="margin:0 0 16px">
       <a class="btn primary" href="#/stock/nouveau">${t('nouvelArticle')}</a>
       <a class="btn" href="#/facture">${t('lireFacture')}</a>
-      <button data-action="stock-depuis-recettes">${t('depuisRecettes')}</button>
-      ${etat.formules.length && etat.stock.length ? `<a class="btn" href="#/idees">${t('ideesCourt')}</a>` : ''}
+      <span class="pousse"></span>
+      <button class="lien" data-action="stock-depuis-recettes">${t('depuisRecettes')}</button>
+      ${etat.formules.length && etat.stock.length ? `<a class="btn lien" href="#/idees">${t('ideesCourt')}</a>` : ''}
     </div>
     ${etat.stock.length ? TYPES.filter(ty => etat.stock.some(a => a.type === ty)).map(ty => `
-      <h3>${t('types')[ty]}</h3>
-      <ul class="list">${etat.stock.filter(a => a.type === ty).sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(a => `
+      <h3>${t('types')[ty]} <span class="compte">${etat.stock.filter(a => a.type === ty).length}</span></h3>
+      <ul class="list serre">${etat.stock.filter(a => a.type === ty).sort((a, b) => a.nom.localeCompare(b.nom, 'fr')).map(a => `
         <li><a class="row" href="#/stock/${a.id}"><div class="grow">
           <div class="title">${esc(a.nom)}</div>
           <div class="sub">${prixUnitaireTexte(a) || t('aucunAchat')}</div>
         </div>
-        <div class="${a.quantite <= nombre(a.seuil) ? 'warn' : ''}" style="white-space:nowrap">${a.quantite > 0 ? quantiteTexte(a.quantite, UNITE[a.type]) : t('epuise')}</div></a></li>`).join('')}
+        <div class="qte ${a.quantite <= nombre(a.seuil) ? 'bas' : ''}">${a.quantite > 0 ? quantiteTexte(a.quantite, UNITE[a.type]).replace('pièce(s)', 'p.') : t('epuise')}</div></a></li>`).join('')}
       </ul>`).join('')
       : `<div class="empty">${t('aucunArticle')}</div>`}`;
 }
@@ -1456,13 +1602,8 @@ function stockDepuisRecettes() {
 // Articles à racheter, affichés en haut de la page Stock.
 function alertesHtml() {
   const liste = enAlerte();
-  return liste.length ? `<div class="card rappel"><h3 style="margin-top:0">${t('alertes')}</h3>
-    <ul class="list">${liste.map(a => `
-      <li><div class="grow">
-        <div class="title">${esc(a.nom)} <span class="muted" style="font-weight:400">· ${t('typeNom')[a.type]}</span></div>
-        <div class="sub warn">${a.quantite > 0 ? t('reste', quantiteTexte(a.quantite, UNITE[a.type])) : t('epuise')}</div>
-      </div>
-      <a class="btn small" href="#/stock/${a.id}">${t('racheter')}</a></li>`).join('')}</ul></div>` : '';
+  return liste.length ? `<div class="card rappel compact"><h3>${t('aRacheter')} <span class="compte">${liste.length}</span></h3>
+    <div class="puces">${[...liste].sort((a, b) => a.quantite - b.quantite).map(a => `<a class="puce ${a.quantite > 0 ? '' : 'vide'}" href="#/stock/${a.id}"><strong>${esc(a.nom)}</strong> ${a.quantite > 0 ? quantiteTexte(a.quantite, UNITE[a.type]).replace('pièce(s)', 'p.') : t('epuise')}</a>`).join('')}</div></div>` : '';
 }
 
 // --- Rapport (entrées et sorties) ---
@@ -1492,20 +1633,20 @@ function vueRapport() {
       <select data-ui="annee" aria-label="${t('annee')}" style="width:auto">${annees.map(a => `<option ${a === annee ? 'selected' : ''}>${a}</option>`).join('')}</select>
       <button data-action="exporter-csv">${t('exporterCsv')}</button>
     </div>
-    <div class="card">
-      <table class="result">
-        <tr><td>${t('entrees')}</td><td class="num">${euros(an.e)}</td></tr>
-        <tr><td>${t('sorties')}</td><td class="num">${euros(-an.s)}</td></tr>
-        <tr class="total"><td>${t('solde')}</td><td class="num">${signe(an.e - an.s)}</td></tr>
-      </table>
-      ${mois.length ? `<h3>${t('mois')}</h3><table class="result petit">
-        <tr><td></td><td class="num muted">${t('entrees')}</td><td class="num muted">${t('sorties')}</td><td class="num muted">${t('solde')}</td></tr>
-        ${mois.map(m => { const x = totaux(liste.filter(v => v.date.startsWith(m))); return `<tr><td>${nomMois(m)}</td>
-          <td class="num">${euros(x.e)}</td><td class="num">${euros(-x.s)}</td><td class="num">${signe(x.e - x.s)}</td></tr>`; }).join('')}
-      </table>` : ''}
+    <div class="tuiles">
+      <div class="tuile"><span class="l">${t('entrees')}</span><span class="v">${euros(an.e)}</span><span class="d">${t('tVentesRecettes')}</span></div>
+      <div class="tuile"><span class="l">${t('sorties')}</span><span class="v">${euros(an.s)}</span><span class="d">${t('tAchatsDepenses')}</span></div>
+      <div class="tuile ${an.e - an.s < 0 ? 'neg' : 'pos'}"><span class="l">${t('solde')}</span><span class="v">${euros(an.e - an.s)}</span><span class="d">${an.e - an.s < 0 ? t('tSoldeNeg') : t('tSoldePos')}</span></div>
     </div>
-    <div class="card">
-      <h3 style="margin-top:0">${t('autreMouvement')}</h3>
+    ${mois.length ? `<div class="card"><h3 style="margin-top:0">${t('mois')}</h3><table class="result petit moisT">
+        <tr><td></td><td></td><td class="num muted">${t('entrees')}</td><td class="num muted">${t('sorties')}</td><td class="num muted">${t('solde')}</td></tr>
+        ${(() => { const max = Math.max(...mois.map(m => { const x = totaux(liste.filter(v => v.date.startsWith(m))); return Math.max(x.e, x.s); }), 1);
+          return mois.map(m => { const x = totaux(liste.filter(v => v.date.startsWith(m))); return `<tr><td>${nomMois(m)}</td>
+          <td class="barres"><i class="e" style="width:${x.e / max * 100}%"></i><i class="s" style="width:${x.s / max * 100}%"></i></td>
+          <td class="num">${euros(x.e)}</td><td class="num">${euros(x.s)}</td><td class="num">${signe(x.e - x.s)}</td></tr>`; }).join(''); })()}
+      </table></div>` : ''}
+    <details class="card repli saisie">
+      <summary><span>+ ${t('autreMouvement')}</span></summary>
       <div class="grid2">
         <div><label for="m-sens">${t('type')}</label>
           <select id="m-sens"><option value="sortie">${t('sortie')}</option><option value="entree">${t('entree')}</option></select></div>
@@ -1516,12 +1657,12 @@ function vueRapport() {
         ${champMontant('m', t('montant').replace(/ \(.*\)$/, ''))}
         <div><label for="m-mode">${t('paiement')}</label><select id="m-mode">${optionsModes(etat.reglages.dernierMode || 'especes')}</select></div>
       </div>
-      <div class="actions"><button data-action="ajouter-mouvement">${t('ajouterMouvement')}</button></div>
-    </div>
+      <div class="actions"><button class="primary" data-action="ajouter-mouvement">${t('ajouterMouvement')}</button></div>
+    </details>
     <div class="card">
       <h3 style="margin-top:0">${t('mouvements')}</h3>
-      ${liste.length ? `<table class="result petit">${liste.map(m => `<tr>
-        <td>${esc(m.libelle)}<span class="pct">${new Date(m.date).toLocaleDateString(locale())}${m.mode ? ' · ' + t('modes')[m.mode] : ''}</span></td>
+      ${liste.length ? `<table class="result petit journal">${liste.map((m, k) => `${k === 0 || liste[k - 1].date.slice(0, 7) !== m.date.slice(0, 7) ? `<tr class="mois"><td colspan="2">${nomMois(m.date.slice(0, 7))}</td></tr>` : ''}<tr>
+        <td><span class="jour">${new Date(m.date).toLocaleDateString(locale(), { day: '2-digit', month: '2-digit' })}</span>${esc(m.libelle)}<span class="pct">${m.mode ? t('modes')[m.mode] : ''}</span></td>
         <td class="num">${signe(m.montant)}${origineTexte(m.origine)}${m.manuel ? ` <button class="small" data-action="supprimer-mouvement" data-id="${m.id}" aria-label="${t('supprimer')}">${ICONES.croix}</button>` : ''}</td></tr>`).join('')}
       </table>` : `<p class="muted">${t('aucunMouvement')}</p>`}
     </div>`;
@@ -1536,24 +1677,41 @@ function fenetreVente(p) {
   const prix = p.prixVente === '' ? '' : String(p.prixVente).replace('.', locale() === 'fr-FR' ? ',' : '.');
   fond.innerHTML = `<div class="card fenetre">
     <h3 style="margin-top:0">${t('venteTitre', esc(p.nom))}</h3>
+    <label for="v-n">${t('quantiteVendue')} <span class="muted" style="font-weight:500">· ${t('enStockN', p.quantite)}</span></label>
+    <div class="stepper">
+      <button data-v="moins" aria-label="−1">−</button>
+      <input id="v-n" inputmode="numeric" value="1">
+      <button data-v="plus" aria-label="+1">+</button>
+    </div>
     <div class="grid2">
-      <div><label for="v-prix">${t('prixVente')}</label><input id="v-prix" inputmode="decimal" value="${esc(prix)}"></div>
+      <div><label for="v-prix">${t('prixUnBougie')}</label><input id="v-prix" inputmode="decimal" value="${esc(prix)}"></div>
       <div><label for="v-mode">${t('paiement')}</label><select id="v-mode">${optionsModes(etat.reglages.dernierMode || 'especes')}</select></div>
     </div>
+    <p class="total-vente" id="v-total"></p>
     <div class="actions">
       <button class="primary" data-v="valider">${t('valider')}</button>
       <button data-v="annuler">${t('annuler')}</button>
     </div></div>`;
   document.body.appendChild(fond);
   fond.querySelector('#v-prix').focus();
+  // Jamais plus que ce qui est en stock, jamais moins d'une.
+  const champN = fond.querySelector('#v-n');
+  const lireN = () => Math.min(Math.max(1, Math.round(nombre(champN.value)) || 1), Math.max(1, p.quantite));
+  const majTotal = () => { fond.querySelector('#v-total').textContent = t('totalVente', lireN(), euros(lireN() * nombre(fond.querySelector('#v-prix').value))); };
+  fond.addEventListener('input', majTotal);
+  champN.addEventListener('change', () => { champN.value = lireN(); majTotal(); });
+  majTotal();
   fond.addEventListener('click', ev => {
-    const choix = ev.target.dataset.v;
+    const choix = ev.target.closest('[data-v]')?.dataset.v;
     if (choix === 'annuler' || ev.target === fond) { fond.remove(); return; }
+    if (choix === 'plus' || choix === 'moins') { champN.value = lireN() + (choix === 'plus' ? 1 : -1); champN.value = lireN(); majTotal(); return; }
     if (choix !== 'valider') return;
+    const n = lireN();
     const montant = nombre(fond.querySelector('#v-prix').value);
     const mode = fond.querySelector('#v-mode').value;
-    p.ventes.push({ date: new Date().toISOString().slice(0, 10), n: 1, prix: montant, mode });
-    p.quantite = Math.max(0, p.quantite - 1);
+    // Le prix enregistré est le total de la vente ; le prix par bougie sert de proposition la prochaine fois.
+    p.ventes.push({ date: new Date().toISOString().slice(0, 10), n, prix: montant * n, mode });
+    p.quantite = Math.max(0, p.quantite - n);
     if (p.prixVente === '' && montant) p.prixVente = montant;
     etat.reglages.dernierMode = mode;
     enregistrer();
@@ -1585,25 +1743,27 @@ function vueReglages() {
   const r = etat.reglages;
   const d = etat.derniereSauvegarde ? new Date(etat.derniereSauvegarde).toLocaleDateString(locale(), { dateStyle: 'long' }) : t('jamais');
   app.innerHTML = `<h2>${t('reglages')}</h2>
-    <div class="card">
+    <div class="card reg"><div class="grid2"><div>
       <label for="r-langue" style="margin-top:0">${t('langue')}</label>
       <select id="r-langue" data-reglage="langue">
         <option value="fr" ${r.langue === 'fr' ? 'selected' : ''}>Français</option>
         <option value="en" ${r.langue === 'en' ? 'selected' : ''}>English</option>
-      </select>
-      <label for="r-devise">${t('devise')}</label>
+      </select></div><div>
+      <label for="r-devise" style="margin-top:0">${t('devise')}</label>
       <select id="r-devise" data-reglage="devise">
         ${['CHF', 'EUR'].map(d => `<option ${r.devise === d ? 'selected' : ''}>${d}</option>`).join('')}
-      </select>
-      <div class="grid2">
+      </select></div></div></div>
+    <div class="card reg"><h3 style="margin-top:0">${t('calculTitre')}</h3>
+      <div class="grid2 trois">
         <div><label for="r-dosage">${t('dosageDefaut')}</label>
           <input id="r-dosage" data-reglage="dosageDefaut" inputmode="decimal" value="${esc(r.dosageDefaut)}"></div>
         <div><label for="r-densite">${t('densite')}</label>
           <input id="r-densite" data-reglage="densite" inputmode="decimal" value="${esc(r.densite)}"></div>
         <div><label for="r-densite-parfum">${t('densiteParfum')}</label>
           <input id="r-densite-parfum" data-reglage="densiteParfum" inputmode="decimal" value="${esc(r.densiteParfum)}"></div>
-      </div>
-      <h3>${t('temperatures')}</h3>
+      </div></div>
+    <div class="card reg">
+      <h3 style="margin-top:0">${t('temperatures')}</h3>
       <div class="grid-temp">
         ${[['pot', 'tPot'], ['fonte', 'tFonte'], ['couleur', 'tCouleur'], ['parfum', 'tParfum'], ['coulage', 'tCoulage']].map(([k, l]) => `
           <div><label for="r-t-${k}">${t(l)}</label>
@@ -1791,6 +1951,7 @@ function vueFabrication() {
   const lignes = fab.lignes
     .map(l => ({ ...l, p: poidsLigne(l), n: Math.max(0, Math.round(nombre(l.n))) }))
     .filter(l => l.p > 0 && l.n > 0);
+  if ((fab.autres || []).length) { vueFournee(fab, lotsDe(fab)); return garderEcranAllume(); }
   const { etapes, poidsTotal, nb } = etapesFabrication(f, lignes);
   fab.nbEtapes = etapes.length;
   const faites = etapes.filter((_, i) => fab.coches[i]).length;
@@ -1799,9 +1960,10 @@ function vueFabrication() {
     <p class="muted">${t('bougies', nb)}, ${grammes(poidsTotal)} · <span id="progression">${t('etapesFaites', faites, etapes.length)}</span></p>
     ${f.prochaineFois ? `<div class="card rappel"><strong>${t('rappelProchaineFois')} :</strong>
       <span style="white-space:pre-wrap">${esc(f.prochaineFois)}</span></div>` : ''}
+    <div class="progres" aria-hidden="true"><i style="width:${faites / etapes.length * 100}%"></i></div>
     <div class="duo fab">
     <ol class="etapes">
-      ${etapes.map((e, i) => `<li class="etape card ${fab.coches[i] ? 'faite' : ''}">
+      ${etapes.map((e, i) => `<li class="etape card ${fab.coches[i] ? 'faite' : ''} ${i === etapes.findIndex((_, k) => !fab.coches[k]) ? 'courante' : ''}">
         <label class="coche"><input type="checkbox" data-etape="${i}" ${fab.coches[i] ? 'checked' : ''}>
           <span><span class="num-etape">${i + 1}</span> ${e.titre}</span></label>
         ${e.detail ? `<div class="detail-etape">${e.detail}</div>` : ''}
@@ -1833,20 +1995,36 @@ app.addEventListener('click', ev => {
   switch (action) {
     case 'plus':
     case 'moins': {
-      const l = etat.ui.lignes[i];
+      const k = Number(el.dataset.lot) || 0;
+      const l = lotUi(k).lignes[i];
       l.n = Math.max(1, Math.round(nombre(l.n)) + (action === 'plus' ? 1 : -1));
-      document.getElementById('c-nombre-' + i).value = l.n;
+      document.getElementById(`c-nombre-${k}-${i}`).value = l.n;
       enregistrer();
       afficherResultat();
       break;
     }
     case 'ajouter-pot':
-      etat.ui.lignes.push({ contenant: contenantsTries()[0]?.id || 'perso', poids: '', n: 1 });
+      lotUi(Number(el.dataset.lot) || 0).lignes.push({ contenant: contenantsTries()[0]?.id || 'perso', poids: '', n: 1 });
       enregistrer();
       vueCalcul();
       break;
     case 'retirer-pot':
-      etat.ui.lignes.splice(i, 1);
+      lotUi(Number(el.dataset.lot) || 0).lignes.splice(i, 1);
+      enregistrer();
+      vueCalcul();
+      break;
+    case 'ajouter-recette': {
+      // Propose une recette pas encore dans la fournée.
+      const prises = [etat.ui.formule, ...etat.ui.autres.map(x => x.formule)];
+      const libre = formulesTriees().find(f => !prises.includes(f.id)) || formulesTriees()[0];
+      etat.ui.autres.push({ formule: libre.id, lignes: [{ contenant: contenantsTries()[0]?.id || 'perso', poids: '', n: 1 }] });
+      enregistrer();
+      vueCalcul();
+      document.getElementById(`c-formule-${etat.ui.autres.length}`)?.scrollIntoView({ block: 'center' });
+      break;
+    }
+    case 'retirer-recette':
+      etat.ui.autres.splice(Number(el.dataset.lot) - 1, 1);
       enregistrer();
       vueCalcul();
       break;
@@ -1860,12 +2038,14 @@ app.addEventListener('click', ev => {
     }
     case 'calculer-idee':
       etat.ui.formule = id;
+      etat.ui.autres = [];
       etat.ui.lignes = [{ contenant: el.dataset.contenant, poids: '', n: Math.max(1, nombre(el.dataset.n)) }];
       enregistrer();
       aller('#/calcul');
       break;
     case 'calculer':
       etat.ui.formule = id;
+      etat.ui.autres = [];
       enregistrer();
       aller('#/calcul');
       break;
@@ -1933,7 +2113,7 @@ app.addEventListener('click', ev => {
       break;
     }
     case 'fabriquer':
-      etat.ui.fabrication = { formule: etat.ui.formule, lignes: structuredClone(etat.ui.lignes), coches: [], notes: '' };
+      etat.ui.fabrication = { formule: etat.ui.formule, lignes: structuredClone(etat.ui.lignes), autres: structuredClone(etat.ui.autres || []), coches: [], notes: '', notesLots: {} };
       enregistrer();
       aller('#/fabrication');
       break;
@@ -1942,25 +2122,27 @@ app.addEventListener('click', ev => {
       const fab = etat.ui.fabrication;
       if (action === 'abandonner-fabrication' && !confirm(t('abandonnerConfirmer'))) return;
       const f = formuleParId(fab.formule);
-      if (action === 'terminer-fabrication' && f && fab.notes?.trim()) {
-        const n = fab.lignes.reduce((s, l) => s + Math.round(nombre(l.n)), 0);
+      const lots = lotsDe(fab);
+      if (action === 'terminer-fabrication' && lots.length) {
+        const plusieurs = (fab.autres || []).length > 0;
         const date = new Date().toLocaleDateString(locale());
-        f.notes = [f.notes, `${t('fournee', date, n)} : ${fab.notes.trim()}`].filter(Boolean).join('\n');
-        toast(t('fourneeEnregistree'));
-      }
-      if (action === 'terminer-fabrication' && f) {
-        const lignes = fab.lignes.map(l => ({ ...l, p: poidsLigne(l), n: Math.max(0, Math.round(nombre(l.n))) })).filter(l => l.p > 0 && l.n > 0);
-        const postes = consommation(f, lignes).postes.filter(p => p.article);
-        postes.forEach(p => { p.article.quantite = Math.max(0, nombre(p.article.quantite) - p.quantite); });
-        const ajoutees = rangerBougies(f, lignes);
+        let ajoutees = 0, notees = false;
+        // Les quantités à retirer du stock sont calculées avant de toucher au stock.
+        const retraits = lots.map(x => consommation(x.f, x.lignes).postes.filter(p => p.article));
+        lots.forEach((x, k) => {
+          const note = (plusieurs ? (fab.notesLots || {})[x.idx] : fab.notes)?.trim();
+          if (note) { x.f.notes = [x.f.notes, `${t('fournee', date, x.nb)} : ${note}`].filter(Boolean).join('\n'); notees = true; }
+          retraits[k].forEach(p => { p.article.quantite = Math.max(0, nombre(p.article.quantite) - p.quantite); });
+          ajoutees += rangerBougies(x.f, x.lignes);
+        });
         const bas = enAlerte().length;
-        if (!fab.notes?.trim()) toast(t('bougiesAjoutees', ajoutees));
+        toast(plusieurs ? t('recettesRangees', ajoutees) : notees ? t('fourneeEnregistree') : t('bougiesAjoutees', ajoutees));
         if (bas) setTimeout(() => toast(t('stockBas', bas)), 2400);
       }
       delete etat.ui.fabrication;
       enregistrer();
       liberer();
-      aller(action === 'terminer-fabrication' && f ? '#/formule/' + f.id : '#/calcul');
+      aller(action !== 'terminer-fabrication' || !f ? '#/calcul' : (fab.autres || []).length ? '#/bougies' : '#/formule/' + f.id);
       break;
     }
     case 'convertir': {
@@ -2095,8 +2277,16 @@ app.addEventListener('input', ev => {
     etat.ui[el.dataset.ui] = el.value;
     enregistrer();
     if (el.dataset.ui === 'annee') vueRapport(); else if (el.dataset.ui === 'ideeSenteur') vueIdees(); else afficherResultat();
+  } else if (el.dataset.lotFormule !== undefined) {
+    lotUi(Number(el.dataset.lotFormule)).formule = el.value;
+    enregistrer();
+    afficherResultat();
+  } else if (el.dataset.noteLot !== undefined) {
+    const fab = etat.ui.fabrication;
+    fab.notesLots = { ...fab.notesLots, [el.dataset.noteLot]: el.value };
+    enregistrer();
   } else if (el.dataset.pot !== undefined) {
-    etat.ui.lignes[el.dataset.pot][el.dataset.champPot] = el.value;
+    lotUi(Number(el.dataset.lot) || 0).lignes[el.dataset.pot][el.dataset.champPot] = el.value;
     enregistrer();
     if (el.dataset.champPot === 'contenant') vueCalcul(); else afficherResultat();
   } else if (el.dataset.temp) {
@@ -2107,7 +2297,14 @@ app.addEventListener('input', ev => {
     fab.coches[el.dataset.etape] = el.checked;
     enregistrer();
     el.closest('.etape').classList.toggle('faite', el.checked);
-    document.getElementById('progression').textContent = t('etapesFaites', fab.coches.filter(Boolean).length, fab.nbEtapes);
+    const faites = fab.coches.filter(Boolean).length;
+    document.getElementById('progression').textContent = t('etapesFaites', faites, fab.nbEtapes);
+    const barre = document.querySelector('.progres i');
+    if (barre) barre.style.width = `${faites / fab.nbEtapes * 100}%`;
+    // L'étape mise en avant est toujours la première qui reste à faire.
+    const etapes = [...document.querySelectorAll('.etape')];
+    etapes.forEach(e => e.classList.remove('courante'));
+    etapes.find(e => !e.querySelector('[data-etape]').checked)?.classList.add('courante');
   } else if (el.id === 'notes-fournee') {
     etat.ui.fabrication.notes = el.value;
     enregistrer();

@@ -1,7 +1,19 @@
 // Historique des versions affiché dans Réglages > « Voir les nouveautés ».
-// Numéro : V1.<numéro de la PR mergée>. À CHAQUE nouvelle PR, ajouter une entrée
+// Numéro : V2.<numéro de la PR mergée> depuis la V2.0 (avant : V1.<numéro de PR>). À CHAQUE nouvelle PR, ajouter une entrée
 // EN HAUT de la liste (la première entrée donne la version affichée dans l'app).
 const VERSIONS = [
+  { v: '2.0', date: '2026-11-11', titre: 'Nouvelle présentation et fournées à plusieurs recettes', details: [
+    'Toute l’app a été remise en ordre : cartes plus claires, titres plus discrets, chiffres importants en grand.',
+    'Menu : Calculer, Formules, Mes bougies, Stock et Rapport. Contenants et Réglages sont en bas du menu (en haut à droite quand l’iPad est à la verticale).',
+    'Calculer : les grammes à peser sont en gros, la note « La prochaine fois » s’affiche avant la pesée, et le coût tient sur une ligne (toucher pour voir le détail).',
+    'Nouveau : plusieurs recettes dans la même fournée avec « + Autre recette dans la même fournée ». Chaque recette a sa lettre (A, B, C).',
+    'Le mode fabrication regroupe alors ce qui se fait ensemble (pots, cire, fonte, pesée des parfums), puis guide recette par recette pour la couleur, le parfum et le coulage.',
+    'À la fin d’une fournée à plusieurs recettes, chaque recette reçoit ses notes, ses bougies et son décompte de stock.',
+    'Fabrication : une barre de progression, et l’étape à faire est mise en avant.',
+    'Formules : liste plus compacte, favoris en haut. Stock : les articles à racheter sont regroupés en haut, les quantités basses sont en rose.',
+    'Mes bougies et Rapport : les chiffres clés en haut, les mouvements rangés par mois.',
+    'Vendre plusieurs bougies d’un coup : la fenêtre « Vendu » demande la quantité et le prix par bougie.',
+  ] },
   { v: '1.17', date: '2026-11-08', titre: 'Idées : seulement les senteurs', details: [
     'Les idées de bougies ne dépendent plus que des senteurs en stock : la cire, les couleurs, les pots et les mèches ne sont plus comptés.',
   ] },
