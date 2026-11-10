@@ -9,7 +9,7 @@ Petite web app pour iPad : formules de bougies artisanales et calcul des quantit
 
 ## Versions
 
-La version affichée en bas des Réglages est `V1.<numéro de la PR mergée>`. À chaque nouvelle PR, ajouter une entrée en haut de `versions.js` (numéro, date, titre, changements en langage simple) : elle apparaît dans Réglages > « Voir les nouveautés ».
+La version affichée en bas des Réglages est `V2.<numéro de la PR mergée>` (la refonte de novembre 2026 porte le numéro rond `V2.0` ; avant elle, `V1.<numéro de PR>`). À chaque nouvelle PR, ajouter une entrée en haut de `versions.js` (numéro, date, titre, changements en langage simple) : elle apparaît dans Réglages > « Voir les nouveautés ».
 
 ## Crédits
 

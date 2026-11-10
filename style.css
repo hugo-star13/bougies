@@ -269,3 +269,163 @@ button:disabled { opacity: .4; cursor: default; }
 /* Réglages : numéro de version et lien vers les nouveautés */
 .version-app { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .version-app .btn { width: auto; min-height: 44px; padding: 6px 14px; }
+
+/* ---------- Refonte V1.18 ---------- */
+/* Refonte : même identité sauge, plus de contraste entre fond et cartes, moins de cadres. */
+:root {
+  --bg: #f0f2eb; --card: #fdfdfb; --side: #e2e8dc; --line: #dfe5da;
+  --ok: #3f5f4e; --rose: #f6e3e1; --rose-ligne: #ebc9c7;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #131a17; --card: #1d2622; --side: #18201c; --line: #2c3832; --ok: #9cc4ad; --rose: #3a282b; --rose-ligne: #5a3a3e; }
+}
+body { font-variant-numeric: tabular-nums; }
+.card { box-shadow: none; border-radius: 18px; padding: 22px; }
+h2 { font-size: 34px; margin-bottom: 14px; }
+h2 + p.muted { margin-top: -6px; max-width: 62ch; }
+h3 { font-size: 13px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; margin: 26px 0 10px; }
+.compte { display: inline-block; margin-left: 4px; padding: 0 8px; border-radius: 99px; background: var(--accent-soft); color: var(--ink); letter-spacing: 0; font-size: 12px; line-height: 20px; }
+.texte-fiche p, .note-fois p { margin: 0 0 14px; }
+.texte-fiche p:last-child, .note-fois p:last-child { margin-bottom: 0; }
+.card > h3:first-child { margin-top: 0; }
+button.doux, .btn.doux { background: var(--accent-soft); border-color: transparent; color: var(--ink); }
+button.lien, .btn.lien { background: none; border-color: transparent; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; padding-inline: 8px; }
+.pousse { flex: 1; }
+.grid2, .grid3, .grid-temp { align-items: end; }
+.grid2.trois { grid-template-columns: repeat(3, 1fr); }
+.duo .grid2.trois { grid-template-columns: repeat(3, 1fr); }
+
+/* Navigation : cinq onglets de travail, pots et réglages à part. */
+.topbar { display: flex; align-items: center; justify-content: space-between; }
+.topbar nav.second { position: static; background: none; border: none; padding: 0; gap: 4px; justify-content: flex-end; }
+.topbar nav.second a { flex: none; flex-direction: row; gap: 6px; font-size: 14px; padding: 8px 12px; min-height: 44px; }
+.topbar nav.second .ic { width: 22px; height: 22px; }
+.topbar nav.principal a { font-size: 13px; padding: 7px 2px; }
+@media (min-width: 1000px) {
+  .topbar { align-items: stretch; justify-content: flex-start; gap: 18px; }
+  .topbar nav.second { margin-top: auto; flex-direction: column; justify-content: flex-end; border-top: 1px solid var(--line); padding-top: 12px; }
+  .topbar nav.second a, .topbar nav.principal a { font-size: 17px; padding: 12px 14px; min-height: 50px; gap: 12px; }
+  .topbar nav.second a { color: var(--muted); font-weight: 600; }
+  .topbar nav.principal a[data-tab="stock"] { margin-top: 16px; }
+  .topbar nav a.active { background: var(--card); box-shadow: 0 1px 2px rgb(34 48 42 / .08); }
+}
+
+/* Calculer : ce qu'on pèse se lit à un mètre. */
+.surtitre { margin: 0 0 2px; font-size: 13px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.titre-resultat { font-size: 30px; margin-bottom: 10px; }
+.titre-resultat span { font-weight: 600; }
+table.pesee tr.fort td { font-size: 22px; padding: 14px 4px; }
+table.pesee tr.fort td.num { font-size: 28px; font-weight: 800; }
+table.pesee tr.sous td { font-size: 18px; padding: 9px 4px; border-bottom-color: transparent; }
+table.pesee tr.sous td:first-child { padding-left: 16px; box-shadow: inset 3px 0 0 var(--accent-soft); }
+table.pesee tr.sous td.num { font-size: 20px; font-weight: 700; }
+table.pesee tr.total td { border-top: 1px solid var(--line); }
+button.large { width: 100%; min-height: 58px; font-size: 19px; margin-top: 18px; border-radius: 14px; }
+.repli { margin-top: 16px; border-top: 1px solid var(--line); }
+.repli summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 52px; cursor: pointer; list-style: none; color: var(--muted); font-weight: 700; }
+.repli summary::-webkit-details-marker { display: none; }
+.repli summary span::after { content: "›"; display: inline-block; margin-left: 8px; transition: transform .15s; }
+.repli[open] summary span::after { transform: rotate(90deg); }
+.repli summary strong { color: var(--ink); font-size: 19px; }
+table.result td.num .muted { font-weight: 500; font-size: 14px; }
+.rappel { background: var(--rose); border-color: var(--rose-ligne); }
+.note-fois h3 { color: var(--rose-ink); }
+.note-fois p { font-size: 18px; }
+
+/* Listes : une ligne calme par recette, tout tient sur la même hauteur. */
+.list li { border-radius: 14px; padding: 10px 12px 10px 6px; min-height: 68px; }
+.list.recettes li .title, .list.bougies li .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.senteurs { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.senteurs b { font-weight: 600; opacity: .75; font-size: 13px; }
+.senteurs i { font-style: normal; opacity: .5; }
+.star { color: var(--champ); }
+.star[aria-pressed="true"] { color: var(--rose-ink); }
+@media (min-width: 1000px) { .list.serre { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; } }
+.list.serre li { padding: 8px 14px; min-height: 60px; }
+.list.serre li .title { font-size: 16px; }
+.list.serre li .sub { font-size: 13px; }
+.qte { white-space: nowrap; font-weight: 700; }
+.qte.bas { color: var(--rose-ink); background: var(--rose); padding: 2px 10px; border-radius: 99px; font-size: 14px; }
+.compact { padding: 16px 18px; }
+.puces { display: flex; flex-wrap: wrap; gap: 8px; }
+.puce { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 4px 14px; border-radius: 99px; background: var(--card); border: 1px solid var(--rose-ligne); color: var(--ink); text-decoration: none; font-size: 15px; }
+.puce.vide { background: var(--rose-ink); border-color: var(--rose-ink); color: var(--card); }
+.list.bougies li { padding-left: 12px; }
+.nb { flex: none; width: 46px; height: 46px; border-radius: 12px; background: var(--accent-soft); display: grid; place-items: center; font: 400 22px/1 var(--titres); }
+.vide .nb { background: var(--line); }
+
+/* Tuiles de chiffres */
+.tuiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.tuile { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px; }
+.tuile .l { font-size: 13px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.tuile .v { font: 400 30px/1.2 var(--titres); white-space: nowrap; }
+.tuile .d { font-size: 14px; color: var(--muted); }
+.tuile.neg { background: var(--rose); border-color: var(--rose-ligne); }
+.tuile.neg .v { color: var(--rose-ink); }
+.tuile.pos .v { color: var(--ok); }
+
+/* Rapport */
+.moisT td.barres { width: 34%; padding-right: 16px; }
+.barres i { display: block; height: 7px; border-radius: 4px; min-width: 2px; margin: 3px 0; }
+.barres i.e { background: var(--ok); }
+.barres i.s { background: var(--rose-ink); opacity: .55; }
+details.saisie { padding: 4px 22px; border-top: 1px solid var(--line); margin-top: 0; }
+details.saisie[open] { padding-bottom: 22px; }
+details.saisie summary { color: var(--accent); }
+.journal tr.mois td { padding: 22px 4px 6px; border-bottom: 1px solid var(--line); font-size: 13px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.journal tr.mois:first-child td { padding-top: 0; }
+.journal .jour { display: inline-block; width: 58px; color: var(--muted); font-size: 14px; }
+.journal td.num { font-weight: 700; }
+
+/* Fabrication */
+.progres { height: 8px; border-radius: 4px; background: var(--line); margin: 0 0 18px; overflow: hidden; }
+.progres i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.etape.card { padding: 16px 20px; margin-bottom: 10px; }
+.etape.courante { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
+.etape.courante .coche { font-size: 23px; font-weight: 700; }
+h3.titre-resultat { text-transform: none; letter-spacing: 0; color: var(--ink); margin-top: 0; }
+h3.titre-resultat span { text-transform: none; letter-spacing: 0; }
+.repli summary strong { white-space: nowrap; }
+.senteurs { white-space: normal; }
+.list.recettes li .title { white-space: normal; }
+@media (max-width: 999px) {
+  .duo.calc { display: flex; flex-direction: column; }
+  .duo.calc > div:first-child { display: contents; }
+  .duo.calc #resultat { order: 2; }
+  .duo.calc #notes-recette { order: 3; }
+}
+@media (min-width: 700px) and (max-width: 999px) {
+  .list.serre { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .list.serre li { margin-bottom: 0; }
+}
+
+/* Fournée à plusieurs recettes */
+.lettre { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; font: 800 14px/1 var(--texte); letter-spacing: 0; vertical-align: 2px; background: var(--accent); color: var(--accent-ink); }
+.lettre.lB { background: var(--rose-ink); color: var(--card); }
+.lettre.lC { background: var(--ink); color: var(--bg); }
+.bloc-lot { margin-top: 18px; padding-top: 14px; border-top: 2px solid var(--line); }
+.bloc-lot h4, .detail-etape h4 { margin: 0 0 4px; font-size: 18px; font-weight: 800; }
+.detail-etape h4 { margin-top: 12px; font-size: 16px; }
+.bloc-lot table.pesee td { font-size: 19px; padding: 9px 4px; }
+.bloc-lot table.pesee td.num { font-size: 21px; }
+.bloc-lot table.pesee tr.sous td { font-size: 17px; padding: 6px 4px; }
+.bloc-lot table.pesee tr.sous td.num { font-size: 18px; }
+button.ajout-recette { width: 100%; margin-bottom: 16px; border-style: dashed; border-color: var(--champ); background: none; color: var(--accent); }
+li.phase { list-style: none; margin: 22px 0 10px; font-size: 13px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+li.phase:first-child { margin-top: 0; }
+li.phase .lettre { margin-right: 4px; }
+.etape.du-lot { margin-left: 18px; }
+.etape.du-lot.lA { box-shadow: inset 4px 0 0 var(--accent); }
+.etape.du-lot.lB { box-shadow: inset 4px 0 0 var(--rose-ink); }
+.etape.du-lot.lC { box-shadow: inset 4px 0 0 var(--ink); }
+.etape.courante { outline: 2px solid var(--accent); outline-offset: -1px; }
+.detail-etape td .lettre { margin-right: 6px; }
+.bloc-lot h4 .pct, h2 + p .pct { font-weight: 400; color: var(--muted); font-size: 15px; margin-left: 6px; }
+.card.lot { position: relative; }
+button.retirer-lot { position: absolute; top: 12px; right: 12px; width: 44px; min-height: 44px; padding: 0; border-color: transparent; background: none; color: var(--muted); }
+h4.titre-lot { margin: 14px 0 2px; font-size: 16px; font-weight: 800; }
+.cout-fournee .repli { margin-top: 0; border-top: none; }
+.total-vente { margin: 14px 0 0; font-weight: 800; font-size: 18px; }
+.visionneuse .fenetre > label:first-of-type { margin-top: 0; }
+.bloc-lot table.pesee tr.sous td:first-child { padding-left: 16px; }
+.repli summary span { min-width: 0; }
